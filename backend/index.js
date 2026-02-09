@@ -16,9 +16,10 @@ app.use(cookieParser());
 // Middleware para JSON
 app.use(express.json());
 
+// En tu index.js (Backend)
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: "https://reaction-kioskly.vercel.app", // Tu URL recién creada
+  credentials: true 
 }));
 
 // Rutas para administradores

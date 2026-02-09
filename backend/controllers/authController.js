@@ -71,8 +71,8 @@ export const loginAdmin = async (req, res) => {
   // Enviar token en cookie segura
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none",
      maxAge: 1000 * 60 * 60, // 1 hora
   });
 
