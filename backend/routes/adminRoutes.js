@@ -8,8 +8,8 @@ const router = express.Router();
 
 router.post('/register-admin',  withValidationErrors(validateRegisterInputAdmin), registerAdmin); 
 router.post('/login-admin', withValidationErrors(validateLoginInputAdmin), loginAdmin); 
-router.post('/logout-admin', authenticateAdmin, logoutAdmin)
 
+router.post('/logout-admin', authenticateAdmin, logoutAdmin)
 router.get('/me', authenticateAdmin, getCurrentAdmin);
 
 

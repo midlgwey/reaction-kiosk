@@ -1,31 +1,30 @@
 import { db } from '../db.js';
-import { getShiftByTime } from '../utils/shiftUtils.js';
+import { getShiftByTime } from '../utils/shiftUtils.js'; 
 import { BadRequestError, InternalServerError } from '../errors/customErrors.js';
 
 export const createReaction = async (req, res) => {
-   try {
+  try {
     const { question_id, value } = req.body;
 
-    // Aquí logueas lo que llega en la petición
-    console.log("BODY RECIBIDO:", req.body);
-
+    // Calculamos turno con hora de Tijuana
     const shift = getShiftByTime();
 
-    // Aquí logueas el turno determinado
-    console.log("SHIFT DETERMINADO:", shift);
-
+    // Validaciones básicas
     if (!question_id || !value) {
-      throw new BadRequestError("question_id y value son obligatorios");
+      throw new BadRequestError("Faltan datos (question_id o value)");
     }
 
+    // Validar rango de estrellas
     if (value < 1 || value > 4) {
-      throw new BadRequestError("Valor de reacción inválido");
+      throw new BadRequestError("Valor inválido (1-4)");
     }
 
+    // Si está cerrado, no guardamos nada
     if (shift === "Cerrado" || shift === "Fuera de horario") {
-      throw new BadRequestError("El restaurante está cerrado");
+      throw new BadRequestError("Restaurante cerrado");
     }
 
+    // Insertar en BD
     await db.execute({
       sql: `INSERT INTO reactions (question_id, value, shift) VALUES (?, ?, ?)`,
       args: [question_id, value, shift],
@@ -34,6 +33,13 @@ export const createReaction = async (req, res) => {
     res.status(201).json({ message: "Reacción guardada", shift });
 
   } catch (error) {
-    throw new InternalServerError("Error guardando reacción");
+    console.error("Error createReaction:", error);
+
+    // Si es error de validación (400), se deja pasar
+    if (error.statusCode) throw error;
+    
+    // Error inesperado (BD, código, etc)
+    throw new InternalServerError("Error al guardar reacción");
   }
 };
+

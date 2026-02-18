@@ -1,16 +1,27 @@
 import { db } from '../db.js';
 import { InternalServerError } from '../errors/customErrors.js';
 
-/* ======================================================
-   TOTAL REACCIONES DEL DÍA (TIJUANA)
-====================================================== */
+// Tijuana Invierno: '-8 hours' | Tijuana Verano: '-7 hours' (Ajustar según temporada)
+const TIME_OFFSET = '-8 hours'; 
+
+//helper
+const getTimeModifier = (req) => {
+
+  // Si no se pide nada, usamos 7 por defecto.
+  const dias = parseInt(req.query.days) || 7;
+  return `-${dias - 1} days`;
+};
+
+/* ----------------------------
+   TOTAL REACCIONES DEL DÍA 
+ */
 export const getDailyReactions = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
         SELECT COUNT(*) AS total
         FROM reactions
-        WHERE DATE(created_at, '-7 hours') = DATE('now', '-7 hours');
+        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}');
       `,
     });
 
@@ -24,76 +35,66 @@ export const getDailyReactions = async (req, res) => {
 };
 
 
-/* ======================================================
+/* --------------------------
    SERVICIO MESERO DEL DÍA
-====================================================== */
+*/
 export const getDailyServerScore = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
         SELECT 
-          ROUND(AVG(value),2) AS avg_score,
+          COALESCE(ROUND(AVG(value),2), 0) AS avg_score, -- COALESCE evita valores null
           COUNT(id) AS total_votes
         FROM reactions
-        WHERE DATE(created_at, '-7 hours') = DATE('now', '-7 hours')
+        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
         AND question_id = 1;
       `,
     });
-
-    res.status(200).json({
-      avgScore: result.rows[0].avg_score || 0,
-      totalResponses: result.rows[0].total_votes || 0
+      res.status(200).json({
+      avgScore: result.rows[0].avg_score,
+      totalResponses: result.rows[0].total_votes
     });
-
   } catch (error) {
     throw new InternalServerError("Error servicio mesero");
   }
 };
 
 
-/* ======================================================
+/* --------------------
    FELICIDAD DEL DÍA
-====================================================== */
+*/
 export const getTodayHappinessIndex = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
         SELECT 
-          ROUND(AVG(value),2) AS avg_score,
+          COALESCE(ROUND(AVG(value),2), 0) AS avg_score,
           COUNT(*) as total
         FROM reactions
-        WHERE DATE(created_at, '-7 hours') = DATE('now', '-7 hours');
+        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}');
       `,
     });
 
-    const avg = result.rows[0].avg_score || 0;
-    const total = result.rows[0].total || 0;
+    const avg = result.rows[0].avg_score;
+    const total = result.rows[0].total;
 
-    if (!total) {
-      return res.status(200).json({
-        happinessPercent: 0,
-        avgScore: 0,
-        totalResponses: 0
-      });
-    }
-
-    const percent = Math.round((avg / 4) * 100);
+    // Cálculo del porcentaje basado en el máximo de 4 estrellas
+    const percent = total > 0 ? Math.round((avg / 4) * 100) : 0;
 
     res.status(200).json({
       happinessPercent: percent,
       avgScore: avg,
       totalResponses: total
     });
-
   } catch (error) {
     throw new InternalServerError("Error índice felicidad");
   }
 };
 
 
-/* ======================================================
+/* ----------------------------
    FELICIDAD POR TURNO DEL DÍA
-====================================================== */
+   */
 export const getTodayHappinessByShift = async (req, res) => {
   try {
     const result = await db.execute({
@@ -102,7 +103,7 @@ export const getTodayHappinessByShift = async (req, res) => {
           shift,
           ROUND(AVG(value),2) AS avg_score
         FROM reactions
-        WHERE DATE(created_at, '-7 hours') = DATE('now', '-7 hours')
+        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
         GROUP BY shift;
       `,
     });
@@ -114,7 +115,6 @@ export const getTodayHappinessByShift = async (req, res) => {
 
     result.rows.forEach(row => {
       const percent = Math.round((row.avg_score / 4) * 100);
-
       if (row.shift === "Desayuno") formatted.desayuno = percent;
       if (row.shift === "Comida/Cena") formatted.comidaCena = percent;
     });
@@ -127,19 +127,24 @@ export const getTodayHappinessByShift = async (req, res) => {
 };
 
 
-/* ======================================================
-   AREA CHART SEMANA REAL (TIJUANA)
-====================================================== */
+/* ---------------------
+   AREA CHART SEMANA REAL 
+*/
 export const getDailySatisfactionTrend = async (req, res) => {
   try {
+
+    //Calculamos el inicio del rango (semana o mensual)
+    const timeModifier = getTimeModifier(req);
+
     const result = await db.execute({
       sql: `
       WITH RECURSIVE days(day) AS (
-        SELECT DATE(datetime('now','-8 hours','-6 days'))
+      -- Usamos el parámetro dinámico para saber dónde empezar
+        SELECT DATE('now', '${TIME_OFFSET}', ?)
         UNION ALL
         SELECT DATE(day,'+1 day')
         FROM days
-        WHERE day < DATE(datetime('now','-8 hours'))
+        WHERE day < DATE('now', '${TIME_OFFSET}')
       )
 
       SELECT 
@@ -148,25 +153,31 @@ export const getDailySatisfactionTrend = async (req, res) => {
         COUNT(r.id) as total_responses
       FROM days
       LEFT JOIN reactions r 
-        ON DATE(datetime(r.created_at,'-8 hours')) = days.day
+        ON DATE(r.created_at, '${TIME_OFFSET}') = days.day
       GROUP BY days.day
       ORDER BY days.day ASC;
       `,
+      args: [timeModifier]
     });
 
     res.status(200).json(result.rows);
 
   } catch (error) {
+    console.error("Error en getDailySatisfactionTrend:", error);
     throw new InternalServerError("Error evolución semanal");
   }
 };
 
 
-/* ======================================================
+/*-------------
    DONA SEMANAL 
-====================================================== */
+ */
 export const getWeeklySentimentSummary = async (req, res) => {
   try {
+
+    //Calculamos el inicio del rango (semana o mensual)
+    const timeModifier = getTimeModifier(req);
+
     const result = await db.execute({
       sql: `
         SELECT
@@ -176,9 +187,11 @@ export const getWeeklySentimentSummary = async (req, res) => {
           COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END),0) AS malo,
           COUNT(*) as total
         FROM reactions
-        WHERE DATE(datetime(created_at,'-8 hours'))
-        >= DATE(datetime('now','-8 hours','-6 days'));
+
+        WHERE DATE(created_at, '${TIME_OFFSET}') 
+              >= DATE('now', '${TIME_OFFSET}', ?);
       `,
+      args: [timeModifier]
     });
 
     res.status(200).json(result.rows[0] || {
@@ -189,7 +202,8 @@ export const getWeeklySentimentSummary = async (req, res) => {
       total: 0
     });
 
-  } catch (error) {
-    throw new InternalServerError("Error dona semanal");
+ } catch (error) {
+    console.error("Error en getWeeklySentimentSummary:", error);
+    throw new InternalServerError("Error obteniendo el resumen semanal");
   }
 };

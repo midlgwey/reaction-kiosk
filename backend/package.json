@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@libsql/client": "^0.17.0",
     "axios": "^1.13.4",
     "bcryptjs": "^3.0.3",
@@ -23,8 +24,9 @@
     "http-status": "^2.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.3",
-    "react-calendar-heatmap": "^1.10.0",
-    "uuid": "^13.0.0"
+    "sentiment": "^5.0.2",
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

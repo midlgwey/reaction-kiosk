@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import api from "../services/api"
-
-/*
-✔ Protege rutas admin
-✔ Verifica cookie JWT real en backend
-✔ Evita entrar escribiendo URL manual
-✔ Listo para producción
-*/
+import LoadingScreen from "../components/authcomponent/LoadingScreen";
 
 export default function ProtectedRoutesAdmin({ children }) {
   const [loading, setLoading] = useState(true);
@@ -30,14 +24,8 @@ export default function ProtectedRoutesAdmin({ children }) {
   }, []);
 
   // mientras valida cookie
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg font-semibold text-gray-600">
-          Verificando sesión...
-        </p>
-      </div>
-    );
+if (loading) {
+    return <LoadingScreen />;
   }
 
   // si NO autorizado → login

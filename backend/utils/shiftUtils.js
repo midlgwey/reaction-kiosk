@@ -1,64 +1,75 @@
 export function getShiftByTime() {
 
+  const now = new Date();
+
+  // Helper para forzar zona horaria (útil si se requiere precisión extra en integers)
+  const getTijuanaPart = (part) => {
+    const f = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Tijuana",
+      [part]: "numeric",
+      hour12: false 
+    });
+    return parseInt(f.format(now));
+  };
+
+  // Crear objeto Date basado en la hora local de Tijuana
+  const tijuanaDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Tijuana" }));
   
-  const nowTijuana = new Date().toLocaleString("en-US", {
-    timeZone: "America/Tijuana"
-  });
+  const day = tijuanaDate.getDay(); 
+  const hour = tijuanaDate.getHours();
+  const minutes = tijuanaDate.getMinutes();
 
-  const date = new Date(nowTijuana);
-
-  const day = date.getDay(); // 0 domingo
-  const hour = date.getHours();
-  const minutes = date.getMinutes();
+  // Normalización del tiempo a minutos del día para comparaciones de rango
   const currentTime = hour * 60 + minutes;
 
-  // LUNES CERRADO
+  // Lunes: Día inhabilitado
   if (day === 1) return "Cerrado";
 
-  /* ======================================================
-     MARTES A VIERNES
-     8:00 am - 12:59 pm → Desayuno
-     1:00 pm - 10:00 pm → Comida/Cena
-  ====================================================== */
+  /* -------------------------------------------------
+     Semana Laboral (Martes - Viernes)
+     Corte de turno: 1:00 PM (780 min)
+     Cierre: 10:00 PM (1320 min)
+  ------------------------------------------------- */
+
+  
+
   if (day >= 2 && day <= 5) {
-    if (currentTime >= 480 && currentTime <= 779) {
-      return "Desayuno"; // 8:00 - 12:59
-    }
-
-    if (currentTime >= 780 && currentTime <= 1320) {
-      return "Comida/Cena"; // 1:00 - 10:00
-    }
+    // Rango: 8:00 AM - 12:59 PM
+    if (currentTime >= 480 && currentTime < 780) return "Desayuno"; 
+    // Rango: 1:00 PM - 10:00 PM
+    if (currentTime >= 780 && currentTime <= 1320) return "Comida/Cena";
   }
 
-  /* ======================================================
-     SÁBADO
-     8:00 am - 1:45 pm → Desayuno
-     1:46 pm - 10:00 pm → Comida/Cena
-  ====================================================== */
+  /* -------------------------------------------------
+     Sábado
+     Corte de turno: 1:45 PM (825 min)
+     Cierre: 10:00 PM (1320 min)
+  ------------------------------------------------- */
+
+
+  
   if (day === 6) {
-    if (currentTime >= 480 && currentTime <= 825) {
-      return "Desayuno"; // hasta 1:45
-    }
-
-    if (currentTime >= 826 && currentTime <= 1320) {
-      return "Comida/Cena";
-    }
+    // Rango: 8:00 AM - 1:45 PM
+    if (currentTime >= 480 && currentTime <= 825) return "Desayuno";
+    // Rango: 1:46 PM - 10:00 PM
+    if (currentTime > 825 && currentTime <= 1320) return "Comida/Cena";
   }
 
-  /* ======================================================
-     DOMINGO
-     8:00 am - 1:45 pm → Desayuno
-     1:46 pm - 6:00 pm → Comida/Cena
-  ====================================================== */
-  if (day === 0) {
-    if (currentTime >= 480 && currentTime <= 825) {
-      return "Desayuno";
-    }
+  /* -------------------------------------------------
+     Domingo (Cierre temprano)
+     Corte de turno: 1:45 PM (825 min)
+     Cierre: 6:00 PM (1080 min)
+  ------------------------------------------------- */
 
-    if (currentTime >= 826 && currentTime <= 1080) {
-      return "Comida/Cena"; 
-    }
+  
+  if (day === 0) {
+    // Rango: 8:00 AM - 1:45 PM
+    if (currentTime >= 480 && currentTime <= 825) return "Desayuno";
+    // Rango: 1:46 PM - 6:00 PM
+    if (currentTime > 825 && currentTime <= 1080) return "Comida/Cena";
   }
 
   return "Fuera de horario";
+  
 }
+

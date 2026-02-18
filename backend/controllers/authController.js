@@ -8,12 +8,6 @@ import { UnauthenticatedError, BadRequestError   } from "../errors/customErrors.
 export const registerAdmin = async (req, res) => {
 
   const { name, lastname, email, password } = req.body;
-
-  //Valida Campos
-  if (!name || !lastname || !email || !password) {
-    throw new BadRequestError("Todos los campos son obligatorios");
-  }
-
   //Verifcar si ya existe
    const existingAdmin = await findAdminByEmail(email);
   if (existingAdmin) {
@@ -23,6 +17,7 @@ export const registerAdmin = async (req, res) => {
   //encripta
   const hashedPassword = await encryptPassword(password);
 
+// Guardamos en la base de datos
   await createAdmin({
     name,
     lastname,
@@ -39,13 +34,7 @@ export const loginAdmin = async (req, res) => {
 
   const { email, password } = req.body;
 
-  //Validar campos
-  if (!email || !password) {
-      throw new BadRequestError("Email y contraseña son obligatorios");
-  }
-
-  //Buscar admin en la base de datos
-  const admin = await findAdminByEmail(email)
+  const admin = await findAdminByEmail(email);
 
   console.log("Admin Encontrado:", admin);
 
@@ -68,22 +57,32 @@ export const loginAdmin = async (req, res) => {
 
   });
 
-  // Enviar token en cookie segura
-  res.cookie("token", token, {
+    res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
-     maxAge: 1000 * 60 * 60, // 1 hora
-  });
+   
+    secure: process.env.NODE_ENV === "production", 
+    
+ 
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    
+    maxAge: 1000 * 60 * 60, // 1 hora
+    path: '/' // Recomendado asegurar que sea para todo el sitio
+});
 
   res.status(StatusCodes.OK).json({ message: "Login exitoso" });
 };
 
 export const logoutAdmin = (req, res) => {
-  res.clearCookie("token");
+ 
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: '/'
+  });
+
   res.status(StatusCodes.OK).json({ message: "Sesión cerrada" });
 };
-
 export const getCurrentAdmin = async (req, res) => {
   // si llegó aquí → authenticateAdmin ya validó token
   res.status(200).json({

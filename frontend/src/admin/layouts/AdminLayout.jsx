@@ -6,17 +6,19 @@ const AdminLayout = ({ setAdmin }) => {
   const [open, setOpen] = useState(true); // controla si la sidebar está abierta
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
       {/* Sidebar */}
       <Sidebar open={open} setOpen={setOpen} setAdmin={setAdmin} />
 
       {/* Contenido principal */}
-      <div
-        className="flex-1 bg-gray-100 p-6 transition-all duration-300"
-        style={{ marginLeft: open ? "18rem" : "4rem" }} // Ajusta según el ancho de tu sidebar
-      >
-        <Outlet /> {/* Aquí se renderizan las rutas hijas */}
-      </div>
+     <main className="flex-1 min-w-0 overflow-y-auto transition-all duration-300">
+        
+        {/* Wrapper para limitar el ancho en monitores ultra-wide (opcional pero recomendado) */}
+        <div className="p-6 md:p-8 max-w-400 mx-auto space-y-6">
+           <Outlet />
+        </div>
+        
+      </main>
     </div>
   );
 };
