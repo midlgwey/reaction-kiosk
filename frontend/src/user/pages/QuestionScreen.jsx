@@ -118,7 +118,7 @@ export default function QuestionScreen() {
       </h1>
 
       {/* Componente de entrada de datos (Reacciones) */}
-      <ReactionGrid onSelect={handleRate} />
+      <ReactionGrid key={paso} onSelect={handleRate} />
 
     </div>
   );

@@ -8,13 +8,14 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import { logoutAdminService } from "../services/authService";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import kioskly from "../../assets/logo/kioskly-sidebar.png"
 
 const Sidebar = ({ open, setOpen, setAdmin }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await logoutAdminService(); 
+      await logoutAdminService();  
       if (setAdmin) setAdmin(null);
       navigate("/");
     } catch (error) {
@@ -39,7 +40,11 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
         <div className="text-indigo-900 text-xl">
           <div className="p-2.5 mt-1 flex items-center justify-between">
             <div className="flex items-center">
-              <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-white text-lg"></i>
+              <img 
+                src={kioskly} 
+                alt="Logo ServiceReaction" 
+                className="w-8 h-8 object-contain rounded-md bg-white p-1" // Ajusta el w-8 y h-8 a tu gusto
+              />
               <h1 className="font-bold text-white text-[22px] ml-3">
                 ServiceReaction
               </h1>
@@ -91,7 +96,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
             </NavLink>
         </nav>
 
-        <div className="my-5 bg-white/20 h-px"></div>
+        <div className="my-5 bg-white h-px"></div>
 
         {/* Cerrar Sesión */}
         <div
