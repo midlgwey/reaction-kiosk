@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLoginAdmin } from "../../hooks/login/useLoginAdmin";
-import kiosklylogo from "../../assets/logo/kioskly-sidebar.png" // Importación del logotipo para el formulario de inicio de sesión
+import kiosklylogo from "../../../assets/logo/kioskly-sidebar.png" // Importación del logotipo para el formulario de inicio de sesión
 
 export default function LoginAdminComponent() {
   const {
