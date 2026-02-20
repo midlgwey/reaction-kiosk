@@ -43,10 +43,10 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               <img 
                 src={kioskly} 
                 alt="Logo ServiceReaction" 
-                className="w-8 h-8 object-contain rounded-md bg-white p-1" // Ajusta el w-8 y h-8 a tu gusto
+                className="w-12 h-12 object-contain rounded-md bg-white p-1" // Ajusta el w-8 y h-8 a tu gusto
               />
               <h1 className="font-bold text-white text-[22px] ml-3">
-                ServiceReaction
+                Kioskly
               </h1>
             </div>
             <i
