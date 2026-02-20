@@ -25,7 +25,11 @@ app.use(cookieParser());
 // Middleware para JSON
 app.use(express.json());
 
-// Rutas para administradores
+//Ruta para que no se desactive la alarma para cron-job
+app.get('/', (req, res) => {
+  res.status(200).send('Servidor Kiosco Activo');
+});
+
 app.use('/admin', adminRoutes);
 
 app.use('/dashboard', dashboardRoutes);

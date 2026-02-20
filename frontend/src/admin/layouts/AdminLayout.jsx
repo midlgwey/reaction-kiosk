@@ -27,8 +27,8 @@ const AdminLayout = ({ setAdmin }) => {
         {/* Contenido principal */}
         <main className="flex-1 overflow-y-auto transition-all duration-300">
           
-          {/* Wrapper para limitar el ancho en monitores ultra-wide (opcional pero recomendado) */}
-          <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+          {/* Se elimina la restricción de ancho para ocupar toda la pantalla */}
+          <div className="p-6 md:p-8 w-full space-y-6">
              <Outlet />
           </div>
           

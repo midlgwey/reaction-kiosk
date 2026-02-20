@@ -28,9 +28,9 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
       {/* Contenedor Sidebar */}
       <div
         className={`
-          bg-indigo-400 text-white w-72 p-2 overflow-y-auto z-40 transition-transform duration-300 ease-in-out
+          bg-indigo-400 text-white p-3 overflow-y-auto z-40 transition-transform duration-300 ease-in-out
           fixed inset-y-0 left-0 
-          lg:relative lg:translate-x-0
+          w-72 lg:w-80 lg:relative lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
           shadow-xl lg:shadow-none
         `}
@@ -39,8 +39,8 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
         <div className="text-indigo-900 text-xl">
           <div className="p-2.5 mt-1 flex items-center justify-between">
             <div className="flex items-center">
-              <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-white"></i>
-              <h1 className="font-bold text-white text-[20px] ml-3">
+              <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-white text-lg"></i>
+              <h1 className="font-bold text-white text-[22px] ml-3">
                 ServiceReaction
               </h1>
             </div>
@@ -57,49 +57,49 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
             <NavLink
               to="/admin/dashboard"
               onClick={() => setOpen(false)}
-              className="p-2.5 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <HomeIcon className="w-6 h-6 text-white" />
-              <span className="text-[15px] ml-4 font-bold">Dashboard</span>
+              <HomeIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Dashboard</span>
             </NavLink>
 
             <NavLink
               to="/admin/stats"
               onClick={() => setOpen(false)}
-              className="p-2.5 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <ChartBarIcon className="w-6 h-6 text-white" />
-              <span className="text-[15px] ml-4 font-bold">Estadísticas</span>
+              <ChartBarIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Estadísticas</span>
             </NavLink>
 
             <NavLink
               to="/admin/feedback"
               onClick={() => setOpen(false)}
-              className="p-2.5 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-white" />
-              <span className="text-[15px] ml-4 font-bold">Comentarios</span>
+              <ChatBubbleBottomCenterTextIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Comentarios</span>
             </NavLink>
 
             <NavLink
               to="/admin/recovery"
               onClick={() => setOpen(false)}
-              className="p-2.5 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <DocumentCheckIcon className="w-6 h-6 text-white" />
-              <span className="text-[15px] ml-4 font-bold">Reportes</span>
+              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Reportes</span>
             </NavLink>
         </nav>
 
-        <div className="my-4 bg-white/20 h-px"></div>
+        <div className="my-5 bg-white/20 h-px"></div>
 
         {/* Cerrar Sesión */}
         <div
           onClick={handleLogout}
-          className="p-2.5 mt-3 flex items-center rounded-md px-4 cursor-pointer hover:bg-red-400 transition"
+          className="p-3 flex items-center rounded-md px-4 cursor-pointer hover:bg-red-400 transition"
         >
-          <ArrowRightOnRectangleIcon className="w-6 h-6 text-red-600" />
-          <span className="text-[15px] ml-4 font-bold text-red-700">Cerrar Sesión</span>
+          <ArrowRightOnRectangleIcon className="w-7 h-7 text-red-600" />
+          <span className="text-[16px] ml-4 font-bold text-red-700">Cerrar Sesión</span>
         </div>
       </div>
 
