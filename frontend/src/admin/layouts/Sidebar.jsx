@@ -1,4 +1,3 @@
-
 import {
   ChartBarIcon,
   HomeIcon,
@@ -26,14 +25,6 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
 
   return (
     <>
-      {/* Botón menú móvil */}
-      <span
-        className="fixed text-white text-4xl top-4 left-4 cursor-pointer lg:hidden z-50 bg-indigo-500 rounded p-1 shadow-lg"
-        onClick={() => setOpen(!open)}
-      >
-        <i className="bi bi-filter-left"></i>
-      </span>
-
       {/* Contenedor Sidebar */}
       <div
         className={`
@@ -46,13 +37,15 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
       >
         {/* Encabezado */}
         <div className="text-indigo-900 text-xl">
-          <div className="p-2.5 mt-1 flex items-center">
-            <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-white"></i>
-            <h1 className="font-bold text-white text-[20px] ml-3">
-              ServiceReaction
-            </h1>
+          <div className="p-2.5 mt-1 flex items-center justify-between">
+            <div className="flex items-center">
+              <i className="bi bi-app-indicator px-2 py-1 rounded-md bg-white"></i>
+              <h1 className="font-bold text-white text-[20px] ml-3">
+                ServiceReaction
+              </h1>
+            </div>
             <i
-              className="bi bi-x cursor-pointer ml-auto lg:hidden text-white text-2xl"
+              className="bi bi-x cursor-pointer lg:hidden text-white text-3xl"
               onClick={() => setOpen(false)}
             ></i>
           </div>
