@@ -1,7 +1,10 @@
 import axios from "axios";
 import { navigateTo } from "./navigation";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Si es producción usa "/api", si es local usa la URL de entorno o localhost
+const BASE_URL = import.meta.env.PROD 
+  ? "/api" 
+  : (import.meta.env.VITE_API_URL || "http://localhost:3000");
 
 const api = axios.create({
   baseURL: BASE_URL, 
@@ -17,7 +20,7 @@ api.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       console.warn("Sesión expirada");
-      navigateTo("/admin/login"); //
+      navigateTo("/admin/login");
     }
     return Promise.reject(error);
   }

@@ -1,7 +1,9 @@
 import axios from "axios";
 
-//Lee si hay una variable de entorno si no usa localhost por default
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Si es producción usa "/api", si es local usa la URL de entorno o localhost
+const API_URL = import.meta.env.PROD 
+  ? "/api" 
+  : (import.meta.env.VITE_API_URL || "http://localhost:3000");
 
 const apiKiosk = axios.create({
   baseURL: API_URL,
@@ -14,8 +16,6 @@ const apiKiosk = axios.create({
 apiKiosk.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Aquí NO redirigimos al login de admin.
-    // Devolvemos error para que muestre una alerta o toast
     console.error("Error de conexión en Kiosco:", error);
     return Promise.reject(error);
   }

@@ -1,5 +1,14 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+
+"rewrites": [
+    {
+    "source": "/api/:path*",
+    "destination": "https://reaction-kiosk.onrender.com/:path*"
+    },
+    {
+    "source": "/(.*)",
+    "destination": "/index.html"
+    }
   ]
 }
+
