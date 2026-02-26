@@ -20,7 +20,7 @@ export default function ThanksScreen({ onReset }) {
         <div className="text-center flex flex-col items-center max-w-2xl animate-slide-up">
           
           <h2 className="text-4xl md:text-6xl font-black text-indigo-600 mb-6 tracking-tight">
-            ¡Gracias!
+            ¡Gracias por su preferencia!
           </h2>
 
           <div className="w-48 h-48 md:w-56 md:h-56 mb-6">
@@ -28,7 +28,7 @@ export default function ThanksScreen({ onReset }) {
           </div>
 
           <p className="text-xl md:text-3xl text-slate-600 font-bold mb-10">
-            Valoramos mucho su tiempo y opinión.
+            Si pudieras mejorar una sola cosa para tu proxima visita, ¿qué sería?.
           </p>
 
           <SuggestionButton onClick={() => setView('FORM')} />

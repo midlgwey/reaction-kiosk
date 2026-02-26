@@ -11,7 +11,7 @@ return (
     {emotions.map((item) => (
         <ReactionButton
           key={item.id}      
-          emoji={item.animation}
+          emoji={item.icon}
           label={item.label}
         
           onClick={() => onSelect(item.value)} 

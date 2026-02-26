@@ -5,7 +5,7 @@ export const questions = [
   },
   {
     id: 2,
-    title: "¿La calidad de sus bebidas fue la que esperaba?",
+    title: "Las bebidas llegaron en el tiempo esperado?",
   },
   {
     id: 3,
