@@ -1,32 +1,32 @@
 
-import goodAnim from '../../assets/icons/haha.json';
-import excellentAnim from '../../assets/icons/love.json';
-import regularAnim from '../../assets/icons/meh.json';
-import badAnim from '../../assets/icons/angry.json';
+import hearteyes from "../../assets/icons/heart-eyes.png"
+import happyface from "../../assets/icons/happy-face.png"
+import confusedface from "../../assets/icons/confused-face.png"
+import angryface from "../../assets/icons/angry-face.png"
 
 export const emotions = [
   { 
     id: 1,
     value: 1, 
     label: "Malo", 
-    animation: badAnim,
+    animation: angryface,
   },
   { 
     id: 2,
     value: 2, 
     label: "Puede Mejorar", 
-    animation: regularAnim,
+    animation: confusedface,
   },
   { 
     id: 3,
     value: 3, 
     label: "Bueno", 
-    animation: goodAnim,
+    animation: happyface,
   },
   { 
     id: 4,
     value: 4, 
     label: "Excelente", 
-    animation: excellentAnim,
+    animation: hearteyes,
   },
 ];

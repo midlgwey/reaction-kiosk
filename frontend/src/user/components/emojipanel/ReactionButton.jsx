@@ -11,7 +11,6 @@ export default function ReactionButton({ emoji, label, onClick }) {
         w-full aspect-square       /* Mantiene proporción cuadrada perfecta */
         p-4                        /* Espacio interno */
         transition-all duration-300 ease-out
-        transform hover:-translate-y-1 hover:scale-105 /* Efecto de 'levantarse' */
         border border-transparent hover:border-indigo-200 /* Borde sutil al hover */
       "
     >
