@@ -1,8 +1,8 @@
 
 import hearteyes from "../../assets/icons/heart-eyes.png"
 import happyface from "../../assets/icons/happy-face.png"
-import confusedface from "../../assets/icons/confused-face.png"
-import angryface from "../../assets/icons/angry-face.png"
+import confusedface from "../../assets/icons/confused.png"
+import angryface from "../../assets/icons/angry.png"
 
 export const emotions = [
   { 
