@@ -9,24 +9,24 @@ export const emotions = [
     id: 1,
     value: 1, 
     label: "Malo", 
-    animation: angryface,
+    icon: angryface,
   },
   { 
     id: 2,
     value: 2, 
     label: "Puede Mejorar", 
-    animation: confusedface,
+    icon: confusedface,
   },
   { 
     id: 3,
     value: 3, 
     label: "Bueno", 
-    animation: happyface,
+    icon: happyface,
   },
   { 
     id: 4,
     value: 4, 
     label: "Excelente", 
-    animation: hearteyes,
+    icon: hearteyes,
   },
 ];
