@@ -97,7 +97,7 @@ export default function QuestionScreen() {
 
       {/* Indicador visual de progreso */}
       <div className="w-full max-w-2xl mb-10">
-        <div className="bg-gray-300 h-2 rounded-full">
+        <div className="bg-white h-2 rounded-full">
           <div 
             className="bg-indigo-500 h-full rounded-full transition-all duration-500"
             style={{ width: `${((paso + 1) / questions.length) * 100}%` }}
