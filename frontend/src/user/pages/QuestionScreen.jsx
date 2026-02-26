@@ -93,7 +93,7 @@ export default function QuestionScreen() {
   }
 
   return (
-    <div className="min-h-screenbg-slate-200 w-full flex flex-col items-center justify-center animate-fade-in">
+    <div className="min-h-screen bg-slate-200 w-full flex flex-col items-center justify-center animate-fade-in">
 
       {/* Indicador visual de progreso */}
       <div className="w-full max-w-2xl mb-10">
