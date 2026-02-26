@@ -13,7 +13,7 @@ export default function ThanksScreen({ onReset }) {
   const [view, setView] = useState('THANKS'); 
   
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full animate-fade-in relative">
+    <div className="min-h-screen flex flex-col items-center justify-center w-full h-full animate-fade-in relative">
       
       {/* Pantalla que lanza "gracias" */}
       {view === 'THANKS' && (
