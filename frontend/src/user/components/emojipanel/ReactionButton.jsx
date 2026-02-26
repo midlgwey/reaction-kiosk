@@ -5,12 +5,12 @@ export default function ReactionButton({ emoji, label, onClick }) {
       onClick={onClick}
       className="
         group relative flex flex-col items-center justify-center
-        bg-slate-100          
+        bg-white         
         rounded-3xl              
         w-full aspect-square   
         p-4                
         transition-colors duration-300 ease-out
-        border border-transparent hover:border-indigo-200 
+        border border-transparent hover:border-indigo-300 
       "
     >
        <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
