@@ -5,7 +5,7 @@ export default function WelcomeScreen({ onStart }) {
   return (
     <div 
       onClick={onStart}
-      className="min-h-screen bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] flex flex-col items-center justify-center cursor-pointer select-none"
+      className="min-h-[100dvh] bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] flex flex-col items-center justify-center cursor-pointer select-none"
     >
       <div className="flex flex-col items-center">
       
