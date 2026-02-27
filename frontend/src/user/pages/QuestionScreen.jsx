@@ -4,11 +4,14 @@ import toast from 'react-hot-toast';
 import api from '../../admin/services/api';
 import ReactionGrid from '../components/emojipanel/ReactionGrid';
 import ThanksScreen from './ThanksScreen';
+import WelcomeScreen from './WelcomeScreen';
 import { questions } from '../data/questions';
 import { toastStyles } from '../../config/toastConfig';
 import { getShiftByTime } from '../utils/timeCheck'; 
 
 export default function QuestionScreen() {
+
+  const [empezado, setEmpezado] = useState(false)
   const [paso, setPaso] = useState(0);
   const [terminado, setTerminado] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -21,20 +24,21 @@ export default function QuestionScreen() {
   const reiniciarKiosco = () => {
     setPaso(0);
     setTerminado(false);
+    setEmpezado(false);
   };
 
   /**
    * Gestión de temporizador para reinicio automático por inactividad.
    */
   useEffect(() => {
-    if (terminado) return;
+    if (!empezado || terminado) return;
 
     const timer = setTimeout(() => {
       reiniciarKiosco(); 
     }, 60000);
 
     return () => clearTimeout(timer);
-  }, [paso, terminado]);
+  }, [paso, terminado, empezado]);
 
   /**
    * Procesa la calificación del usuario.
@@ -86,6 +90,11 @@ export default function QuestionScreen() {
       setEnviando(false);
     }
   };
+
+  // Renderizado condicional para inicializar el flujo
+  if (!empezado) {
+    return <WelcomeScreen onStart={() => setEmpezado(true)} />;
+  }
 
   // Renderizado condicional para finalización de flujo
   if (terminado) {
