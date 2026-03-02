@@ -5,7 +5,7 @@ import { questions } from '../data/questions';
 import { toastStyles } from '../../config/toastConfig';
 import { getShiftByTime } from '../utils/timeCheck';
 
-export const useKioskFlow = () => {
+export const useKioskflow = () => {
   const [empezado, setEmpezado] = useState(false);
   const [paso, setPaso] = useState(0);
   const [terminado, setTerminado] = useState(false);
