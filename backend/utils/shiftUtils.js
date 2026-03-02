@@ -1,5 +1,9 @@
 export function getShiftByTime() {
 
+  // MODO DE PRUEBA: Omitir validación de horario y día.
+  // IMPORTANTE: Retirar esta línea antes del pase a producción.
+  return "Comida/Cena";
+
   const now = new Date();
 
   // Helper para forzar zona horaria (útil si se requiere precisión extra en integers)
@@ -72,4 +76,3 @@ export function getShiftByTime() {
   return "Fuera de horario";
   
 }
-
