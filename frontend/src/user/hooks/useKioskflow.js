@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import apiKiosk from '../../user/services/apiKiosk';
+import api from '../../user/services/api';
 import { questions } from '../data/questions';
 import { toastStyles } from '../../config/toastConfig';
 import { getShiftByTime } from '../utils/timeCheck';
@@ -97,7 +97,7 @@ export const useKioskFlow = () => {
        */
       await Promise.all(
         nuevasRespuestas.map((res) =>
-          apiKiosk.post("/reactions", {
+          api.post("/reactions", {
             question_id: res.question_id,
             value: res.value,
           })
