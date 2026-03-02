@@ -9,8 +9,8 @@ export default function StaffResetButton({ onReset }) {
         fixed bottom-6 right-6            
         flex items-center gap-2 
         px-4 py-2 
-        bg-indigo-100 hover:bg-gray-200 active:bg-indigo-100
-        text-indigo-400 hover:text-indigo-600 
+        bg-purple-100 hover:bg-purple-200 active:bg-purple-100
+        text-violet-300 hover:text-violet-400 
         rounded-full border border-gray-200
         transition-all duration-300
         text-xs font-bold tracking-widest uppercase

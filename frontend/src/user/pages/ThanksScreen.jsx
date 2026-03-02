@@ -27,7 +27,7 @@ export default function ThanksScreen({ onReset }) {
              <Lottie animationData={handsAnim} loop={true} />
           </div>
 
-          <p className="text-xl md:text-3xl text-slate-600 font-bold mb-10">
+          <p className="text-xl md:text-3xl text-slate-700 font-bold mb-10">
             Si pudieras mejorar una sola cosa para tu proxima visita, ¿qué sería?.
           </p>
 
