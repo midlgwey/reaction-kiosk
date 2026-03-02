@@ -26,12 +26,12 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
   return (
     // Se ha implementado una altura dinámica (h-[80vh] y max-h-[700px]) combinada con flex-col 
     // para asegurar que los controles de acción permanezcan visibles sobre el teclado en dispositivos táctiles.
-    <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 w-full max-w-2xl mx-auto border border-slate-100 relative animate-scale-in flex flex-col h-[80vh] md:h-auto max-h-[700px]">
+    <div className="bg-indigo-50 rounded-[2.5rem] shadow-2xl p-8 md:p-12 w-full max-w-2xl mx-auto border border-slate-100 relative animate-scale-in flex flex-col h-[80vh] md:h-auto max-h-[700px]">
       
       {/* Control de cierre superior */}
       <button 
         onClick={onCancel}
-        className="absolute top-6 right-6 p-3 bg-slate-100 rounded-full text-slate-400 hover:bg-slate-200 transition-colors active:scale-95 z-10"
+        className="absolute top-6 right-6 p-3 bg-rose-200 rounded-full text-red-600 hover:bg-rose-300 transition-colors active:scale-95 z-10"
       >
         <XMarkIcon className="w-8 h-8" />
       </button>
@@ -86,9 +86,9 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
           disabled={loading}
           className="
             flex-1 py-4 
-            text-slate-500 font-bold text-xl 
-            bg-white border-2 border-slate-200 rounded-2xl
-            hover:bg-slate-50 hover:border-slate-300 hover:text-slate-600 
+           text-slate-600 font-bold text-xl
+            bg-white border-2 border-slate-400 rounded-2xl
+             hover:bg-rose-100 hover:border-rose-300 hover:text-red-500
             transition-colors
           "
         >
@@ -103,7 +103,7 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
             flex-1 py-4 rounded-2xl font-bold text-xl text-white shadow-xl transition-all flex items-center justify-center gap-3
             ${loading || !text.trim() 
               ? 'bg-indigo-300 cursor-not-allowed shadow-none' 
-              : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-1 active:translate-y-0'}
+              : 'bg-indigo-400 hover:bg-indigo-500 hover:shadow-indigo-300 hover:-translate-y-1 active:translate-y-0'}
           `}
         >
           {loading ? (
