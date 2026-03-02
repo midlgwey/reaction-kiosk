@@ -16,21 +16,21 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
   const esTextoValido = () => {
     const t = text.trim();
     
-    // 1. Longitud mínima muy permisiva (8 caracteres permite "todo bien" o "muy rico")
-    if (t.length < 8) return false;
+    // Longitud mínima muy permisiva
+    if (t.length < 6) return false;
 
-    // 2. Filtra repetición excesiva de cualquier carácter (ej. "aaaaaaa", "///////").
-    // Aumentado a 5 para tolerar dedos lentos en la tablet (ej. "muyyyy bueno").
+    // Filtra repetición excesiva de cualquier carácter (ej. "aaaaaaa", "///////").
+    // Aumentado a 5 para tolerar dedos lentos en la tablet
     if (/(.)\1{4,}/.test(t)) return false;
 
-    // 3. Valida la presencia de al menos un espacio (asegura que hay más de una palabra).
+    // Valida la presencia de al menos un espacio. Esto permite frases cortas pero reales, y bloquea palabras únicas sin sentido.
     if (!t.includes(' ')) return false;
 
-    // 4. Exige al menos una letra del abecedario (bloquea "12345 6789" o "//// ////").
+    // Exige al menos una letra del abecedario (bloquea "12345 6789" o "//// ////").
     const contieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(t);
     if (!contieneLetras) return false;
 
-    // 5. Detecta "teclazos" sin sentido de consonantes (ej. "sjsjdajdsajd" o "qwrty psdfg")
+    // Detecta "teclazos" sin sentido de consonantes (ej. "sjsjdajdsajd" o "qwrty psdfg")
     // Si hay más de 5 consonantes seguidas sin vocales, lo asume como basura.
     const tecladoRandom = /[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{6,}/;
     if (tecladoRandom.test(t)) return false;
@@ -68,10 +68,10 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
 
       {/* Encabezado del componente */}
       <div className="mb-6 md:mb-8 mt-4 md:mt-0">
-        <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-2 md:mb-3">
+        <h3 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 md:mb-3">
           Nos interesa tu opinión
         </h3>
-        <p className="text-slate-500 text-lg md:text-xl font-medium">
+        <p className="text-slate-600 text-lg md:text-xl font-medium">
           Ayúdanos a mejorar contándonos tu experiencia.
         </p>
       </div>
@@ -105,8 +105,8 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
       {/* Indicador de ayuda visual para el usuario */}
       <div className="mb-4 ml-2 h-6">
         {!esTextoValido() && text.length > 0 && (
-          <p className="text-sm font-bold text-indigo-400">
-            {text.length < 8 ? "Escribe un poco más..." : "Por favor, escribe un comentario válido."}
+          <p className="text-sm font-bold text-red-500">
+            {text.length < 6 ? "Escribe un poco más..." : "Por favor, escribe un comentario válido."}
           </p>
         )}
       </div>
