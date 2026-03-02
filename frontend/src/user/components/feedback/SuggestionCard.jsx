@@ -1,4 +1,3 @@
-
 import { useSuggestions } from '../../hooks/useSuggestions.js';
 import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/solid";
 
@@ -10,13 +9,45 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
     () => alert("Hubo un error al enviar, intente nuevamente.") 
   );
 
-  // Manejador de eventos del teclado para dispositivos móviles y tablets.
-  // Previene el salto de línea y ejecuta la acción de envío al presionar 'Enter'.
+  /**
+   * Valida la calidad del comentario antes de permitir el envío.
+   * Ajustado para aceptar frases cortas reales y bloquear spam evidente.
+   */
+  const esTextoValido = () => {
+    const t = text.trim();
+    
+    // 1. Longitud mínima muy permisiva (8 caracteres permite "todo bien" o "muy rico")
+    if (t.length < 8) return false;
+
+    // 2. Filtra repetición excesiva de cualquier carácter (ej. "aaaaaaa", "///////").
+    // Aumentado a 5 para tolerar dedos lentos en la tablet (ej. "muyyyy bueno").
+    if (/(.)\1{4,}/.test(t)) return false;
+
+    // 3. Valida la presencia de al menos un espacio (asegura que hay más de una palabra).
+    if (!t.includes(' ')) return false;
+
+    // 4. Exige al menos una letra del abecedario (bloquea "12345 6789" o "//// ////").
+    const contieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(t);
+    if (!contieneLetras) return false;
+
+    // 5. Detecta "teclazos" sin sentido de consonantes (ej. "sjsjdajdsajd" o "qwrty psdfg")
+    // Si hay más de 5 consonantes seguidas sin vocales, lo asume como basura.
+    const tecladoRandom = /[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{6,}/;
+    if (tecladoRandom.test(t)) return false;
+
+    return true;
+  };
+
+  /**
+   * Manejador de eventos del teclado para dispositivos móviles y tablets.
+   * Previene el salto de línea y ejecuta la acción de envío al presionar 'Enter'
+   * siempre que se cumplan los criterios de validación.
+   */
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault(); 
       
-      if (text.trim() && !loading) {
+      if (esTextoValido() && !loading) {
         e.target.blur(); // Oculta el teclado virtual nativo
         handleSend();    // Ejecuta el proceso de guardado
       }
@@ -24,8 +55,7 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
   };
 
   return (
-    // Se ha implementado una altura dinámica (h-[80vh] y max-h-[700px]) combinada con flex-col 
-    // para asegurar que los controles de acción permanezcan visibles sobre el teclado en dispositivos táctiles.
+    // Estructura de altura dinámica para mantener la visibilidad de controles sobre el teclado táctil.
     <div className="bg-indigo-50 rounded-[2.5rem] shadow-2xl p-8 md:p-12 w-full max-w-2xl mx-auto border border-slate-100 relative animate-scale-in flex flex-col h-[80vh] md:h-auto max-h-[700px]">
       
       {/* Control de cierre superior */}
@@ -61,23 +91,27 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
           resize-none      
           transition-all
           shadow-inner
-          mb-6
+          mb-2
         "
         placeholder="Escriba su sugerencia, queja o felicitación aquí..."
         value={text} 
         onChange={(e) => setText(e.target.value)} 
         disabled={loading}
         autoFocus 
-        
-        // Atributo HTML5 para modificar la tecla de acción en teclados virtuales (ej. Android/iOS)
         enterKeyHint="send" 
-        
-        // Asignación del listener para captura de tecla Enter
         onKeyDown={handleKeyDown} 
       />
 
+      {/* Indicador de ayuda visual para el usuario */}
+      <div className="mb-4 ml-2 h-6">
+        {!esTextoValido() && text.length > 0 && (
+          <p className="text-sm font-bold text-indigo-400">
+            {text.length < 8 ? "Escribe un poco más..." : "Por favor, escribe un comentario válido."}
+          </p>
+        )}
+      </div>
+
       {/* Controles de acción inferiores */}
-      {/* La clase mt-auto posiciona el contenedor en la parte inferior del flex-col */}
       <div className="flex gap-4 mt-auto">
         
         {/* Acción secundaria: Cancelar */}
@@ -86,31 +120,31 @@ export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
           disabled={loading}
           className="
             flex-1 py-4 
-           text-slate-600 font-bold text-xl
+            text-slate-600 font-bold text-xl
             bg-white border-2 border-slate-400 rounded-2xl
-             hover:bg-rose-100 hover:border-rose-300 hover:text-red-500
+            hover:bg-rose-100 hover:border-rose-300 hover:text-red-500
             transition-colors
           "
         >
           Cancelar
         </button>
 
-        {/* Acción principal: Enviar */}
+        {/* Acción principal: Enviar Comentario */}
         <button
           onClick={handleSend}
-          disabled={loading || !text.trim()}
+          disabled={loading || !esTextoValido()}
           className={`
             flex-1 py-4 rounded-2xl font-bold text-xl text-white shadow-xl transition-all flex items-center justify-center gap-3
-            ${loading || !text.trim() 
-              ? 'bg-indigo-300 cursor-not-allowed shadow-none' 
-              : 'bg-indigo-400 hover:bg-indigo-500 hover:shadow-indigo-300 hover:-translate-y-1 active:translate-y-0'}
+            ${loading || !esTextoValido()
+              ? 'bg-indigo-300 cursor-not-allowed shadow-none opacity-70' 
+              : 'bg-indigo-500 hover:bg-indigo-700 hover:shadow-indigo-300 hover:-translate-y-1 active:translate-y-0'}
           `}
         >
           {loading ? (
              <div className="w-7 h-7 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
           ) : (
             <>
-              <span>Enviar</span>
+              <span>Enviar Comentario</span>
               <PaperAirplaneIcon className="w-6 h-6" />
             </>
           )}
