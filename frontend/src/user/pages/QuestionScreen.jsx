@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactionGrid from '../components/emojipanel/ReactionGrid';
-import ThanksScreen from './ThanksScreen';
-import WelcomeScreen from './WelcomeScreen';
-import { useKioskFlow } from '../../hooks/useKioskflow'; 
+import ThanksScreen from '../pages/ThanksScreen';
+import WelcomeScreen from '../pages/WelcomeScreen';
+import { useKioskflow } from '../../user/hooks/useKioskflow';
 
 export default function QuestionScreen() {
   
@@ -15,7 +15,7 @@ export default function QuestionScreen() {
     iniciarKiosco,
     reiniciarKiosco,
     handleRate
-  } = useKioskFlow();
+  } = useKioskflow();
 
   if (!empezado) {
     return <WelcomeScreen onStart={iniciarKiosco} />;
