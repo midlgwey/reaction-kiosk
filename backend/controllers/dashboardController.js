@@ -126,27 +126,24 @@ export const getTodayHappinessByShift = async (req, res) => {
   }
 };
 
-
 /* ---------------------
    AREA CHART SEMANA REAL 
 */
 export const getDailySatisfactionTrend = async (req, res) => {
   try {
+    const filter = getDateFilters(req);
+    let sql, args;
 
-    //Calculamos el inicio del rango (semana o mensual)
-    const timeModifier = getTimeModifier(req);
-
-    const result = await db.execute({
-      sql: `
+    // Si hay un rango de fechas explícito
+    if (filter.condition.includes('BETWEEN')) {
+      sql = `
       WITH RECURSIVE days(day) AS (
-      -- Usamos el parámetro dinámico para saber dónde empezar
-        SELECT DATE('now', '${TIME_OFFSET}', ?)
+        SELECT DATE(?)
         UNION ALL
         SELECT DATE(day,'+1 day')
         FROM days
-        WHERE day < DATE('now', '${TIME_OFFSET}')
+        WHERE day < DATE(?)
       )
-
       SELECT 
         days.day,
         COALESCE(ROUND(AVG(r.value),2),0) as avg_satisfaction,
@@ -156,27 +153,46 @@ export const getDailySatisfactionTrend = async (req, res) => {
         ON DATE(r.created_at, '${TIME_OFFSET}') = days.day
       GROUP BY days.day
       ORDER BY days.day ASC;
-      `,
-      args: [timeModifier]
-    });
+      `;
+      args = filter.args; // [startDate, endDate]
+    } else {
+      // Comportamiento original (últimos X días)
+      sql = `
+      WITH RECURSIVE days(day) AS (
+        SELECT DATE('now', '${TIME_OFFSET}', ?)
+        UNION ALL
+        SELECT DATE(day,'+1 day')
+        FROM days
+        WHERE day < DATE('now', '${TIME_OFFSET}')
+      )
+      SELECT 
+        days.day,
+        COALESCE(ROUND(AVG(r.value),2),0) as avg_satisfaction,
+        COUNT(r.id) as total_responses
+      FROM days
+      LEFT JOIN reactions r 
+        ON DATE(r.created_at, '${TIME_OFFSET}') = days.day
+      GROUP BY days.day
+      ORDER BY days.day ASC;
+      `;
+      args = filter.args; // [timeModifier]
+    }
 
+    const result = await db.execute({ sql, args });
     res.status(200).json(result.rows);
 
   } catch (error) {
     console.error("Error en getDailySatisfactionTrend:", error);
-    throw new InternalServerError("Error evolución semanal");
+    throw new InternalServerError("Error evolución temporal");
   }
 };
-
 
 /*-------------
    DONA SEMANAL 
  */
 export const getWeeklySentimentSummary = async (req, res) => {
   try {
-
-    //Calculamos el inicio del rango (semana o mensual)
-    const timeModifier = getTimeModifier(req);
+    const filter = getDateFilters(req);
 
     const result = await db.execute({
       sql: `
@@ -187,23 +203,17 @@ export const getWeeklySentimentSummary = async (req, res) => {
           COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END),0) AS malo,
           COUNT(*) as total
         FROM reactions
-
-        WHERE DATE(created_at, '${TIME_OFFSET}') 
-              >= DATE('now', '${TIME_OFFSET}', ?);
+        WHERE ${filter.condition.replace(/r\.created_at/g, 'created_at')};
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json(result.rows[0] || {
-      excelente: 0,
-      bueno: 0,
-      puede_mejorar: 0,
-      malo: 0,
-      total: 0
+      excelente: 0, bueno: 0, puede_mejorar: 0, malo: 0, total: 0
     });
 
- } catch (error) {
+  } catch (error) {
     console.error("Error en getWeeklySentimentSummary:", error);
-    throw new InternalServerError("Error obteniendo el resumen semanal");
+    throw new InternalServerError("Error obteniendo el resumen de sentimientos");
   }
 };
