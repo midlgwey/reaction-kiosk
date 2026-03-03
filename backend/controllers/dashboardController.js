@@ -4,12 +4,26 @@ import { InternalServerError } from '../errors/customErrors.js';
 // Tijuana Invierno: '-8 hours' | Tijuana Verano: '-7 hours' (Ajustar según temporada)
 const TIME_OFFSET = '-8 hours'; 
 
-//helper
-const getTimeModifier = (req) => {
+// Helper: Construye las condiciones de fecha dinámicas (Rangos exactos o últimos X días)
+const getDateFilters = (req) => {
+  const { startDate, endDate, days } = req.query;
 
-  // Si no se pide nada, usamos 7 por defecto.
-  const dias = parseInt(req.query.days) || 7;
-  return `-${dias - 1} days`;
+  // Rango de fechas explícito
+  if (startDate && endDate) {
+    return {
+      condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
+      args: [startDate, endDate],
+    };
+  }
+
+  // Comportamiento por defecto (últimos X días)
+  const dias = parseInt(days) || 7;
+  const timeModifier = `-${dias - 1} days`;
+  
+  return {
+    condition: `DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)`,
+    args: [timeModifier],
+  };
 };
 
 /* ----------------------------
