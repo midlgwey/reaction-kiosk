@@ -154,7 +154,8 @@ export const getDailySatisfactionTrend = async (req, res) => {
       GROUP BY days.day
       ORDER BY days.day ASC;
       `;
-      args = filter.args; // [startDate, endDate]
+      // Es vital suministrar los argumentos a la CTE para el inicio y fin recursivo
+      args = [filter.args[0], filter.args[1]]; 
     } else {
       // Comportamiento original (últimos X días)
       sql = `
@@ -193,6 +194,12 @@ export const getDailySatisfactionTrend = async (req, res) => {
 export const getWeeklySentimentSummary = async (req, res) => {
   try {
     const filter = getDateFilters(req);
+    
+    // Validamos y reemplazamos el alias dependiendo del tipo de condicional
+    let conditionFixed = filter.condition;
+    if(conditionFixed.includes('r.created_at')) {
+        conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
+    }
 
     const result = await db.execute({
       sql: `
@@ -203,7 +210,7 @@ export const getWeeklySentimentSummary = async (req, res) => {
           COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END),0) AS malo,
           COUNT(*) as total
         FROM reactions
-        WHERE ${filter.condition.replace(/r\.created_at/g, 'created_at')};
+        WHERE ${conditionFixed};
       `,
       args: filter.args
     });
