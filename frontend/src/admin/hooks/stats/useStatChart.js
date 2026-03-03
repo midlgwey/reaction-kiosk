@@ -4,7 +4,7 @@ import api from "../../services/api";
 /* =========================================================
  BARRAS POR PREGUNTA (sentimientos)
 =========================================================*/
-export function useChartQuestionsWeek(days = 7) {
+export function useChartQuestionsWeek(config = { days: 7 }) {
   const [state, setState] = useState({
     labels: [],
     excelente: [],
@@ -15,12 +15,23 @@ export function useChartQuestionsWeek(days = 7) {
     error: null,
   });
 
+  // Extraemos las variables del objeto de configuración
+  const { days, startDate, endDate } = config;
+
   useEffect(() => {
     const fetchChart = async () => {
       try {
-        setState(prev => ({ ...prev, loading: true })); // Reiniciar loading al cambiar días
-        // Pasamos el query param ?days=...
-        const res = await api.get(`/stats/by-question-week?days=${days}`);
+        setState(prev => ({ ...prev, loading: true })); 
+        
+        // Armamos la URL dinámica
+        let url = `/stats/by-question-week`;
+        if (startDate && endDate) {
+          url += `?startDate=${startDate}&endDate=${endDate}`;
+        } else {
+          url += `?days=${days || 7}`;
+        }
+
+        const res = await api.get(url);
 
         if (!res.data || res.data.length === 0) {
           setState(prev => ({ ...prev, loading: false }));
@@ -53,7 +64,7 @@ export function useChartQuestionsWeek(days = 7) {
     };
 
     fetchChart();
-  }, [days]); // <--- Dependencia clave: si days cambia, se vuelve a ejecutar
+  }, [days, startDate, endDate]); // <--- Se vuelve a ejecutar si cambian las fechas
 
   return state;
 }
