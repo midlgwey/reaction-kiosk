@@ -72,7 +72,7 @@ export function useChartQuestionsWeek(config = { days: 7 }) {
 /* =========================================================
    RADAR COMPARACIÓN (Ahora flexible)
 =========================================================*/
-export function useWeeklyRadar(days = 7) {
+export function useWeeklyRadar(config = { days: 7 }) {
   const [state, setState] = useState({
     labels: [],
     current: [],
@@ -81,12 +81,22 @@ export function useWeeklyRadar(days = 7) {
     error: null,
   });
 
+  const { days, startDate, endDate } = config;
+
   useEffect(() => {
     const fetchRadar = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
-        // Aunque el radar es comparativo, le pasamos los días base
-        const res = await api.get(`/stats/weekly-comparison?days=${days}`);
+        
+        // Configuración de URL dinámica
+        let url = `/stats/weekly-comparison`;
+        if (startDate && endDate) {
+          url += `?startDate=${startDate}&endDate=${endDate}`;
+        } else {
+          url += `?days=${days || 7}`;
+        }
+
+        const res = await api.get(url);
 
         if (!res.data || res.data.length === 0) {
           setState(prev => ({ ...prev, loading: false }));
@@ -115,7 +125,7 @@ export function useWeeklyRadar(days = 7) {
     };
 
     fetchRadar();
-  }, [days]);
+  }, [days, startDate, endDate]);
 
   return state;
 }
