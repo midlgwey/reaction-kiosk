@@ -2,16 +2,30 @@ import { db } from '../db.js';
 import { NotFoundError, InternalServerError } from '../errors/customErrors.js';
 
 // Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
-// Cambiar esto cuando cambie el horario
-const TIME_OFFSET = '-8 hours'; 
+const TIME_OFFSET = '-8 hours';
 
-//Helper 
-const getTimeModifier = (req) => {
-  // Si en la URL mandan ?days=30 usamos eso, si no, nos vamos por la libre con 7 (semana)
-  const dias = parseInt(req.query.days) || 7;
+// Nuevo Helper para manejar rangos de fechas o días relativos
+const getDateFilters = (req) => {
+  const { startDate, endDate, days } = req.query;
+
+  // Si el frontend manda un rango de fechas exacto (ej. 2026-02-24 a 2026-03-02)
+  if (startDate && endDate) {
+    return {
+      condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
+      args: [startDate, endDate],
+      isRadar: false // El radar tiene lógica especial, se maneja aparte
+    };
+  }
+
+  // Comportamiento original (fallback por si no hay fechas)
+  const dias = parseInt(days) || 7;
+  const timeModifier = `-${dias - 1} days`;
   
-  // A la base de datos se le resta uno menos. 
-  return `-${dias - 1} days`;
+  return {
+    condition: `DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)`,
+    args: [timeModifier],
+    isRadar: false
+  };
 };
 
 /* ======================================================
@@ -19,7 +33,7 @@ const getTimeModifier = (req) => {
 ====================================================== */
 export const getBestQuestionWeek = async (req, res) => {
   try {
-    const timeModifier = getTimeModifier(req);
+    const filter = getDateFilters(req);
     const MIN_VOTES = 5;
 
     const result = await db.execute({
@@ -30,14 +44,13 @@ export const getBestQuestionWeek = async (req, res) => {
           COUNT(r.id) AS total_votes
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-        WHERE DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)
+        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
         GROUP BY r.question_id
-        -- Solo preguntas con representatividad estadística
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score DESC, total_votes DESC
         LIMIT 1;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json({ bestQuestionWeek: result.rows[0] || null });
@@ -52,7 +65,7 @@ export const getBestQuestionWeek = async (req, res) => {
 ====================================================== */
 export const getWorstQuestionWeek = async (req, res) => {
   try {
-    const timeModifier = getTimeModifier(req);
+    const filter = getDateFilters(req);
     const MIN_VOTES = 5;
 
     const result = await db.execute({
@@ -63,13 +76,13 @@ export const getWorstQuestionWeek = async (req, res) => {
           COUNT(r.id) AS total_votes
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-        WHERE DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)
+        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score ASC, total_votes DESC
         LIMIT 1;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json({ worstQuestionWeek: result.rows[0] || null });
@@ -84,8 +97,7 @@ export const getWorstQuestionWeek = async (req, res) => {
 ====================================================== */
 export const getWeeklySurveyChart = async (req, res) => {
   try {
-
-    const timeModifier = getTimeModifier(req);
+    const filter = getDateFilters(req);
 
     const result = await db.execute({
       sql: `
@@ -97,34 +109,56 @@ export const getWeeklySurveyChart = async (req, res) => {
           SUM(CASE WHEN r.value = 1 THEN 1 ELSE 0 END) AS malo
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-
-        WHERE DATE(r.created_at,'${TIME_OFFSET}') >= DATE('now','${TIME_OFFSET}', ?)
+        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
         GROUP BY q.id
         ORDER BY q.id;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json(result.rows);
 
-  } catch {
+  } catch (error) {
     console.error("Error al armar la gráfica de barras:", error);
     throw new InternalServerError("Error gráfico por pregunta semanal");
   }
 };
 
-
 /* ======================================================
    RADAR SEMANA ACTUAL VS PASADA
-   (Compara los últimos 7 días vs los 7 anteriores)
 ====================================================== */
 export const getWeeklyComparisonRadar = async (req, res) => {
   try {
-    const result = await db.execute({
-      sql: `
+    const { startDate, endDate } = req.query;
+    let sql, args;
+
+    if (startDate && endDate) {
+      const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      sql = `
         SELECT
           q.text as question,
-          -- COALESCE asegura que si no hay votos, el radar marque 0 y no se rompa
+          COALESCE(ROUND(AVG(CASE 
+            WHEN DATE(r.created_at,'${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)
+            THEN r.value END
+          ) * 25, 1), 0) as current_week_score,
+
+          COALESCE(ROUND(AVG(CASE 
+            WHEN DATE(r.created_at,'${TIME_OFFSET}') >= DATE(?, '-${diffDays} days')
+            AND DATE(r.created_at,'${TIME_OFFSET}') < DATE(?)
+            THEN r.value END
+          ) * 25, 1), 0) as last_week_score
+        FROM questions q
+        LEFT JOIN reactions r ON r.question_id = q.id
+        GROUP BY q.id
+        ORDER BY q.id;
+      `;
+      args = [startDate, endDate, startDate, startDate];
+    } else {
+       sql = `
+        SELECT
+          q.text as question,
           COALESCE(ROUND(AVG(CASE 
             WHEN r.created_at >= datetime('now','${TIME_OFFSET}','-6 days')
             THEN r.value END
@@ -140,10 +174,14 @@ export const getWeeklyComparisonRadar = async (req, res) => {
         LEFT JOIN reactions r ON r.question_id = q.id
         GROUP BY q.id
         ORDER BY q.id;
-      `,
-    });
+      `;
+      args = [];
+    }
+
+    const result = await db.execute({ sql, args });
     res.status(200).json(result.rows);
   } catch (error) {
+    console.error("Error en radar:", error);
     throw new InternalServerError("Error radar semanal");
   }
 };
@@ -153,8 +191,7 @@ export const getWeeklyComparisonRadar = async (req, res) => {
 ====================================================== */
 export const getOverallDistributionWeek = async (req, res) => {
   try {
-
-    const timeModifier = getTimeModifier(req); 
+    const filter = getDateFilters(req);
 
     const result = await db.execute({
       sql: `
@@ -164,17 +201,18 @@ export const getOverallDistributionWeek = async (req, res) => {
           r.value,
           COUNT(*) as total
         FROM reactions r
-        WHERE DATE(r.created_at,'${TIME_OFFSET}') >= DATE('now','${TIME_OFFSET}', ?)
+        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
           AND r.shift IS NOT NULL
         GROUP BY day, r.shift, r.value
         ORDER BY day ASC;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json(result.rows);
 
-  } catch {
+  } catch (error) {
+    console.error("Error en distribucion turnos:", error);
     throw new InternalServerError("Error distribución turnos semanal");
   }
 };
@@ -184,8 +222,10 @@ export const getOverallDistributionWeek = async (req, res) => {
 ====================================================== */
 export const getWeeklyDayStrong = async (req, res) => {
   try {
-    const timeModifier = getTimeModifier(req);
-    const MIN_RESPONSES = 5; // Umbral de relevancia estadística
+    const filter = getDateFilters(req);
+    const MIN_RESPONSES = 5; 
+
+    const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
     const result = await db.execute({
       sql: `
@@ -195,12 +235,10 @@ export const getWeeklyDayStrong = async (req, res) => {
           COALESCE(AVG(value), 0) as avg_score,
           COUNT(*) as total_responses
         FROM reactions
-        WHERE DATE(created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)
+        WHERE ${condition}
         GROUP BY day
-        -- Filtro para asegurar que el promedio sea estadísticamente significativo
         HAVING COUNT(*) >= ${MIN_RESPONSES}
       )
-
       SELECT
         day,
         CASE strftime('%w', day)
@@ -218,10 +256,9 @@ export const getWeeklyDayStrong = async (req, res) => {
       ORDER BY avg_score DESC, total_responses DESC
       LIMIT 1;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
-    // Retorna null si ningún día cumple con el mínimo de respuestas
     res.status(200).json(result.rows[0] || null);
   } catch (error) {
     console.error("Error en getWeeklyDayStrong:", error);
@@ -234,8 +271,10 @@ export const getWeeklyDayStrong = async (req, res) => {
 ====================================================== */
 export const getWeeklyDayWeak = async (req, res) => {
   try {
-    const timeModifier = getTimeModifier(req);
+    const filter = getDateFilters(req);
     const MIN_RESPONSES = 5; 
+
+    const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
     const result = await db.execute({
       sql: `
@@ -245,12 +284,10 @@ export const getWeeklyDayWeak = async (req, res) => {
           COALESCE(AVG(value), 0) as avg_score,
           COUNT(*) as total_responses
         FROM reactions
-        WHERE DATE(created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)
+        WHERE ${condition}
         GROUP BY day
-        -- Excluye días con datos insuficientes para evitar sesgos por muestras pequeñas
         HAVING COUNT(*) >= ${MIN_RESPONSES}
       )
-
       SELECT
         day,
         CASE strftime('%w', day)
@@ -268,7 +305,7 @@ export const getWeeklyDayWeak = async (req, res) => {
       ORDER BY avg_score ASC, total_responses DESC
       LIMIT 1;
       `,
-      args: [timeModifier]
+      args: filter.args
     });
 
     res.status(200).json(result.rows[0] || null);

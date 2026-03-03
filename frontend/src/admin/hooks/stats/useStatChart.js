@@ -112,7 +112,7 @@ export function useWeeklyRadar(days = 7) {
 /* =========================================================
  SATISFACCIÓN POR TURNO Y DÍA (Dinámico 7 o 30 días)
 =========================================================*/
-export function useShiftWeekChart(days = 7) {
+export function useShiftWeekChart(config = { days: 7 }) {
   const [state, setState] = useState({
     labels: [],
     excelente: [],
@@ -123,22 +123,45 @@ export function useShiftWeekChart(days = 7) {
     error: null,
   });
 
+  // Extraemos variables del objeto de configuración
+  const { days, startDate, endDate } = config;
+
   useEffect(() => {
     const fetchShift = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
-        const res = await api.get(`/stats/overall-distribution-week?days=${days}`);
+        
+        // Armamos la URL dependiendo si mandan fechas o días
+        let url = `/stats/overall-distribution-week`;
+        if (startDate && endDate) {
+          url += `?startDate=${startDate}&endDate=${endDate}`;
+        } else {
+          url += `?days=${days || 7}`;
+        }
+
+        const res = await api.get(url);
         const data = res.data || [];
         
         const filledData = [];
         const daysMap = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-        // LÓGICA DINÁMICA: Iteramos según la cantidad de días solicitados
-        // Restamos 1 porque el loop es 0-indexed (ej: 0 a 6 son 7 días)
-        for (let i = days - 1; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          
+        // Lógica para determinar el inicio y fin del ciclo
+        let cycleStart, cycleEnd;
+        let isDateRange = false;
+
+        if (startDate && endDate) {
+            isDateRange = true;
+            // T12:00:00 evita bugs de desfase por zonas horarias en JS
+            cycleStart = new Date(`${startDate}T12:00:00`); 
+            cycleEnd = new Date(`${endDate}T12:00:00`);
+        } else {
+            cycleEnd = new Date();
+            cycleStart = new Date();
+            cycleStart.setDate(cycleEnd.getDate() - (days - 1));
+        }
+
+        // Iteramos día por día desde el inicio hasta el fin
+        for (let d = new Date(cycleStart); d <= cycleEnd; d.setDate(d.getDate() + 1)) {
           const year = d.getFullYear();
           const month = String(d.getMonth() + 1).padStart(2, '0');
           const day = String(d.getDate()).padStart(2, '0');
@@ -154,8 +177,8 @@ export function useShiftWeekChart(days = 7) {
           turnosConfig.forEach((turno) => {
             const foundRows = data.filter(r => r.day === dateStr && turno.filter(r.shift));
 
-            // Ajuste visual: Si son 30 días, acortamos la etiqueta para que quepa
-            const labelDay = days > 7 ? `${day}/${month}` : dayName;
+            // Ajuste visual: Si es rango de fechas o > 7 días, acortamos la etiqueta
+            const labelDay = (isDateRange || days > 7) ? `${day}/${month}` : dayName;
 
             const stat = {
               label: [labelDay, turno.id], 
@@ -193,7 +216,7 @@ export function useShiftWeekChart(days = 7) {
     };
 
     fetchShift();
-  }, [days]); // <--- Dependencia clave
+  }, [days, startDate, endDate]); 
 
   return state;
 }

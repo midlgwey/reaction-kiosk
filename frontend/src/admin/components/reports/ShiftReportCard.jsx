@@ -10,7 +10,7 @@ export default function ShiftReportCard() {
   
   // Solicitud de métricas para un periodo mensual (30 días).
   // Nota: El hook retorna arrays paralelos (labels, excelente, bueno, etc.) alineados por índice.
-  const { labels, excelente, bueno, puede_mejorar, malo, loading } = useShiftWeekChart(30);
+  const { labels, excelente, bueno, puede_mejorar, malo, loading } = useShiftWeekChart({ days: 30 });
 
   /**
    * Ejecuta la transformación de datos y la descarga del archivo.

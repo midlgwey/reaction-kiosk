@@ -4,10 +4,6 @@
  */
 export function getShiftByTime() {
   
-  // ⚠️ MODO PRUEBA ACTIVO
-  return "Comida/Cena"; 
-
-  /*
   const now = new Date();
 
   // Forzar zona horaria America/Tijuana
@@ -42,7 +38,6 @@ export function getShiftByTime() {
   }
 
   return "Fuera de horario";
-  */
+  
 }
 
-//CAMBIARLO DESPUES PARA QUE FUNCIONE CON LA HORA REAL, ESTO ES SOLO PARA PRUEBAS
