@@ -17,7 +17,7 @@ import {
   useWeeklySentiment,
 } from "../hooks/dashboard/useDashboardWeekly";
 
-// Componente indicador de carga
+// Componente indicador de estado de carga
 const ChartLoading = () => (
   <div className="h-full min-h-[300px] w-full flex flex-col items-center justify-center bg-slate-50 rounded-xl animate-pulse border-2 border-dashed border-slate-200">
     <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
@@ -26,29 +26,29 @@ const ChartLoading = () => (
 );
 
 export default function DashboardPage() {
-  // Estado para el control global del periodo analizado en las gráficas
-  const [chartPeriod, setChartPeriod] = useState(7);
+  // Estados independientes para el control de periodos por gráfica
+  const [donaPeriod, setDonaPeriod] = useState(7);
+  const [areaPeriod, setAreaPeriod] = useState(7);
 
-  // Obtención de datos mediante custom hooks
+  // Obtención de datos de KPIs superiores
   const dailyReactions = useDailyReactions();
   const serverScore = useDailyServerScore();
   const happiness = useDailyHappinessIndex();
   const happinessByShift = useDailyHappinessByShift();
 
-  // Ejecución de hooks temporales con el periodo seleccionado
-  const trend = useDailySatisfactionTrend({ days: chartPeriod });
-  const sentiment = useWeeklySentiment({ days: chartPeriod });
+  // Ejecución de hooks temporales con sus respectivos periodos
+  const trend = useDailySatisfactionTrend({ days: areaPeriod });
+  const sentiment = useWeeklySentiment({ days: donaPeriod });
 
-  // Procesamiento de datos para la gráfica de área (Tendencia)
+  // Procesamiento de datos para la gráfica de Área (Tendencia)
   const areaChartData = useMemo(() => {
     if (!trend.data || trend.loading) return { labels: [], values: [] };
 
     const labels = trend.data.map(d => {
-      // Parseo seguro de fecha
       const [year, month, day] = d.day.split('-'); 
       const date = new Date(year, month - 1, day); 
-      // Formato abreviado si hay muchos días, completo si son pocos
-      return chartPeriod > 7 
+      // Ajuste de formato de fecha según la amplitud del periodo
+      return areaPeriod > 7 
         ? date.toLocaleDateString("es-MX", { day: '2-digit', month: 'short' })
         : date.toLocaleDateString("es-MX", { weekday: "long" });
     });
@@ -58,9 +58,9 @@ export default function DashboardPage() {
     );
 
     return { labels, values };
-  }, [trend.data, trend.loading, chartPeriod]);
+  }, [trend.data, trend.loading, areaPeriod]);
 
-  // Procesamiento de datos para la gráfica de dona (Sentimientos)
+  // Procesamiento de datos para la gráfica de Dona (Sentimientos)
   const sentimentValues = useMemo(() => {
     if (!sentiment.data) return [0, 0, 0, 0];
     return [
@@ -71,11 +71,10 @@ export default function DashboardPage() {
     ];
   }, [sentiment.data]);
 
-
   return (
     <div className="space-y-6">
       
-      {/* Sección de KPIs Superiores (Siempre muestran datos del día actual) */}
+      {/* KPIs Superiores (Datos estáticos del día actual) */}
        <StatGrid
         dailyReactions={dailyReactions}
         serverScore={serverScore}
@@ -83,30 +82,26 @@ export default function DashboardPage() {
         happinessByShift={happinessByShift}
       />
 
-      {/* Controles globales para la sección de gráficas */}
-      <div className="flex justify-end items-center px-2">
-        <label className="text-sm font-semibold text-slate-600 mr-3">
-            Analizar periodo:
-        </label>
-        <select 
-          className="text-sm bg-white border border-slate-300 text-slate-700 rounded-lg p-2 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
-          value={chartPeriod}
-          onChange={(e) => setChartPeriod(Number(e.target.value))}
-        >
-          <option value={7}>Últimos 7 días</option>
-          <option value={15}>Últimos 15 días</option>
-          <option value={30}>Últimos 30 días</option>
-        </select>
-      </div>
-
       {/* Sección de Gráficas: Grid de 12 columnas */}
       <div className="grid grid-cols-12 gap-6">
           
           {/* Gráfica de Dona (Distribución) */}
           <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full min-h-[400px]">
-            <h3 className="text-slate-800 font-bold mb-6 uppercase text-sm tracking-wider text-center">
-              Distribución ({chartPeriod} días)
-            </h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+                Distribución
+              </h3>
+              <select 
+                className="text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-1.5 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                value={donaPeriod}
+                onChange={(e) => setDonaPeriod(Number(e.target.value))}
+              >
+                <option value={1}>Hoy</option>
+                <option value={7}>Últimos 7 días</option>
+                <option value={15}>Últimos 15 días</option>
+                <option value={30}>Últimos 30 días</option>
+              </select>
+            </div>
             
             <div className="flex-1 flex items-center justify-center">
               {sentiment.loading ? (
@@ -119,9 +114,20 @@ export default function DashboardPage() {
 
           {/* Gráfica de Área (Evolución Temporal) */}
           <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full min-h-[400px]">
-            <h3 className="text-slate-800 font-bold mb-6 uppercase text-sm tracking-wider text-center">
-              Tendencia Diaria ({chartPeriod} días)
-            </h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+                Tendencia Diaria
+              </h3>
+              <select 
+                className="text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-1.5 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                value={areaPeriod}
+                onChange={(e) => setAreaPeriod(Number(e.target.value))}
+              >
+                <option value={7}>Últimos 7 días</option>
+                <option value={15}>Últimos 15 días</option>
+                <option value={30}>Últimos 30 días</option>
+              </select>
+            </div>
             
             <div className="flex-1 flex items-center justify-center w-full">
               {trend.loading ? (
