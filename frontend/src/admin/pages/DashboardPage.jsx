@@ -89,7 +89,7 @@ export default function DashboardPage() {
           <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full min-h-[400px]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-                Distribución
+                Distribución Sentimental
               </h3>
               <select 
                 className="text-xs bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-1.5 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500 outline-none"
