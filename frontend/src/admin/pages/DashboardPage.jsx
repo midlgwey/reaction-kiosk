@@ -142,8 +142,11 @@ export default function DashboardPage() {
             </div>
 
 
-            <WaiterPerformance/>
+      
         </div>
+
+             <WaiterPerformance/>
+
       </div>
 
     </div>
