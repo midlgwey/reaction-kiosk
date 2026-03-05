@@ -238,3 +238,64 @@ export const getWeeklySentimentSummary = async (req, res) => {
     throw new InternalServerError("Error obteniendo el resumen de sentimientos");
   }
 };
+
+/* --------------------------------------------------
+   RADIOGRAFÍA POR PREGUNTA (BARRAS APILADAS)
+-------------------------------------------------- */
+export const getDailyQuestions = async (req, res) => {
+  try {
+    // Usamos tu helper para saber qué rango de fechas pidió el cliente
+    const filter = getDateFilters(req);
+    
+    // Arreglamos el alias por si el helper regresa 'r.created_at' en lugar de 'created_at'
+    let conditionFixed = filter.condition;
+    if(conditionFixed.includes('r.created_at')) {
+        conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
+    }
+
+    // La consulta mágica que cuenta cada tipo de respuesta separada por pregunta
+    const result = await db.execute({
+      sql: `
+        SELECT 
+          question_id,
+          COALESCE(SUM(CASE WHEN value = 4 THEN 1 ELSE 0 END), 0) AS excelente,
+          COALESCE(SUM(CASE WHEN value = 3 THEN 1 ELSE 0 END), 0) AS bueno,
+          COALESCE(SUM(CASE WHEN value = 2 THEN 1 ELSE 0 END), 0) AS regular,
+          COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END), 0) AS malo,
+          COUNT(*) as total_respuestas
+        FROM reactions
+        WHERE ${conditionFixed}
+        GROUP BY question_id
+        ORDER BY question_id ASC;
+      `,
+      args: filter.args
+    });
+
+    // Mapeo de nombres de preguntas según su ID para mandarlo bonito al frontend
+    const QUESTION_LABELS = {
+      1: '¿Qué le pareció el servicio de su mesero?',
+      2: '¿La calidad de sus bebidas fue la que esperaba?',
+      3: '¿Los alimentos servidos cumplieron sus expectativas?',
+      4: '¿Nuestras instalaciones estuvieron a la altura de su visita?'
+    };
+
+    // Formateamos la respuesta para que el Frontend la consuma facilísimo
+    const formattedData = result.rows.map(row => ({
+      id: row.question_id,
+      label: QUESTION_LABELS[row.question_id] || `Pregunta ${row.question_id}`,
+      totalRespuestas: row.total_respuestas,
+      respuestas: {
+        excelente: row.excelente,
+        bueno: row.bueno,
+        regular: row.regular,
+        malo: row.malo
+      }
+    }));
+
+    res.status(200).json(formattedData);
+
+  } catch (error) {
+    console.error("Error en getDailyQuestions:", error);
+    throw new InternalServerError("Error obteniendo la radiografía de preguntas");
+  }
+};

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import SentimentDistributionDoughnut from "../components/charts/SentimentDistributionDoughnut"
 import DailySatisfactionArea from "../components/charts/DailySatisfactionArea";
 import StatGrid from "../components/metrics/StatGrid"
+import DailyQuestions from "../components/charts/DailyQuestions";
 
 // Hooks de datos diarios
 import {
@@ -16,7 +17,7 @@ import {
   useDailySatisfactionTrend,
   useWeeklySentiment,
 } from "../hooks/dashboard/useDashboardWeekly";
-import WaiterPerformance from "../components/charts/WaiterPerfomance";
+
 
 // Componente indicador de estado de carga
 const ChartLoading = () => (
@@ -144,11 +145,10 @@ export default function DashboardPage() {
 
       
         </div>
-          {/* Gráfica de Desempeño por Mesero */}
-          <div className="col-span-12 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full min-h-[400px]">
-            <WaiterPerformance />
-          </div>
-          
+       
+        {/* Gráfica de Barras por Pregunta (Análisis Detallado) */}
+         <DailyQuestions />
+         
       </div>
     </div>
   );

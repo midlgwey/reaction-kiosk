@@ -74,3 +74,41 @@ export function useWeeklySentiment(config = { days: 7 }) {
 
   return { data, loading, error };
 }
+
+
+//hook para la grafica de barras por pregunta 
+// Hook para la radiografía por pregunta (Barras apiladas)
+export function useDailyQuestions(config = { days: 1 }) { // Por defecto 1 día (Hoy)
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const { days, startDate, endDate } = config;
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        setLoading(true);
+        let url = `/dashboard/daily-questions`;
+        
+        if (startDate && endDate) {
+          url += `?startDate=${startDate}&endDate=${endDate}`;
+        } else {
+          url += `?days=${days || 1}`;
+        }
+
+        const res = await api.get(url);
+        setData(res.data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Error cargando radiografía de preguntas");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [days, startDate, endDate]); 
+
+  return { data, loading, error };
+}
