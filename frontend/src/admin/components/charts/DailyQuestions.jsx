@@ -1,9 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { Select } from 'flowbite-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import Select from 'react-select';
+import { DayPicker } from 'react-day-picker';
+import { es } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { useDailyQuestions } from '../../hooks/dashboard/useDashboardWeekly';
-import QuestionBar from './QuestionBar'; 
+import QuestionBar from './QuestionBar';
 
-// Componente para indicar el estado de carga de los datos
+// Estilos base de react-day-picker
+import 'react-day-picker/dist/style.css';
+
 const ChartLoading = () => (
   <div className="h-full w-full min-h-[200px] flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200">
     <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
@@ -11,88 +16,135 @@ const ChartLoading = () => (
   </div>
 );
 
-// Helper para formatear fechas a YYYY-MM-DD según la zona horaria local
 const formatLocalDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  if (!date) return '';
+  return format(date, 'yyyy-MM-dd');
 };
 
-export default function DailyQuestions() {
-  const [dateOption, setDateOption] = useState('hoy');
-  const [customDate, setCustomDate] = useState('');
+// Opciones para React Select
+const dateOptions = [
+  { value: 'hoy', label: 'Hoy' },
+  { value: 'ayer', label: 'Ayer' },
+  { value: 'antier', label: 'Antier' },
+  { value: 'custom', label: '📅 Elegir fecha...' },
+];
 
-  // Memorización de filtros para evitar peticiones innecesarias
+export default function DailyQuestions() {
+  const [selectedOption, setSelectedOption] = useState(dateOptions[0]);
+  const [selectedDay, setSelectedDay] = useState(new Date());
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const pickerRef = useRef(null);
+
+  // Cerrar calendario al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setIsPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const getFilters = useMemo(() => {
     const d = new Date();
+    const option = selectedOption.value;
 
-    if (dateOption === 'hoy') {
-      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
-    }
-    
-    if (dateOption === 'ayer') {
+    if (option === 'hoy') return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    if (option === 'ayer') {
       d.setDate(d.getDate() - 1);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
-    
-    if (dateOption === 'antier') {
+    if (option === 'antier') {
       d.setDate(d.getDate() - 2);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
-
-    if (dateOption === 'custom' && customDate) {
-      return { startDate: customDate, endDate: customDate };
+    if (option === 'custom' && selectedDay) {
+      return { startDate: formatLocalDate(selectedDay), endDate: formatLocalDate(selectedDay) };
     }
-    
-    return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) }; 
-  }, [dateOption, customDate]);
+    return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+  }, [selectedOption, selectedDay]);
 
-  // Obtención de datos mediante hook personalizado
   const { data, loading, error } = useDailyQuestions(getFilters);
 
+  // Estilos personalizados para React Select (Indigo)
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      borderRadius: '0.5rem',
+      borderColor: '#e2e8f0',
+      fontSize: '0.875rem',
+      minHeight: '38px',
+      '&:hover': { borderColor: '#6366f1' }
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#6366f1' : state.isFocused ? '#f5f3ff' : 'white',
+      color: state.isSelected ? 'white' : '#475569',
+      fontSize: '0.875rem',
+    })
+  };
+
   return (
-    <div className="space-y-6">
-      
-      {/* Sección de encabezado y controles de filtrado */}
+    <div className="space-y-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Pregunta</h3>
-          <p className="text-xs text-slate-500 mt-1">Análisis detallado de las 4 preguntas de la encuesta.</p>
+          <p className="text-xs text-slate-500 mt-1">Análisis detallado de las preguntas de la encuesta.</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
-          
-          {/* Selector estilizado de Flowbite */}
-          <div className="min-w-[140px]">
-            <Select 
-              id="date-select" 
-              value={dateOption} 
-              onChange={(e) => setDateOption(e.target.value)}
-              sizing="sm"
-            >
-              <option value="hoy">Hoy</option>
-              <option value="ayer">Ayer</option>
-              <option value="antier">Antier</option>
-              <option disabled>──────────</option>
-              <option value="custom">📅 Elegir fecha...</option>
-            </Select>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto relative" ref={pickerRef}>
+          {/* React Select */}
+          <div className="w-full sm:w-48">
+            <Select
+              options={dateOptions}
+              value={selectedOption}
+              onChange={(opt) => {
+                setSelectedOption(opt);
+                if (opt.value === 'custom') setIsPickerOpen(true);
+                else setIsPickerOpen(false);
+              }}
+              styles={customSelectStyles}
+              isSearchable={false}
+              placeholder="Seleccionar periodo"
+            />
           </div>
 
-          {/* Selector de fecha nativo (DatePicker estándar) */}
-          {dateOption === 'custom' && (
-            <input 
-              type="date" 
-              className="text-sm bg-white border border-slate-300 text-slate-700 rounded-lg p-1.5 focus:ring-indigo-500 focus:border-indigo-500 outline-none animate-fade-in"
-              value={customDate}
-              onChange={(e) => setCustomDate(e.target.value)}
-              max={formatLocalDate(new Date())} 
-            />
+          {/* React Day Picker (Popover) */}
+          {selectedOption.value === 'custom' && isPickerOpen && (
+            <div className="absolute right-0 top-12 z-[100] bg-white shadow-2xl border border-slate-200 rounded-2xl p-2 animate-fade-in">
+              <DayPicker
+                mode="single"
+                selected={selectedDay}
+                onSelect={(day) => {
+                  if (day) {
+                    setSelectedDay(day);
+                    setIsPickerOpen(false);
+                  }
+                }}
+                locale={es}
+                disabled={{ after: new Date() }}
+                modifiersClassNames={{
+                  selected: 'bg-indigo-600 text-white rounded-lg',
+                  today: 'text-indigo-600 font-bold'
+                }}
+              />
+            </div>
+          )}
+
+          {/* Badge de fecha seleccionada */}
+          {selectedOption.value === 'custom' && !isPickerOpen && (
+            <button 
+              onClick={() => setIsPickerOpen(true)}
+              className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg hover:bg-indigo-100 transition-colors"
+            >
+              {format(selectedDay, "dd 'de' MMMM", { locale: es })}
+            </button>
           )}
         </div>
       </div>
 
-      {/* Indicadores de colores para las métricas */}
+      {/* Leyenda y Listado de Datos */}
       <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400"></span> Excelente</div>
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-400"></span> Bueno</div>
@@ -100,27 +152,15 @@ export default function DailyQuestions() {
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-rose-400"></span> Malo</div>
       </div>
 
-      {/* Área de visualización de resultados con manejo de estados */}
-      <div className="flex-1 relative min-h-[150px]">
-        {loading ? (
-          <ChartLoading />
-        ) : error ? (
-          <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">
-            Error al cargar la radiografía
-          </div>
-        ) : (!data || data.length === 0) ? (
-          <div className="h-full flex items-center justify-center text-slate-400 font-medium text-sm">
-            No hay encuestas registradas en esta fecha
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {data.map((q) => (
-              <QuestionBar key={q.id} question={q} />
-            ))}
-          </div>
-        )}
+      <div className="min-h-[150px]">
+        {loading ? <ChartLoading /> : 
+         error ? <div className="text-center py-10 text-red-400 font-semibold">Error al cargar datos</div> :
+         (!data || data.length === 0) ? <div className="text-center py-10 text-slate-400">No hay encuestas en esta fecha</div> :
+         <div className="space-y-6">
+           {data.map((q) => <QuestionBar key={q.id} question={q} />)}
+         </div>
+        }
       </div>
-
     </div>
   );
 }
