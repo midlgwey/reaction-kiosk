@@ -10,7 +10,7 @@ export default function QuestionBar({ question }) {
       {/* Título y contador */}
       <div className="flex justify-between items-end">
         <span className="text-sm font-bold text-slate-700">{question.label}</span>
-        <span className="text-xs text-slate-400 font-medium">{total} respuestas</span>
+        <span className="text-xs text-indigo-500 font-medium">{total} respuestas</span>
       </div>
 
       {/* Barra Apilada Visual */}
