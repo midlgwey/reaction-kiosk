@@ -144,11 +144,14 @@ export default function DashboardPage() {
 
       
         </div>
-
-             <WaiterPerformance/>
-
+          {/* Gráfica de Desempeño por Mesero */}
+          <div className="col-span-12 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full min-h-[400px]">
+            <WaiterPerformance />
+          </div>
+          
       </div>
-
     </div>
   );
 }
+
+              
