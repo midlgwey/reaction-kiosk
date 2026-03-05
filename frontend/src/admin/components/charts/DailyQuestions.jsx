@@ -32,7 +32,7 @@ export default function DailyQuestions() {
   const { data, loading, error } = useDailyQuestions(getFilters);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full space-y-6">
+    <div className="space-y-6">
       
       {/* Encabezado y Filtros */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">

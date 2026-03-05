@@ -147,8 +147,10 @@ export default function DashboardPage() {
         </div>
        
         {/* Gráfica de Barras por Pregunta (Análisis Detallado) */}
-         <DailyQuestions />
-         
+        <div className="col-span-12 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full">
+          <DailyQuestions />
+        </div>
+
       </div>
     </div>
   );
