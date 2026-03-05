@@ -19,6 +19,31 @@ const formatLocalDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+const customDatepickerTheme = {
+  popup: {
+    root: {
+      inner: "rounded-lg bg-white p-4 shadow-lg border border-slate-200"
+    },
+    footer: {
+      button: {
+        base: "w-full rounded-lg px-5 py-2 text-center text-sm font-medium focus:ring-4 focus:ring-indigo-300",
+        today: "bg-indigo-600 text-white hover:bg-indigo-700", 
+        clear: "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+      }
+    }
+  },
+  views: {
+    days: {
+      items: {
+        item: {
+          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-700 hover:bg-slate-100",
+          selected: "bg-indigo-600 text-white hover:bg-indigo-700" 
+        }
+      }
+    }
+  }
+};
+
 export default function DailyQuestions() {
   const [dateOption, setDateOption] = useState('hoy');
   const [customDate, setCustomDate] = useState('');
@@ -80,12 +105,14 @@ export default function DailyQuestions() {
 
           {/* Renderizado del Datepicker de Flowbite */}
           {dateOption === 'custom' && (
-            <div className="w-full sm:w-48 animate-fade-in">
+            <div className="w-full sm:w-48 animate-fade-in relative">
               <Datepicker 
+                theme={customDatepickerTheme} 
                 language="es-MX"
                 labelTodayButton="Hoy"
                 labelClearButton="Limpiar"
                 maxDate={new Date()}
+                placement="bottom-end"
                 onSelectedDateChanged={(date) => {
                   setCustomDate(formatLocalDate(date));
                 }}
