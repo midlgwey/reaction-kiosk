@@ -11,7 +11,7 @@ const ChartLoading = () => (
   </div>
 );
 
-// Helper de fechas estandarizado para mantener compatibilidad con el backend
+// Helper de fechas estandarizado
 const formatLocalDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -19,25 +19,47 @@ const formatLocalDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const customDatepickerTheme = {
+// TEMA CORREGIDO: Blanco total con textos visibles
+const customTheme = {
   popup: {
     root: {
-      inner: "rounded-lg bg-white p-4 shadow-lg border border-slate-200"
+      inner: "rounded-lg bg-white p-4 shadow-xl border border-slate-200 w-64" // Ancho fijo para evitar desbordamiento
     },
     footer: {
       button: {
         base: "w-full rounded-lg px-5 py-2 text-center text-sm font-medium focus:ring-4 focus:ring-indigo-300",
-        today: "bg-indigo-600 text-white hover:bg-indigo-700", 
+        today: "bg-indigo-600 text-white hover:bg-indigo-700",
         clear: "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
       }
     }
   },
   views: {
     days: {
+      header: {
+        base: "mb-1 grid grid-cols-7",
+        title: "h-6 text-center text-sm font-bold leading-6 text-slate-600" // Días de la semana más oscuros
+      },
       items: {
         item: {
-          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-700 hover:bg-slate-100",
-          selected: "bg-indigo-600 text-white hover:bg-indigo-700" 
+          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100", // Números negros
+          selected: "bg-indigo-600 text-white hover:bg-indigo-700",
+          disabled: "text-slate-300"
+        }
+      }
+    },
+    months: {
+      items: {
+        item: {
+          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100",
+          selected: "bg-indigo-600 text-white hover:bg-indigo-700"
+        }
+      }
+    },
+    years: {
+      items: {
+        item: {
+          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100",
+          selected: "bg-indigo-600 text-white hover:bg-indigo-700"
         }
       }
     }
@@ -48,27 +70,19 @@ export default function DailyQuestions() {
   const [dateOption, setDateOption] = useState('hoy');
   const [customDate, setCustomDate] = useState('');
 
-  // Lógica de filtrado de fechas
   const getFilters = useMemo(() => {
     const d = new Date();
 
-    if (dateOption === 'hoy') {
-      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
-    }
-    
+    if (dateOption === 'hoy') return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     if (dateOption === 'ayer') {
       d.setDate(d.getDate() - 1);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
-    
     if (dateOption === 'antier') {
       d.setDate(d.getDate() - 2);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
-
-    if (dateOption === 'custom' && customDate) {
-      return { startDate: customDate, endDate: customDate };
-    }
+    if (dateOption === 'custom' && customDate) return { startDate: customDate, endDate: customDate };
     
     return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) }; 
   }, [dateOption, customDate]);
@@ -78,15 +92,13 @@ export default function DailyQuestions() {
   return (
     <div className="space-y-6">
       
-      {/* Controles de encabezado y filtro modular */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Pregunta</h3>
           <p className="text-xs text-slate-500 mt-1">Análisis detallado de las 4 preguntas de la encuesta.</p>
         </div>
         
-        {/* Controles de Flowbite */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto relative items-center">
           
           <div className="min-w-[140px]">
             <Select 
@@ -103,11 +115,10 @@ export default function DailyQuestions() {
             </Select>
           </div>
 
-          {/* Renderizado del Datepicker de Flowbite */}
           {dateOption === 'custom' && (
-            <div className="w-full sm:w-48 animate-fade-in relative">
+            <div className="w-full sm:w-48 animate-fade-in z-50"> {/* Agregado z-50 para evitar empujar el layout */}
               <Datepicker 
-                theme={customDatepickerTheme} 
+                theme={customTheme}
                 language="es-MX"
                 labelTodayButton="Hoy"
                 labelClearButton="Limpiar"
@@ -150,7 +161,6 @@ export default function DailyQuestions() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
