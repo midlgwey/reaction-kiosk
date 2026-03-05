@@ -16,6 +16,7 @@ import {
   useDailySatisfactionTrend,
   useWeeklySentiment,
 } from "../hooks/dashboard/useDashboardWeekly";
+import WaiterPerformance from "../components/charts/WaiterPerfomance";
 
 // Componente indicador de estado de carga
 const ChartLoading = () => (
@@ -139,6 +140,9 @@ export default function DashboardPage() {
                 />
               )}
             </div>
+
+
+            <WaiterPerformance/>
         </div>
       </div>
 
