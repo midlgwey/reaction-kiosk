@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@plugin "flowbite/plugin";
+
+@source "../node_modules/flowbite-react";
+
 :root {
   --font-sans: 'Inter', sans-serif;
 }
