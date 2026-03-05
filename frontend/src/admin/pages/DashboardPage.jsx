@@ -84,6 +84,12 @@ export default function DashboardPage() {
         happinessByShift={happinessByShift}
       />
 
+
+         {/* Gráfica de Barras por Pregunta (Análisis Detallado) */}
+        <div className="col-span-12 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full">
+          <DailyQuestions />
+        </div>
+
       {/* Sección de Gráficas: Grid de 12 columnas */}
       <div className="grid grid-cols-12 gap-6">
           
@@ -146,11 +152,6 @@ export default function DashboardPage() {
       
         </div>
        
-        {/* Gráfica de Barras por Pregunta (Análisis Detallado) */}
-        <div className="col-span-12 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col h-full">
-          <DailyQuestions />
-        </div>
-
       </div>
     </div>
   );
