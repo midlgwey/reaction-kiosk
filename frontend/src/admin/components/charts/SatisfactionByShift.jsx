@@ -129,7 +129,6 @@ export default function SatisfactionByShiftChart() {
   return (
     <div className="w-full flex flex-col h-100 md:h-112 p-4">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-700">Satisfacción por Turno y Día</h3>
         
         <select 
           className="text-xs bg-gray-50 border border-gray-300 text-gray-700 rounded-lg p-2 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500"

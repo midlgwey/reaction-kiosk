@@ -274,7 +274,7 @@ export const getDailyQuestions = async (req, res) => {
     // Mapeo de nombres de preguntas según su ID para mandarlo bonito al frontend
     const QUESTION_LABELS = {
       1: '¿Qué le pareció el servicio de su mesero?',
-      2: '¿La calidad de sus bebidas fue la que esperaba?',
+      2: '¿Las bebidas llegaron en el tiempo esperado?',
       3: '¿Los alimentos servidos cumplieron sus expectativas?',
       4: '¿Nuestras instalaciones estuvieron a la altura de su visita?'
     };
