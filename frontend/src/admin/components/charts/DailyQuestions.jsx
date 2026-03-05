@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Select, Datepicker } from 'flowbite-react';
+import { Select } from 'flowbite-react';
 import { useDailyQuestions } from '../../hooks/dashboard/useDashboardWeekly';
 import QuestionBar from './QuestionBar'; 
 
-// Componente para indicar el estado de carga
+// Componente para indicar el estado de carga de los datos
 const ChartLoading = () => (
   <div className="h-full w-full min-h-[200px] flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200">
     <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
@@ -11,7 +11,7 @@ const ChartLoading = () => (
   </div>
 );
 
-// Helper de fechas estandarizado
+// Helper para formatear fechas a YYYY-MM-DD según la zona horaria local
 const formatLocalDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -19,87 +19,51 @@ const formatLocalDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// TEMA CORREGIDO: Blanco total con textos visibles
-const customTheme = {
-  popup: {
-    root: {
-      inner: "rounded-lg bg-white p-4 shadow-xl border border-slate-200 w-64" // Ancho fijo para evitar desbordamiento
-    },
-    footer: {
-      button: {
-        base: "w-full rounded-lg px-5 py-2 text-center text-sm font-medium focus:ring-4 focus:ring-indigo-300",
-        today: "bg-indigo-600 text-white hover:bg-indigo-700",
-        clear: "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-      }
-    }
-  },
-  views: {
-    days: {
-      header: {
-        base: "mb-1 grid grid-cols-7",
-        title: "h-6 text-center text-sm font-bold leading-6 text-slate-600" // Días de la semana más oscuros
-      },
-      items: {
-        item: {
-          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100", // Números negros
-          selected: "bg-indigo-600 text-white hover:bg-indigo-700",
-          disabled: "text-slate-300"
-        }
-      }
-    },
-    months: {
-      items: {
-        item: {
-          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100",
-          selected: "bg-indigo-600 text-white hover:bg-indigo-700"
-        }
-      }
-    },
-    years: {
-      items: {
-        item: {
-          base: "block flex-1 cursor-pointer rounded-lg border-0 text-center text-sm font-semibold leading-9 text-slate-900 hover:bg-slate-100",
-          selected: "bg-indigo-600 text-white hover:bg-indigo-700"
-        }
-      }
-    }
-  }
-};
-
 export default function DailyQuestions() {
   const [dateOption, setDateOption] = useState('hoy');
   const [customDate, setCustomDate] = useState('');
 
+  // Memorización de filtros para evitar peticiones innecesarias
   const getFilters = useMemo(() => {
     const d = new Date();
 
-    if (dateOption === 'hoy') return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    if (dateOption === 'hoy') {
+      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    }
+    
     if (dateOption === 'ayer') {
       d.setDate(d.getDate() - 1);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
+    
     if (dateOption === 'antier') {
       d.setDate(d.getDate() - 2);
       return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
     }
-    if (dateOption === 'custom' && customDate) return { startDate: customDate, endDate: customDate };
+
+    if (dateOption === 'custom' && customDate) {
+      return { startDate: customDate, endDate: customDate };
+    }
     
     return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) }; 
   }, [dateOption, customDate]);
 
+  // Obtención de datos mediante hook personalizado
   const { data, loading, error } = useDailyQuestions(getFilters);
 
   return (
     <div className="space-y-6">
       
+      {/* Sección de encabezado y controles de filtrado */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Pregunta</h3>
           <p className="text-xs text-slate-500 mt-1">Análisis detallado de las 4 preguntas de la encuesta.</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto relative items-center">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
           
+          {/* Selector estilizado de Flowbite */}
           <div className="min-w-[140px]">
             <Select 
               id="date-select" 
@@ -115,25 +79,20 @@ export default function DailyQuestions() {
             </Select>
           </div>
 
+          {/* Selector de fecha nativo (DatePicker estándar) */}
           {dateOption === 'custom' && (
-            <div className="w-full sm:w-48 animate-fade-in z-50"> {/* Agregado z-50 para evitar empujar el layout */}
-              <Datepicker 
-                theme={customTheme}
-                language="es-MX"
-                labelTodayButton="Hoy"
-                labelClearButton="Limpiar"
-                maxDate={new Date()}
-                placement="bottom-end"
-                onSelectedDateChanged={(date) => {
-                  setCustomDate(formatLocalDate(date));
-                }}
-              />
-            </div>
+            <input 
+              type="date" 
+              className="text-sm bg-white border border-slate-300 text-slate-700 rounded-lg p-1.5 focus:ring-indigo-500 focus:border-indigo-500 outline-none animate-fade-in"
+              value={customDate}
+              onChange={(e) => setCustomDate(e.target.value)}
+              max={formatLocalDate(new Date())} 
+            />
           )}
         </div>
       </div>
 
-      {/* Leyenda visual */}
+      {/* Indicadores de colores para las métricas */}
       <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400"></span> Excelente</div>
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-400"></span> Bueno</div>
@@ -141,7 +100,7 @@ export default function DailyQuestions() {
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-rose-400"></span> Malo</div>
       </div>
 
-      {/* Renderizado de estados y gráfica */}
+      {/* Área de visualización de resultados con manejo de estados */}
       <div className="flex-1 relative min-h-[150px]">
         {loading ? (
           <ChartLoading />
@@ -161,6 +120,7 @@ export default function DailyQuestions() {
           </div>
         )}
       </div>
+
     </div>
   );
 }
