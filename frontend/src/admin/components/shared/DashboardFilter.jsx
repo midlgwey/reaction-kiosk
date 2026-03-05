@@ -4,15 +4,14 @@ import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
 
-const options = [
-  { value: '1', label: 'Hoy' },
-  { value: '7', label: '7 días' },
-  { value: '15', label: '15 días' },
-  { value: '30', label: '30 días' },
-  { value: 'custom', label: '📅 Calendario' },
-];
-
-export default function DashboardFilter({ selectedOption, setSelectedOption, selectedDay, setSelectedDay }) {
+//Recibimos "options" como prop para que el padre decida qué mostrar
+export default function DashboardFilter({ 
+  options, 
+  selectedOption, 
+  setSelectedOption, 
+  selectedDay, 
+  setSelectedDay 
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -24,9 +23,9 @@ export default function DashboardFilter({ selectedOption, setSelectedOption, sel
 
   return (
     <div className="relative flex flex-col items-end gap-2" ref={containerRef}>
-      <div className="w-36">
+      <div className="w-40"> {/* Un poco más ancho para textos largos como "Últimas 2 semanas" */}
         <Select
-          options={options}
+          options={options} // Usamos las opciones dinámicas aquí
           value={selectedOption}
           onChange={(opt) => {
             setSelectedOption(opt);
