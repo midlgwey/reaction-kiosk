@@ -43,12 +43,12 @@ const DONA_OPTIONS = [
 ];
 
 const AREA_OPTIONS = [
-  { value: '7', label: 'Última Semana (7 días)' },
-  { value: '14', label: 'Últimas 2 Semanas (14 días)' },
-  { value: '21', label: 'Últimas 3 Semanas (21 días)' },
-  { value: '30', label: 'Último Mes (30 días)' },
-  { value: '90', label: 'Últimos 3 Meses (90 días)' },
-  { value: '180', label: 'Últimos 6 Meses (180 días)' },
+  { value: '7', label: 'Última Semana' },
+  { value: '14', label: 'Últimas 2 Semanas' },
+  { value: '21', label: 'Últimas 3 Semanas' },
+  { value: '30', label: 'Último Mes' },
+  { value: '90', label: 'Últimos 3 Meses ' },
+  { value: '180', label: 'Últimos 6 Meses' },
 ];
 
 export default function DashboardPage() {
@@ -126,7 +126,9 @@ export default function DashboardPage() {
       />
 
       {/* Sección 2: Desglose de respuestas por pregunta */}
-      <DailyQuestions />
+       <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
+         <DailyQuestions />
+       </div>
 
       {/* Sección 3: Representaciones gráficas compuestas */}
       <div className="grid grid-cols-12 gap-6">
@@ -145,9 +147,13 @@ export default function DashboardPage() {
               setSelectedDay={setDonaCustomDate} 
             />
           </div>
-          <div className="flex-1 flex items-center justify-center">
+         <div className="flex-1 flex items-center justify-center">
             {sentiment.loading ? (
               <ChartLoading />
+            ) : !sentiment.data || sentiment.data.total === 0 ? ( /* Validación de datos nulos o en cero */
+              <div className="h-full flex items-center justify-center text-slate-400 text-center font-medium text-sm">
+                No hay encuestas en esta fecha
+              </div>
             ) : (
               <SentimentDistributionDoughnut dataValues={sentimentValues} />
             )}
