@@ -1,210 +1,112 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Chart as ChartJS,
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Radar } from "react-chartjs-2";
-import { useWeeklyRadar } from "../../hooks/stats/useStatChart";
+import { useDailyQuestions } from '../../hooks/dashboard/useDashboardWeekly';
+import QuestionBar from './QuestionBar'; 
+import ChartLoading from './ChartLoading'; // Asegúrate de ajustar esta ruta
 
-ChartJS.register(
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend
-);
+export default function DailyQuestions() {
+  const [dateOption, setDateOption] = useState('hoy');
+  const [customDate, setCustomDate] = useState('');
 
-// Componente indicador de carga
-const ChartLoading = () => (
-  <div className="h-80 w-full flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200">
-    <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-    <span className="text-indigo-400 text-sm font-semibold tracking-wide">Cargando radar...</span>
-  </div>
-);
+  const getFilters = useMemo(() => {
+    const d = new Date();
+    
+    // Función para formatear la fecha a YYYY-MM-DD respetando la zona horaria local
+    const formatLocalDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
-// Helper: Genera los rangos de fechas (martes a lunes) para las últimas 4 semanas
-const getRecentTuesdays = () => {
-  const options = [];
-  const today = new Date();
-  
-  let lastTuesday = new Date(today);
-  const dayOfWeek = lastTuesday.getDay(); 
-  
-  // Retroceder al martes más reciente
-  if (dayOfWeek !== 2) {
-      const daysToSubtract = dayOfWeek >= 2 ? dayOfWeek - 2 : dayOfWeek + 5;
-      lastTuesday.setDate(lastTuesday.getDate() - daysToSubtract);
-  }
+    // Calcular la fecha según la opción seleccionada
+    if (dateOption === 'hoy') {
+      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    }
+    
+    if (dateOption === 'ayer') {
+      d.setDate(d.getDate() - 1);
+      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    }
+    
+    if (dateOption === 'antier') {
+      d.setDate(d.getDate() - 2);
+      return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) };
+    }
 
-  // Generación de 4 rangos semanales consecutivos hacia atrás
-  for (let i = 0; i < 4; i++) {
-      const start = new Date(lastTuesday);
-      start.setDate(start.getDate() - (i * 7)); 
-      
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6); 
+    if (dateOption === 'custom' && customDate) {
+      return { startDate: customDate, endDate: customDate };
+    }
+    
+    // Opción por defecto
+    return { startDate: formatLocalDate(d), endDate: formatLocalDate(d) }; 
+  }, [dateOption, customDate]);
 
-      const label = `${start.getDate()} ${start.toLocaleString('es-MX', {month:'short'})} - ${end.getDate()} ${end.toLocaleString('es-MX', {month:'short'})}`;
-      const formatDB = (date) => date.toISOString().split('T')[0];
-
-      options.push({
-          label: i === 0 ? `Esta semana (${label})` : label,
-          startDate: formatDB(start),
-          endDate: formatDB(end)
-      });
-  }
-  return options;
-};
-
-export default function WeeklyCompRadar() {
-  // Estado local para almacenar el rango de fechas seleccionado
-  const [selectedRange, setSelectedRange] = useState(null);
-  const weekOptions = useMemo(() => getRecentTuesdays(), []);
-
-  // Configuración de parámetros para la consulta de datos
-  const config = selectedRange 
-      ? { startDate: selectedRange.startDate, endDate: selectedRange.endDate } 
-      : { days: 7 };
-
-  // Ejecución del hook de datos
-  const radar = useWeeklyRadar(config);
-
-  // Formateo de etiquetas para prevenir desbordamiento visual
-  const shortLabels = radar.labels ? radar.labels.map(l => 
-    l.length > 20 ? l.substring(0, 20) + "..." : l
-  ) : [];
-
-  // Configuración de los datasets para Chart.js
-  const data = {
-    labels: shortLabels, 
-    datasets: [
-      {
-        label: "Semana Seleccionada",
-        data: radar.current,
-        backgroundColor: "rgba(16, 185, 129, 0.2)", 
-        borderColor: "#10b981",
-        borderWidth: 2,
-        pointBackgroundColor: "#10b981",
-        pointBorderColor: "#fff",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: "#10b981",
-      },
-      {
-        label: "Semana Anterior",
-        data: radar.last,
-        backgroundColor: "rgba(99, 102, 241, 0.2)", 
-        borderColor: "#6366f1",
-        borderWidth: 2,
-        pointBackgroundColor: "#6366f1",
-        pointBorderColor: "#fff",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: "#6366f1",
-        borderDash: [5, 5], 
-      },
-    ],
-  };
-
-  // Configuración de escalas, tooltips y opciones de diseño
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      r: {
-        angleLines: { 
-            display: true, 
-            color: "#cbd5e1" 
-        }, 
-        grid: { 
-            color: "#cbd5e1" 
-        },
-        suggestedMin: 0,
-        suggestedMax: 100,
-        ticks: {
-          stepSize: 25,
-          display: false, 
-        },
-        pointLabels: {
-          font: {
-            family: "Inter, sans-serif",
-            size: 11,
-            weight: "bold", 
-          },
-          color: "#000000", 
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: {
-          usePointStyle: true,
-          boxWidth: 8,
-          font: { family: "Inter, sans-serif", size: 12, weight: "bold" }, 
-          color: "#000000", 
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        titleColor: '#1e293b',
-        bodyColor: '#475569',
-        borderColor: '#e2e8f0',
-        borderWidth: 1,
-        titleFont: { family: "Inter", size: 13 },
-        bodyFont: { family: "Inter", size: 12 },
-        callbacks: {
-            // Despliega la pregunta completa en el tooltip
-            title: (context) => {
-                const index = context[0].dataIndex;
-                return radar.labels[index]; 
-            },
-            label: (context) => ` ${context.dataset.label}: ${context.formattedValue}%`,
-        },
-      },
-    },
-  };
+  const { data, loading, error } = useDailyQuestions(getFilters);
 
   return (
-    <div className="w-full flex flex-col h-100 md:h-112 p-4">
+    <div className="space-y-6">
       
-      {/* Controles de encabezado y filtro de fechas */}
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-700">Equilibrio de Servicio</h3>
+      {/* Encabezado y Filtros */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
+        <div>
+          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Pregunta</h3>
+          <p className="text-xs text-slate-500 mt-1">Análisis detallado de las 4 preguntas de la encuesta.</p>
+        </div>
         
-        <select 
-          className="text-xs bg-gray-50 border border-gray-300 text-gray-700 rounded-lg p-2 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={(e) => {
-              if (e.target.value === "7days") {
-                  setSelectedRange(null);
-              } else {
-                  setSelectedRange(weekOptions[e.target.value]);
-              }
-          }}
-        >
-          <option value="7days">Últimos 7 días</option>
-          {weekOptions.map((opt, index) => (
-             <option key={index} value={index}>{opt.label}</option>
-          ))}
-        </select>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select 
+            className="text-sm bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-2 outline-none"
+            value={dateOption}
+            onChange={(e) => setDateOption(e.target.value)}
+          >
+            <option value="hoy">Hoy</option>
+            <option value="ayer">Ayer</option>
+            <option value="antier">Antier</option>
+            <option disabled>──────────</option>
+            <option value="custom">📅 Elegir fecha...</option>
+          </select>
+
+          {dateOption === 'custom' && (
+            <input 
+              type="date" 
+              className="text-sm bg-white border border-indigo-300 text-indigo-700 rounded-lg p-2 outline-none animate-fade-in"
+              value={customDate}
+              onChange={(e) => setCustomDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]} 
+            />
+          )}
+        </div>
       </div>
 
-      {/* Área de renderizado de la gráfica con manejo de estados */}
-      <div className="flex-1 relative">
-        {radar.loading ? (
+      {/* Leyenda de Colores */}
+      <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+        <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400"></span> Excelente</div>
+        <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-400"></span> Bueno</div>
+        <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-400"></span> Puede Mejorar</div>
+        <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-rose-400"></span> Malo</div>
+      </div>
+
+      {/* Área de renderizado con manejo de estados */}
+      <div className="flex-1 relative min-h-[200px]">
+        {loading ? (
           <ChartLoading />
-        ) : radar.error ? (
-          <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">{radar.error}</div>
-        ) : (!radar.labels || radar.labels.length === 0) ? (
-          <div className="h-full flex items-center justify-center text-slate-400 font-medium text-sm">No hay suficientes datos para comparar</div>
+        ) : error ? (
+          <div className="h-full flex items-center justify-center text-rose-500 text-sm font-semibold">
+            {error.message || "Error al cargar los datos."}
+          </div>
+        ) : (!data || data.length === 0) ? (
+          <div className="h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+            No hay encuestas registradas en esta fecha.
+          </div>
         ) : (
-          <Radar data={data} options={options} />
+          <div className="space-y-6">
+            {data.map((q) => (
+              <QuestionBar key={q.id} question={q} />
+            ))}
+          </div>
         )}
       </div>
+
     </div>
   );
 }
