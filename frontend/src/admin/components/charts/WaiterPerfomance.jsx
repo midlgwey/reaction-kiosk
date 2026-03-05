@@ -33,27 +33,20 @@ export default function WaiterPerformance() {
   const getPercentage = (value, total) => `${(value / total) * 100}%`;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full">
+    <div className="space-y-6">
       
-      {/* Encabezado y Select de Mesero */}
+      {/* Encabezado */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-            Radiografía por Mesero
+            Radiografía por Pregunta
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Análisis detallado de las 4 preguntas de la encuesta
+            Análisis detallado de las 4 preguntas de la encuesta por dia.
           </p>
         </div>
         
-        <select 
-          className="text-sm bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-2 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500 outline-none w-full sm:w-auto"
-          value={selectedWaiterId}
-          onChange={(e) => setSelectedWaiterId(e.target.value)}
-        >
-          <option value="luis-p">Luis P. (32 Encuestas)</option>
-          <option value="ana-g">Ana G. (40 Encuestas)</option>
-        </select>
+    
       </div>
 
       {/* Leyenda de Colores */}
