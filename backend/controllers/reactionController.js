@@ -35,8 +35,8 @@ export const createReaction = async (req, res) => {
     const newReactionId = result.lastInsertRowid;
 
     // Lógica de Alertas: Si el valor es 1 (Malo)
+    // Lógica de Alertas: Si el valor es 1 (Malo)
     if (value === 1) {
-
       const listQuestions = {
         1: "Atención del mesero",
         2: "Tiempo de las bebidas",
@@ -47,15 +47,18 @@ export const createReaction = async (req, res) => {
       const questionText = listQuestions[question_id] || `Pregunta #${question_id}`;
       const messageAlert = `⚠️ Alerta de Servicio: Se registró una calificación MALA en: ${questionText}.`;
       
-
-      // Guardar en la tabla alerts para el Dashboard
-      await db.execute({
-        sql: `INSERT INTO alerts (type, message, reaction_id) VALUES (?, ?, ?)`,
-        args: ['calificacion', messageAlert, Number(newReactionId)]
-      });
-
-      // Ejecutar la función para notificar al gerente
+      // Enviamos la alerta a Telegram (sin esperar a que se guarde en BD para no retrasar la respuesta al cliente)
       await sendAlertTelegram(messageAlert);
+
+      //  2. Luego intentamos guardar la alerta en la BD.
+      try {
+        await db.execute({
+          sql: `INSERT INTO alerts (type, message, reaction_id) VALUES (?, ?, ?)`,
+          args: ['calificacion', messageAlert, Number(newReactionId)]
+        });
+      } catch (alertDbError) {
+        console.warn(`Advertencia: No se pudo guardar la alerta de reacción en BD.`, alertDbError.message);
+      }
     }
 
     res.status(201).json({ message: "Reacción guardada", shift });
