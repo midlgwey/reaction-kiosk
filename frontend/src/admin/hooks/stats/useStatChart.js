@@ -131,7 +131,7 @@ export function useWeeklyRadar(config = { days: 7 }) {
 }
 
 /* =========================================================
- SATISFACCIÓN POR TURNO Y DÍA (Dinámico 7 o 30 días)
+ SATISFACCIÓN POR TURNO Y DÍA 
 =========================================================*/
 export function useShiftWeekChart(config = { days: 7 }) {
   const [state, setState] = useState({

@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 
 /* =========================================================
-   HELPER: Hook Genérico para no repetir código
-   (Esto hace tu código más limpio y profesional)
-   ========================================================= */
+  Hook Genérico para no repetir código en las cards de estadísticas
+   ======================================================== */
 function useGenericCardData(endpoint, days) {
   const [state, setState] = useState({
     data: null, // Guardamos toda la data aquí
@@ -17,7 +16,7 @@ function useGenericCardData(endpoint, days) {
     const fetchData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
-        // AQUÍ ESTÁ LA MAGIA: Pasamos ?days=...
+       
         const res = await api.get(`${endpoint}?days=${days}`);
 
         // Verificamos si la respuesta viene vacía o nula
@@ -47,7 +46,7 @@ function useGenericCardData(endpoint, days) {
 }
 
 /* ===============================
-   HOOKS EXPORTABLES (Ahora flexibles)
+   HOOKS EXPORTABLES 
 =================================*/
 
 export function useBestQuestionWeek(days = 7) {

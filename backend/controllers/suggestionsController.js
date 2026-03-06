@@ -2,6 +2,7 @@ import { db } from "../db.js";
 import { getShiftByTime } from '../utils/shiftUtils.js'; 
 import { InternalServerError } from '../errors/customErrors.js'
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { sendAlertTelegram } from '../utils/alertsUtils.js';
 
 // Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
 const TIME_OFFSET = '-8 hours';
@@ -12,7 +13,6 @@ const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 // --- GUARDAR SUGERENCIA (Modo Rápido / Fire and Forget) ---
 export const createSuggestion = async (req, res) => {
- 
   try {
     const { comment, rating_context } = req.body;
     const shift = getShiftByTime();
@@ -34,7 +34,7 @@ export const createSuggestion = async (req, res) => {
       sentiment: "Procesando..." 
     });
 
-    // Esto ocurre DESPUÉS de responder
+    // Esto ocurre despues de responder
     analyzeSentimentInBackground(newId, comment.trim());
 
   } catch (error) {
@@ -64,6 +64,39 @@ async function analyzeSentimentInBackground(id, commentText) {
          args: [responseText, BigInt(id)] // Usamos BigInt por si el ID es muy grande
        });
        console.log(`[ID: ${id}] Base de datos actualizada con éxito.`);
+    }
+
+    //Implementar alertas para comentarios negativos
+    const lowerCaseText = commentText.toLowerCase();
+    
+    // Diccionario de palabras rojas operativas
+    const criticalKeywords = [
+      // Servicio / Actitud
+      'grosero', 'mal trato', 'de malas', 'sin ganas', 'actitud', 'prepotente', 'ignoraron', "tardo en atender", "no me atendieron", "me dejaron esperando", "sin atender", "desatendieron", "distraido",
+      // Comida / Plagas (Urgencia máxima)
+      'pelo', 'cabello', 'insecto', 'mosca', 'cucaracha', 'bicho', 'crudo', 'quemado', 'frío', 'fria', 'tardo', 'tardaron', 'basura', 'no fue lo que pedi', 'no fue lo que pedí', 'sin sabor', "echado a perder", "incomible", "asqueroso", "repugnante", "apestoso",
+      // Bebidas / Comida (Errores operativos)
+      'fría', 'fria', 'tardo', 'tardaron', 'basura', 'no fue lo que pedi', 'no fue lo que pedí', 'sin sabor' , "apestaba el vaso", "sabe a agua", "sabe a nada", "sabe raro", "sabe mal", "no sabe bien",
+      // Instalaciones
+      'sucio', 'sucia', 'deplorable', 'sin papel', 'sin agua', 'apesta', 'hediondo', 'olor a baño', 'olor a pis', 'olor a orines', 'olor a humedad', 'olor a moho', 'olor a muerto', 'olor a basura', 'inodoro', 'baño público', "baño apestoso", "baño sucio", "baño asqueroso"
+    ];
+    
+    // Verificamos si Gemini dijo Neutral PERO contiene una palabra crítica
+    const isHiddenComplaint = responseText === 'Neutral' && criticalKeywords.some(keyword => lowerCaseText.includes(keyword));
+
+    // Disparamos la alerta si es negativo puro O si es una queja oculta
+    if (responseText === 'Negative' || isHiddenComplaint) {
+       const alertReason = isHiddenComplaint ? "Queja operativa detectada" : "Comentario Negativo";
+       const alertMessage = `🔴 Alerta de Crítica:\nMotivo: ${alertReason}\nComentario: "${commentText}"`;
+       
+       // Guardar en la tabla alerts (para la campana del Dashboard)
+       await db.execute({
+         sql: `INSERT INTO alerts (type, message, suggestion_id) VALUES (?, ?, ?)`,
+         args: ['critica', alertMessage, Number(id)] // Aquí usamos el ID de la sugerencia
+       });
+
+       // Enviar al celular
+       await sendAlertTelegram(alertMessage);
     }
 
   } catch (aiError) {
@@ -138,32 +171,65 @@ export const getFeedbackStats = async (req, res) => {
       criticalShift = Object.keys(shiftCounts).reduce((a, b) => shiftCounts[a] > shiftCounts[b] ? a : b);
     }
 
-    // DETECTOR DE TEMAS (Función interna)
+    // DETECTOR DE TEMAS (Clasificación por categorías y detección de adjetivos frecuentes)
     const detectTopic = (commentsList) => {
-      let counts = { 'tiempo': 0, 'servicio': 0, 'comida': 0, 'higiene': 0, 'precio': 0, 'ambiente': 0 };
+      let counts = { 'servicio': 0, 'comida': 0, 'bebida': 0, 'instalacion': 0, 'general': 0 };
+      let wordCounts = {};
       
-      commentsList.forEach(item => {
-        const text = (item.comment || "").toLowerCase();
-        if (text.includes('lento') || text.includes('tarda') || text.includes('hora')) counts['tiempo']++;
-        else if (text.includes('mesero') || text.includes('atencion') || text.includes('grosero')) counts['servicio']++;
-        else if (text.includes('sabor') || text.includes('fria') || text.includes('rica')) counts['comida']++;
-        else if (text.includes('sucio') || text.includes('limpio') || text.includes('higiene')) counts['higiene']++;
-        else if (text.includes('caro') || text.includes('precio') || text.includes('cuenta')) counts['precio']++;
-        else if (text.includes('ruido') || text.includes('calor') || text.includes('lugar')) counts['ambiente']++;
-      });
-      
-      const winner = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-      
-      const labels = { 
-        'tiempo': 'Rapidez / Tiempos', 
-        'servicio': 'Atención Personal', 
-        'comida': 'Sabor y Calidad', 
-        'higiene': 'Limpieza', 
-        'precio': 'Precios',
-        'ambiente': 'Ambiente / Lugar'
+      const specificWords = {
+        'fria': 'Fría', 'fría': 'Fría',
+        'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor',
+        'caro': 'Caro', 'precio': 'Caro', 'cobro': 'Cobro',
+        'lento': 'Lento', 'tarda': 'Lento', 'espera': 'Lento',
+        'grosero': 'Grosero', 'mal trato': 'Mal trato', 'actitud': 'Mala actitud',
+        'pelo': 'Cabello/Pelo', 'mosca': 'Plaga', 'sucio': 'Sucio', 'bano': 'Baño', 'baño': 'Baño',
+        'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 
+        'amable': 'Amable', 'rapido': 'Rápido', 'rápido': 'Rápido', 'perfecto': 'Perfecto'
       };
 
-      return counts[winner] > 0 ? labels[winner] : "Varios";
+      commentsList.forEach(item => {
+        const text = (item.comment || "").toLowerCase();
+        
+        // Conteo de categorías
+        if (text.includes('mesero') || text.includes('host') || text.includes('lento') || text.includes('mal trato') || text.includes('grosero') || text.includes('rapido') || text.includes('rápido') || text.includes('de malas') || text.includes('amable') || text.includes('atencion') || text.includes('atención')) counts['servicio']++;
+        if (text.includes('comida') || text.includes('plato') || text.includes('fria') || text.includes('fría') || text.includes('sin sabor') || text.includes('pelo') || text.includes('cabello') || text.includes('insecto') || text.includes('mosca') || text.includes('crudo') || text.includes('rico') || text.includes('rica') || text.includes('delicioso')) counts['comida']++;
+        if (text.includes('bebida') || text.includes('vaso') || text.includes('cafe') || text.includes('refresco') || text.includes('cerveza') || text.includes('caro') || text.includes('precio') || text.includes('tibia')) counts['bebida']++;
+        if (text.includes('instalacion') || text.includes('sucio') || text.includes('deplorable') || text.includes('papel') || text.includes('bano') || text.includes('baño') || text.includes('limpieza') || text.includes('agua')) counts['instalacion']++;
+        if (text.includes('todo bien') || text.includes('perfecto') || text.includes('excelente') || text.includes('sin quejas') || text.includes('muy bien')) counts['general']++;
+
+        // Conteo de palabras específicas
+        Object.keys(specificWords).forEach(key => {
+          if (text.includes(key)) {
+            const niceLabel = specificWords[key];
+            wordCounts[niceLabel] = (wordCounts[niceLabel] || 0) + 1;
+          }
+        });
+      });
+      
+      let maxCount = 0;
+      for (const key in counts) {
+        if (counts[key] > maxCount) maxCount = counts[key];
+      }
+
+      if (maxCount === 0) return "Sin comentarios específicos";
+
+      const labels = { 
+        'servicio': 'Servicio', 
+        'comida': 'Comida', 
+        'bebida': 'Bebidas', 
+        'instalacion': 'Instalaciones',
+        'general': 'Experiencia General' 
+      };
+
+      const winners = Object.keys(counts).filter(key => counts[key] === maxCount).map(key => labels[key]);
+      const mainCategory = winners.join(' y ');
+
+      // Obtener los 2 adjetivos más frecuentes
+      const topWords = Object.keys(wordCounts)
+        .sort((a, b) => wordCounts[b] - wordCounts[a])
+        .slice(0, 2);
+
+      return topWords.length > 0 ? `${mainCategory} (${topWords.join(' y ')})` : mainCategory;
     };
 
     // Foco Malo (Naranja) vs Punto Fuerte (Verde)
@@ -172,7 +238,7 @@ export const getFeedbackStats = async (req, res) => {
 
     // Respuesta final para el Frontend
     res.json({
-      total,          
+      total,           
       criticalShift,  
       mainComplaint,  
       strongPoint    
