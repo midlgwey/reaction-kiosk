@@ -2,7 +2,8 @@
 const sentimentConfig = {
   'Positive': { label: 'Positivo', color: 'bg-green-50 text-green-600' },
   'Negative': { label: 'Negativo', color: 'bg-rose-50 text-rose-600' },
-  'Neutral': { label: 'Neutral', color: 'bg-slate-100 text-slate-600' }
+  'Neutral': { label: 'Neutral', color: 'bg-slate-100 text-slate-600' },
+  'Review': { label: 'Revisión', color: 'bg-amber-50 text-amber-600' }
 };
 
 export default function SentimentBadge({ sentiment }) {

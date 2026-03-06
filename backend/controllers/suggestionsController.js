@@ -92,16 +92,6 @@ async function analyzeSentimentInBackground(id, commentText) {
     
     console.log(`[ID: ${id}] IA terminó análisis: ${responseText}`);
 
-    // Si la respuesta es válida, se actuualiza el registro
-    if (["Positive", "Negative", "Neutral"].includes(responseText) && responseText !== 'Neutral') {
-       await db.execute({
-         sql: `UPDATE suggestions SET sentiment = ? WHERE id = ?`,
-         args: [responseText, BigInt(id)] // Usamos BigInt por si el ID es muy grande
-       });
-       console.log(`[ID: ${id}] Base de datos actualizada con éxito.`);
-    }
-
-  
     // Se normaliza el texto para mejorar la detección de palabras clave
     const lowerCaseText = normalizeText(commentText);
 
@@ -109,33 +99,55 @@ async function analyzeSentimentInBackground(id, commentText) {
     const complaintSegment = extractComplaintSegment(commentText);
     
     // Diccionario de palabras rojas operativas
-    const criticalKeywords = [
-      // Servicio / Actitud
-      'grosero', 'mal trato', 'de malas', 'sin ganas', 'actitud', 'prepotente', 'ignoraron', "tardo en atender", "no me atendieron", "me dejaron esperando", "sin atender", "desatendieron", "distraido",
-      // Comida / Plagas (Urgencia máxima)
-      'pelo', 'cabello', 'insecto', 'mosca', 'cucaracha', 'bicho', 'crudo', 'quemado', 'frío', 'fria', 'tardo', 'tardaron', 'basura', 'no fue lo que pedi', 'no fue lo que pedí', 'sin sabor', "echado a perder", "incomible", "asqueroso", "repugnante", "apestoso",
-      // Bebidas / Comida (Errores operativos)
-      'fría', 'fria', 'tardo', 'tardaron', 'basura', 'no fue lo que pedi', 'no fue lo que pedí', 'sin sabor' , "apestaba el vaso", "sabe a agua", "sabe a nada", "sabe raro", "sabe mal", "no sabe bien",
-      // Instalaciones
-      'sucio', 'sucia', 'deplorable', 'sin papel', 'sin agua', 'apesta', 'hediondo', 'olor a baño', 'olor a pis', 'olor a orines', 'olor a humedad', 'olor a moho', 'olor a muerto', 'olor a basura', 'inodoro', 'baño público', "baño apestoso", "baño sucio", "baño asqueroso", 
-      'sin papel', 'no habia papel', 'no había papel', 'baño sucio', 'baño apestoso', 'no habia agua', 'no había agua', 'falta papel', 'falta servilletas',
+      const criticalKeywords = [
+      'grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron',
+      "tardo en atender","no me atendieron","me dejaron esperando","sin atender",
+      "desatendieron","distraido",
+
+      'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
+      'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor',
+      "echado a perder","incomible","asqueroso","repugnante","apestoso",
+
+      "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal","no sabe bien",
+
+      'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
+      'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
+      'olor a muerto','olor a basura','inodoro','bano publico',
+      "bano apestoso","bano sucio","bano asqueroso",
+      'no habia papel','falta papel','falta servilletas'
     ];
-    
-    // Para detectar quejas ocultas, analizamos el texto completo y también la parte que suele contener la queja (después de conectores como "pero" o "aunque")
+
+    // Texto que realmente analizaremos
     const textToAnalyze = complaintSegment 
       ? normalizeText(complaintSegment) 
       : lowerCaseText;
 
+      // Detectar si existe queja operativa
       const isHiddenComplaint = criticalKeywords.some(keyword =>
         textToAnalyze.includes(keyword)
       );
+
+      // Determinar sentimiento final
+      let finalSentiment = responseText;
+
+      if (isHiddenComplaint && responseText !== "Negative") {
+        finalSentiment = "Review";
+      }
+
+      // Actualizar base de datos
+      if (["Positive","Negative","Neutral","Review"].includes(finalSentiment)) {
+        await db.execute({
+          sql: `UPDATE suggestions SET sentiment = ? WHERE id = ?`,
+          args: [finalSentiment, BigInt(id)]
+        });
+      }
 
     // Disparamos la alerta si es negativo puro O si es una queja oculta
     if (responseText === 'Negative' || isHiddenComplaint) {
        const alertReason = isHiddenComplaint ? "Queja operativa detectada" : "Comentario Negativo";
        const alertMessage = 
         `🔴 Alerta de Crítica
-        Turno: ${getShiftByTime()}
+        Turno: ${shift}
         Motivo: ${alertReason}
 
         Comentario:
