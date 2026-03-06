@@ -76,7 +76,8 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
 
       {/* BODY: Valor y Subtítulo */}
       <div className="mt-3">
-        <h3 className="text-xl lg:text-2xl font-black text-slate-800 leading-none">
+        <h3 className="text-xl lg:text-2xl font-black text-slate-800 leading-tight line-clamp-2 min-h-[3rem]" 
+        title={value}>
           {value}
         </h3>
 

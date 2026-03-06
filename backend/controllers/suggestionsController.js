@@ -114,7 +114,7 @@ async function analyzeSentimentInBackground(id, commentText) {
       'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
       'olor a muerto','olor a basura','inodoro','bano publico',
       "bano apestoso","bano sucio","bano asqueroso",
-      'no habia papel','falta papel','falta servilletas'
+      'no habia papel','falta papel', 'pape','falta servilletas'
     ];
 
     // Texto que realmente analizaremos
@@ -143,7 +143,7 @@ async function analyzeSentimentInBackground(id, commentText) {
       }
 
     // Disparamos la alerta si es negativo puro O si es una queja oculta
-    if (responseText === 'Negative' || isHiddenComplaint) {
+      if (finalSentiment === "Negative" || finalSentiment === "Review") {
        const alertReason = isHiddenComplaint ? "Queja operativa detectada" : "Comentario Negativo";
        const alertMessage = 
         `🔴 Alerta de Crítica
