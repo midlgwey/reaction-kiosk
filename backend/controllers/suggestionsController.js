@@ -219,8 +219,8 @@ export const getFeedbackStats = async (req, res) => {
       });
     }
 
-    // Filtramos por bando para los cálculos
-    const negatives = todayRows.filter(r => r.sentiment === 'Negative');
+    // Clasificar por sentimiento y detectar turno crítico y foco de atención
+    const negatives = todayRows.filter(r => r.sentiment === 'Negative' || r.sentiment === 'Review');
     const positives = todayRows.filter(r => r.sentiment === 'Positive');
 
     // TURNO CRÍTICO 
@@ -231,39 +231,44 @@ export const getFeedbackStats = async (req, res) => {
         const s = r.shift || "General";
         shiftCounts[s] = (shiftCounts[s] || 0) + 1;
       });
-      // Sacamos el turno que tiene más quejas acumuladas
       criticalShift = Object.keys(shiftCounts).reduce((a, b) => shiftCounts[a] > shiftCounts[b] ? a : b);
     }
 
-    // DETECTOR DE TEMAS (Clasificación por categorías y detección de adjetivos frecuentes)
+    // Detectar foco de atención (queja más común)
     const detectTopic = (commentsList) => {
       let counts = { 'servicio': 0, 'comida': 0, 'bebida': 0, 'instalacion': 0, 'general': 0 };
       let wordCounts = {};
       
+      //Diccionario de palabras clave específicas para detectar temas comunes.
       const specificWords = {
         'fria': 'Fría', 'fría': 'Fría',
         'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor',
         'caro': 'Caro', 'precio': 'Caro', 'cobro': 'Cobro',
         'lento': 'Lento', 'tarda': 'Lento', 'espera': 'Lento',
         'grosero': 'Grosero', 'mal trato': 'Mal trato', 'actitud': 'Mala actitud',
-        'pelo': 'Cabello/Pelo', 'mosca': 'Plaga', 'sucio': 'Sucio', 'bano': 'Baño', 'baño': 'Baño',
+        'pelo': 'Cabello/Pelo', 'mosca': 'Plaga', 'sucio': 'Sucio', 
+        'bano': 'Baños', 'baño': 'Baños', 
+        'papel': 'Sin papel', 'agua': 'Sin agua', // <-- NUEVO
         'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 
         'amable': 'Amable', 'rapido': 'Rápido', 'rápido': 'Rápido', 'perfecto': 'Perfecto'
       };
 
       commentsList.forEach(item => {
-        const text = (item.comment || "").toLowerCase();
+        // Usamos la función normalizeText para quitar acentos y que siempre detecte "bano" aunque escriban "baño"
+        const text = normalizeText(item.comment || "");
         
         // Conteo de categorías
-        if (text.includes('mesero') || text.includes('host') || text.includes('lento') || text.includes('mal trato') || text.includes('grosero') || text.includes('rapido') || text.includes('rápido') || text.includes('de malas') || text.includes('amable') || text.includes('atencion') || text.includes('atención')) counts['servicio']++;
-        if (text.includes('comida') || text.includes('plato') || text.includes('fria') || text.includes('fría') || text.includes('sin sabor') || text.includes('pelo') || text.includes('cabello') || text.includes('insecto') || text.includes('mosca') || text.includes('crudo') || text.includes('rico') || text.includes('rica') || text.includes('delicioso')) counts['comida']++;
+        if (text.includes('mesero') || text.includes('host') || text.includes('lento') || text.includes('mal trato') || text.includes('grosero') || text.includes('rapido') || text.includes('de malas') || text.includes('amable') || text.includes('atencion')) counts['servicio']++;
+        if (text.includes('comida') || text.includes('plato') || text.includes('fria') || text.includes('sin sabor') || text.includes('pelo') || text.includes('cabello') || text.includes('insecto') || text.includes('mosca') || text.includes('crudo') || text.includes('rico') || text.includes('rica') || text.includes('delicioso')) counts['comida']++;
         if (text.includes('bebida') || text.includes('vaso') || text.includes('cafe') || text.includes('refresco') || text.includes('cerveza') || text.includes('caro') || text.includes('precio') || text.includes('tibia')) counts['bebida']++;
-        if (text.includes('instalacion') || text.includes('sucio') || text.includes('deplorable') || text.includes('papel') || text.includes('bano') || text.includes('baño') || text.includes('limpieza') || text.includes('agua')) counts['instalacion']++;
+        if (text.includes('instalacion') || text.includes('sucio') || text.includes('deplorable') || text.includes('papel') || text.includes('bano') || text.includes('limpieza') || text.includes('agua')) counts['instalacion']++;
         if (text.includes('todo bien') || text.includes('perfecto') || text.includes('excelente') || text.includes('sin quejas') || text.includes('muy bien')) counts['general']++;
 
         // Conteo de palabras específicas
         Object.keys(specificWords).forEach(key => {
-          if (text.includes(key)) {
+          // Normalizamos la llave del diccionario también por si acaso
+          const normalizedKey = normalizeText(key);
+          if (text.includes(normalizedKey)) {
             const niceLabel = specificWords[key];
             wordCounts[niceLabel] = (wordCounts[niceLabel] || 0) + 1;
           }
@@ -288,7 +293,6 @@ export const getFeedbackStats = async (req, res) => {
       const winners = Object.keys(counts).filter(key => counts[key] === maxCount).map(key => labels[key]);
       const mainCategory = winners.join(' y ');
 
-      // Obtener los 2 adjetivos más frecuentes
       const topWords = Object.keys(wordCounts)
         .sort((a, b) => wordCounts[b] - wordCounts[a])
         .slice(0, 2);
@@ -296,11 +300,9 @@ export const getFeedbackStats = async (req, res) => {
       return topWords.length > 0 ? `${mainCategory} (${topWords.join(' y ')})` : mainCategory;
     };
 
-    // Foco Malo (Naranja) vs Punto Fuerte (Verde)
     const mainComplaint = negatives.length > 0 ? detectTopic(negatives) : "Ninguna";
     const strongPoint = positives.length > 0 ? detectTopic(positives) : "Ninguno";
 
-    // Respuesta final para el Frontend
     res.json({
       total,           
       criticalShift,  
