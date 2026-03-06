@@ -3,6 +3,9 @@
  * Reutiliza la lógica exacta del backend para mantener consistencia.
  */
 export function getShiftByTime() {
+
+    // Forzar turno para pruebas
+  return "Comida/Cena";
   
   const now = new Date();
 
