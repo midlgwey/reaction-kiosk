@@ -52,13 +52,14 @@ export default function StatCardWeekly({ title, question, subtitle, icon, color 
         )}
       </div>
 
-      {/* BODY: Pregunta Principal */}
+      {/* Pregunta Principal */}
       <div className="mt-auto">
         {/* Usamos break-words para que si la pregunta es larga, baje de línea y no rompa el grid */}
-        <h3 className="text-sm md:text-base lg:text-lg font-black text-slate-900 leading-tight break-words">
+        <h3 className="text-sm md:text-base lg:text-lg font-black text-slate-900 leading-tight line-clamp-2 min-h-[3rem]"
+          title={question}>
           {question}
         </h3>
-        
+      
         {/* Subtítulo (Porcentaje) */}
         {subtitle && (
           <p className={`${theme.subtitle} text-[10px] lg:text-xs font-bold mt-2`}>

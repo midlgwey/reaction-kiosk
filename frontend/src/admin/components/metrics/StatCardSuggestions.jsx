@@ -43,7 +43,7 @@ export default function FeedbackStats() {
 
   const total = buildStatResult(stats.total, loading, error, "Total de sugerencias hoy");
   const shift = buildStatResult(stats.criticalShift, loading, error, "Turno con más reportes");
-  const focus = buildStatResult(stats.mainComplaint, loading, error, "Foco de atención hoy");
+  const focus = buildStatResult(stats.mainComplaint, loading, error, "Prioridad de atención");
   const strong = buildStatResult(stats.strongPoint, loading, error, "Lo mejor calificado");
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
