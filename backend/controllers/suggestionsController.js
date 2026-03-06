@@ -52,6 +52,8 @@ const complaintConnectors = [
   "nada más que",
   "lo unico",
   "lo único",
+  "deberian", 
+  "les falta"
 ];
 
 //Extrae la parte del comentario que sigue después de conectores de contraste
@@ -109,7 +111,7 @@ async function analyzeSentimentInBackground(id, commentText, shift) {
       'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
       'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor',
       "echado a perder","incomible","asqueroso","repugnante","apestoso",
-      "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal","no sabe bien",
+      "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal","no sabe bien" ,"no sabia bien","sabor raro","sabor mal","sabor a agua","sabor a nada",
       'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
       'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
       'olor a muerto','olor a basura','inodoro','bano publico',"bano apestoso","bano sucio","bano asqueroso",
@@ -225,15 +227,19 @@ export const getFeedbackStats = async (req, res) => {
       commentsList.forEach(item => {
         const text = normalizeText(item.comment || "");
         
-        if (mode === 'bad') {
+       if (mode === 'bad') {
           // Análisis de áreas de mejora
           if (text.includes('lento') || text.includes('mal trato') || text.includes('grosero') || text.includes('actitud')) counts['servicio']++;
-          if (text.includes('fria') || text.includes('sin sabor') || text.includes('pelo') || text.includes('mosca') || text.includes('crudo')) counts['comida']++;
-          if (text.includes('caro') || text.includes('tibia')) counts['bebida']++;
+          if (text.includes('fria') || text.includes('frio') || text.includes('sin sabor') || text.includes('pelo') || text.includes('mosca') || text.includes('crudo')) counts['comida']++;
+          if (text.includes('caro') || text.includes('tibia') || text.includes('cafe frio') || text.includes('cerveza caliente') || text.includes('refresco caliente') || text.includes('sabe a agua') || text.includes('sabe mal')) counts['bebida']++;
           if (text.includes('sucio') || text.includes('papel') || text.includes('bano') || text.includes('agua') || text.includes('olor')) counts['instalacion']++;
 
+          // Diccionario de quejas
           const badWords = {
-            'fria': 'Fría', 'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor',
+            'cafe frio': 'Café Frío', 'cerveza caliente': 'Bebida Caliente', 'refresco caliente': 'Bebida Caliente', 'tibia': 'Bebida Tibia',
+            'sabe a agua': 'Bebida Aguada', 'sabe mal': 'Sabor Raro',
+            'fria': 'Comida Fría', 'frio': 'Comida Fría', 
+            'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor',
             'caro': 'Caro', 'cobro': 'Cobro',
             'lento': 'Lento', 'tarda': 'Lento', 'espera': 'Lento',
             'grosero': 'Grosero', 'actitud': 'Mala actitud',

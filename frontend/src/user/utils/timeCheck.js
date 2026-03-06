@@ -4,9 +4,6 @@
  */
 export function getShiftByTime() {
 
-    // Forzar turno para pruebas
-  return "Comida/Cena";
-  
   const now = new Date();
 
   // Forzar zona horaria America/Tijuana

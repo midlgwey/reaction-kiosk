@@ -1,10 +1,5 @@
 export function getShiftByTime() {
 
-
-    // Forzar turno para pruebas en producción
-  return "Comida/Cena";
-
-  
   const now = new Date();
 
   // Helper para forzar zona horaria (útil si se requiere precisión extra en integers)
