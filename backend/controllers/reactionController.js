@@ -39,9 +39,9 @@ export const createReaction = async (req, res) => {
 
       const listQuestions = {
         1: "Atención del mesero",
-        2: "Calidad de las bebidas",
-        3: "Sabor/Calidad de la comida",
-        4: "Instalaciones"
+        2: "Tiempo de las bebidas",
+        3: "Calidad de la comida",
+        4: "Instalaciones del restaurante",
       };
 
       const questionText = listQuestions[question_id] || `Pregunta #${question_id}`;

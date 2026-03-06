@@ -43,6 +43,41 @@ export const createSuggestion = async (req, res) => {
   }
 };
 
+const complaintConnectors = [
+  "pero",
+  "solo que",
+  "aunque",
+  "excepto",
+  "nada mas que",
+  "nada más que",
+  "lo unico",
+  "lo único",
+];
+
+//Extrae la parte del comentario que sigue después de conectores de contraste
+function extractComplaintSegment(text) {
+  const lower = text.toLowerCase();
+
+  for (const connector of complaintConnectors) {
+    const index = lower.indexOf(connector);
+
+    if (index !== -1) {
+      return lower.slice(index + connector.length).trim();
+    }
+  }
+
+  return null;
+
+}
+
+// Normaliza el texto para evitar problemas con acentos o variaciones de escritura
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD") // separa letras de acentos
+    .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
+}
+
 // Se ejecuta en el servidor, no en el kiosko
 async function analyzeSentimentInBackground(id, commentText) {
   try {
@@ -66,8 +101,12 @@ async function analyzeSentimentInBackground(id, commentText) {
        console.log(`[ID: ${id}] Base de datos actualizada con éxito.`);
     }
 
-    //Implementar alertas para comentarios negativos
-    const lowerCaseText = commentText.toLowerCase();
+  
+    // Se normaliza el texto para mejorar la detección de palabras clave
+    const lowerCaseText = normalizeText(commentText);
+
+    // Extraemos la parte del comentario que podría contener la queja, para hacer un análisis más profundo de palabras clave críticas
+    const complaintSegment = extractComplaintSegment(commentText);
     
     // Diccionario de palabras rojas operativas
     const criticalKeywords = [
@@ -78,16 +117,29 @@ async function analyzeSentimentInBackground(id, commentText) {
       // Bebidas / Comida (Errores operativos)
       'fría', 'fria', 'tardo', 'tardaron', 'basura', 'no fue lo que pedi', 'no fue lo que pedí', 'sin sabor' , "apestaba el vaso", "sabe a agua", "sabe a nada", "sabe raro", "sabe mal", "no sabe bien",
       // Instalaciones
-      'sucio', 'sucia', 'deplorable', 'sin papel', 'sin agua', 'apesta', 'hediondo', 'olor a baño', 'olor a pis', 'olor a orines', 'olor a humedad', 'olor a moho', 'olor a muerto', 'olor a basura', 'inodoro', 'baño público', "baño apestoso", "baño sucio", "baño asqueroso"
+      'sucio', 'sucia', 'deplorable', 'sin papel', 'sin agua', 'apesta', 'hediondo', 'olor a baño', 'olor a pis', 'olor a orines', 'olor a humedad', 'olor a moho', 'olor a muerto', 'olor a basura', 'inodoro', 'baño público', "baño apestoso", "baño sucio", "baño asqueroso", 
+      'sin papel', 'no habia papel', 'no había papel', 'baño sucio', 'baño apestoso', 'no habia agua', 'no había agua', 'falta papel', 'falta servilletas',
     ];
     
-    // Verificamos si Gemini dijo Neutral PERO contiene una palabra crítica
-    const isHiddenComplaint = responseText === 'Neutral' && criticalKeywords.some(keyword => lowerCaseText.includes(keyword));
+    // Para detectar quejas ocultas, analizamos el texto completo y también la parte que suele contener la queja (después de conectores como "pero" o "aunque")
+    const textToAnalyze = complaintSegment 
+      ? normalizeText(complaintSegment) 
+      : lowerCaseText;
+
+      const isHiddenComplaint = criticalKeywords.some(keyword =>
+        textToAnalyze.includes(keyword)
+      );
 
     // Disparamos la alerta si es negativo puro O si es una queja oculta
     if (responseText === 'Negative' || isHiddenComplaint) {
        const alertReason = isHiddenComplaint ? "Queja operativa detectada" : "Comentario Negativo";
-       const alertMessage = `🔴 Alerta de Crítica:\nMotivo: ${alertReason}\nComentario: "${commentText}"`;
+       const alertMessage = 
+        `🔴 Alerta de Crítica
+        Turno: ${getShiftByTime()}
+        Motivo: ${alertReason}
+
+        Comentario:
+        "${commentText}"`;
        
        // Guardar en la tabla alerts (para la campana del Dashboard)
        await db.execute({
