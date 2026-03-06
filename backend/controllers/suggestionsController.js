@@ -88,7 +88,14 @@ async function analyzeSentimentInBackground(id, commentText, shift) {
       Comentario: "${commentText}"`;
 
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
+
+    // Convertimos la respuesta a minúsculas para evitar problemas de formato
+    const rawResponse = result.response.text().trim().toLowerCase();
+
+    // Filtro de seguridad: Identifica la intención sin importar si hay puntos o espacios
+    let responseText = "Neutral";
+    if (rawResponse.includes("positive")) responseText = "Positive";
+    else if (rawResponse.includes("negative")) responseText = "Negative";
     
     console.log(`[ID: ${id}] IA terminó análisis: ${responseText}`);
 
@@ -129,18 +136,20 @@ async function analyzeSentimentInBackground(id, commentText, shift) {
     // Formateo y envío de la alerta vía Telegram
     if (finalSentiment === "Negative" || finalSentiment === "Review") {
        const alertReason = finalSentiment === "Review" ? "Queja mixta detectada" : "Comentario Negativo";
-       const alertMessage = `🔴 *Alerta de Crítica*\n*Turno:* ${shift}\n*Motivo:* ${alertReason}\n\n*Comentario:*\n"${commentText}"`;
+       const alertMessage = `🔴 ALERTA DE CRITICA\nTurno: ${shift}\nMotivo: ${alertReason}\n\nComentario:\n"${commentText}"`;
        
+       // Se envía la alerta a Telegram para notificar al gerente sobre la crítica recibida, incluyendo el comentario original para contexto.
+       await sendAlertTelegram(alertMessage);
+
+       // Guardar en la tabla alerts para el Dashboard
        await db.execute({
          sql: `INSERT INTO alerts (type, message, suggestion_id) VALUES (?, ?, ?)`,
          args: ['critica', alertMessage, Number(id)] 
        });
-
-       await sendAlertTelegram(alertMessage);
     }
 
-  } catch (aiError) {
-    console.error(`[ID: ${id}] Error en proceso de fondo IA:`, aiError);
+  } catch (dbError) {
+    console.error(`[ID: ${id}] Error en proceso de fondo IA:`, dbError);
   }
 }
 
