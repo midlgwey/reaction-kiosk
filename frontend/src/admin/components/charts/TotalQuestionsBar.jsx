@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useChartQuestionsWeek } from "../../hooks/stats/useStatChart";
+import DashboardFilter from "../shared/DashboardFilter"; // Ajusta la ruta si es diferente
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -12,8 +14,25 @@ const ChartLoading = () => (
   </div>
 );
 
-// Recibe la config desde StatsPage
-export default function TotalQuestionsBar({ config }) {
+const STATS_OPTIONS = [
+  { value: '7', label: 'Últimos 7 días' },
+  { value: '14', label: 'Últimas 2 semanas' },
+  { value: '30', label: 'Último mes' },
+  { value: 'custom', label: '📅 Elegir rango exacto' },
+];
+
+export default function TotalQuestionsBar() {
+  const [filterOption, setFilterOption] = useState(STATS_OPTIONS[0]);
+  const [customDate, setCustomDate] = useState(new Date());
+
+  const config = useMemo(() => {
+    if (filterOption.value === 'custom') {
+      const dateStr = format(customDate, 'yyyy-MM-dd');
+      return { startDate: dateStr, endDate: dateStr };
+    }
+    return { days: Number(filterOption.value) };
+  }, [filterOption, customDate]);
+
   const chart = useChartQuestionsWeek(config);
 
   const shortLabels = chart.labels ? chart.labels.map(l => l.length > 25 ? l.substring(0, 25) + "..." : l ) : [];
@@ -49,7 +68,19 @@ export default function TotalQuestionsBar({ config }) {
 
   return (
     <div className="w-full flex flex-col h-100 md:h-112 p-4 pt-0">
-      <div className="flex-1 relative">
+      
+      {/* Controles de encabezado con el filtro */}
+      <div className="flex justify-end items-center mb-4 relative z-10">
+        <DashboardFilter 
+          options={STATS_OPTIONS} 
+          selectedOption={filterOption} 
+          setSelectedOption={setFilterOption} 
+          selectedDay={customDate} 
+          setSelectedDay={setCustomDate} 
+        />
+      </div>
+
+      <div className="flex-1 relative z-0">
         {chart.loading ? ( <ChartLoading /> ) : chart.error ? ( <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">{chart.error}</div> ) : (!chart.labels || chart.labels.length === 0) ? ( <div className="h-full flex items-center justify-center text-slate-400 font-medium">No hay datos registrados en este periodo</div> ) : ( <Bar data={data} options={options} /> )}
       </div>
     </div>

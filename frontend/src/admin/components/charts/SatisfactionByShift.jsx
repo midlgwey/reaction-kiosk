@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useShiftWeekChart } from "../../hooks/stats/useStatChart"; 
+import DashboardFilter from "../shared/DashboardFilter"; // Ajusta la ruta si es diferente
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -12,8 +14,25 @@ const ChartLoading = () => (
   </div>
 );
 
-// Recibe la config desde StatsPage
-export default function SatisfactionByShiftChart({ config }) {
+const STATS_OPTIONS = [
+  { value: '7', label: 'Últimos 7 días' },
+  { value: '14', label: 'Últimas 2 semanas' },
+  { value: '30', label: 'Último mes' },
+  { value: 'custom', label: '📅 Elegir rango exacto' },
+];
+
+export default function SatisfactionByShift() {
+  const [filterOption, setFilterOption] = useState(STATS_OPTIONS[0]);
+  const [customDate, setCustomDate] = useState(new Date());
+
+  const config = useMemo(() => {
+    if (filterOption.value === 'custom') {
+      const dateStr = format(customDate, 'yyyy-MM-dd');
+      return { startDate: dateStr, endDate: dateStr };
+    }
+    return { days: Number(filterOption.value) };
+  }, [filterOption, customDate]);
+
   const { labels, excelente, bueno, puede_mejorar, malo, loading, error } = useShiftWeekChart(config);
 
   const data = {
@@ -40,7 +59,19 @@ export default function SatisfactionByShiftChart({ config }) {
 
   return (
     <div className="w-full flex flex-col h-100 md:h-112 p-4 pt-0">
-      <div className="flex-1 relative">
+      
+      {/* Controles de encabezado con el filtro */}
+      <div className="flex justify-end items-center mb-4 relative z-10">
+        <DashboardFilter 
+          options={STATS_OPTIONS} 
+          selectedOption={filterOption} 
+          setSelectedOption={setFilterOption} 
+          selectedDay={customDate} 
+          setSelectedDay={setCustomDate} 
+        />
+      </div>
+
+      <div className="flex-1 relative z-0">
         {loading ? <ChartLoading /> : error ? (
            <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">Error al cargar datos</div>
         ) : ( <Bar data={data} options={options} /> )}
