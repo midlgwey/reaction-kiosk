@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import Select from 'react-select';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -11,6 +12,7 @@ import {
 import { Radar } from "react-chartjs-2";
 import { useWeeklyRadar } from "../../hooks/stats/useStatChart";
 
+// Registro de componentes requeridos por Chart.js para gráficos tipo Radar
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -20,7 +22,9 @@ ChartJS.register(
   Legend
 );
 
-// Componente indicador de carga
+/**
+ * Componente funcional para mostrar estado de carga durante peticiones asíncronas.
+ */
 const ChartLoading = () => (
   <div className="h-80 w-full flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200">
     <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
@@ -28,7 +32,11 @@ const ChartLoading = () => (
   </div>
 );
 
-// Helper: Genera los rangos de fechas (martes a lunes) para las últimas 4 semanas
+/**
+ * Función utilitaria para generar los últimos 4 ciclos semanales.
+ * Un ciclo semanal se define desde el martes más reciente hasta el lunes anterior.
+ * * @returns {Array} Arreglo de objetos formateados para su uso en react-select y consultas a la API.
+ */
 const getRecentTuesdays = () => {
   const options = [];
   const today = new Date();
@@ -36,13 +44,13 @@ const getRecentTuesdays = () => {
   let lastTuesday = new Date(today);
   const dayOfWeek = lastTuesday.getDay(); 
   
-  // Retroceder al martes más reciente
+  // Normalización: Retroceso al martes más reciente
   if (dayOfWeek !== 2) {
       const daysToSubtract = dayOfWeek >= 2 ? dayOfWeek - 2 : dayOfWeek + 5;
       lastTuesday.setDate(lastTuesday.getDate() - daysToSubtract);
   }
 
-  // Generación de 4 rangos semanales consecutivos hacia atrás
+  // Generación iterativa de 4 intervalos de 7 días
   for (let i = 0; i < 4; i++) {
       const start = new Date(lastTuesday);
       start.setDate(start.getDate() - (i * 7)); 
@@ -54,6 +62,7 @@ const getRecentTuesdays = () => {
       const formatDB = (date) => date.toISOString().split('T')[0];
 
       options.push({
+          value: `week_${i}`,
           label: i === 0 ? `Esta semana (${label})` : label,
           startDate: formatDB(start),
           endDate: formatDB(end)
@@ -62,25 +71,40 @@ const getRecentTuesdays = () => {
   return options;
 };
 
+/**
+ * Componente Principal: Renderiza un gráfico de Radar para comparar métricas
+ * entre una semana seleccionada y su semana inmediatamente anterior.
+ * Opera de forma independiente al filtro global de la página para garantizar
+ * la comparación exclusiva de periodos cerrados de 7 días.
+ */
 export default function WeeklyCompRadar() {
-  // Estado local para almacenar el rango de fechas seleccionado
-  const [selectedRange, setSelectedRange] = useState(null);
-  const weekOptions = useMemo(() => getRecentTuesdays(), []);
+  
+  // Generación y almacenamiento en caché de las opciones del selector de semanas
+  const selectOptions = useMemo(() => {
+    const weeks = getRecentTuesdays();
+    return [
+      { value: '7days', label: 'Últimos 7 días', startDate: null, endDate: null },
+      ...weeks
+    ];
+  }, []);
 
-  // Configuración de parámetros para la consulta de datos
-  const config = selectedRange 
-      ? { startDate: selectedRange.startDate, endDate: selectedRange.endDate } 
-      : { days: 7 };
+  // Estado que controla el periodo actualmente seleccionado para análisis
+  const [selectedOption, setSelectedOption] = useState(selectOptions[0]);
 
-  // Ejecución del hook de datos
+  // Construcción del objeto de configuración para la petición HTTP
+  const config = selectedOption.value === '7days' 
+      ? { days: 7 } 
+      : { startDate: selectedOption.startDate, endDate: selectedOption.endDate };
+
+  // Invocación del hook personalizado para obtención de datos
   const radar = useWeeklyRadar(config);
 
-  // Formateo de etiquetas para prevenir desbordamiento visual
+  // Truncamiento de etiquetas extensas para mantener la integridad visual del canvas
   const shortLabels = radar.labels ? radar.labels.map(l => 
     l.length > 20 ? l.substring(0, 20) + "..." : l
   ) : [];
 
-  // Configuración de los datasets para Chart.js
+  // Estructuración de datos para inyección en Chart.js
   const data = {
     labels: shortLabels, 
     datasets: [
@@ -110,31 +134,19 @@ export default function WeeklyCompRadar() {
     ],
   };
 
-  // Configuración de escalas, tooltips y opciones de diseño
+  // Configuración de escalas, interacciones y renderizado general del gráfico
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
       r: {
-        angleLines: { 
-            display: true, 
-            color: "#cbd5e1" 
-        }, 
-        grid: { 
-            color: "#cbd5e1" 
-        },
+        angleLines: { display: true, color: "#cbd5e1" }, 
+        grid: { color: "#cbd5e1" },
         suggestedMin: 0,
         suggestedMax: 100,
-        ticks: {
-          stepSize: 25,
-          display: false, 
-        },
+        ticks: { stepSize: 25, display: false },
         pointLabels: {
-          font: {
-            family: "Inter, sans-serif",
-            size: 11,
-            weight: "bold", 
-          },
+          font: { family: "Inter, sans-serif", size: 11, weight: "bold" },
           color: "#000000", 
         },
       },
@@ -158,7 +170,7 @@ export default function WeeklyCompRadar() {
         titleFont: { family: "Inter", size: 13 },
         bodyFont: { family: "Inter", size: 12 },
         callbacks: {
-            // Despliega la pregunta completa en el tooltip
+            // Restauración de la etiqueta completa en el componente de tooltip
             title: (context) => {
                 const index = context[0].dataIndex;
                 return radar.labels[index]; 
@@ -169,31 +181,45 @@ export default function WeeklyCompRadar() {
     },
   };
 
+  // Definición de estilos base y estados de interacción para el componente react-select
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      borderRadius: '0.5rem',
+      borderColor: '#e2e8f0',
+      fontSize: '0.75rem',
+      minHeight: '32px',
+      boxShadow: 'none',
+      cursor: 'pointer',
+      '&:hover': { borderColor: '#6366f1' }
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#6366f1' : state.isFocused ? '#f5f3ff' : 'white',
+      color: state.isSelected ? 'white' : '#475569',
+      fontSize: '0.75rem',
+      cursor: 'pointer',
+    })
+  };
+
   return (
-    <div className="w-full flex flex-col h-100 md:h-112 p-4">
+    <div className="w-full flex flex-col h-100 md:h-112 p-4 pt-0">
       
-      {/* Controles de encabezado y filtro de fechas */}
-      <div className="flex justify-between items-center mb-4">
-        
-        <select 
-          className="text-xs bg-gray-50 border border-gray-300 text-gray-700 rounded-lg p-2 font-medium cursor-pointer focus:ring-indigo-500 focus:border-indigo-500"
-          onChange={(e) => {
-              if (e.target.value === "7days") {
-                  setSelectedRange(null);
-              } else {
-                  setSelectedRange(weekOptions[e.target.value]);
-              }
-          }}
-        >
-          <option value="7days">Últimos 7 días</option>
-          {weekOptions.map((opt, index) => (
-             <option key={index} value={index}>{opt.label}</option>
-          ))}
-        </select>
+      {/* Selector de rango de fechas */}
+      <div className="flex justify-end items-center mb-4 relative z-10">
+        <div className="w-60">
+          <Select
+            options={selectOptions}
+            value={selectedOption}
+            onChange={(opt) => setSelectedOption(opt)}
+            styles={customSelectStyles}
+            isSearchable={false}
+          />
+        </div>
       </div>
 
-      {/* Área de renderizado de la gráfica con manejo de estados */}
-      <div className="flex-1 relative">
+      {/* Canvas de renderizado y manejo de estados vacíos/error */}
+      <div className="flex-1 relative z-0">
         {radar.loading ? (
           <ChartLoading />
         ) : radar.error ? (
