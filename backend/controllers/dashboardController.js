@@ -2,7 +2,7 @@ import { db } from '../db.js';
 import { InternalServerError } from '../errors/customErrors.js';
 
 // Tijuana Invierno: '-8 hours' | Tijuana Verano: '-7 hours' (Ajustar según temporada)
-const TIME_OFFSET = '-8 hours'; 
+const TIME_OFFSET = '-7 hours'; 
 
 // Helper: Construye las condiciones de fecha dinámicas (Rangos exactos o últimos X días)
 const getDateFilters = (req) => {

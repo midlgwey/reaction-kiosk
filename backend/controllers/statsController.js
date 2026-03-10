@@ -2,7 +2,7 @@ import { db } from '../db.js';
 import { NotFoundError, InternalServerError } from '../errors/customErrors.js';
 
 // Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
-const TIME_OFFSET = '-8 hours';
+const TIME_OFFSET = '-7 hours';
 
 // Nuevo Helper para manejar rangos de fechas o días relativos
 const getDateFilters = (req) => {

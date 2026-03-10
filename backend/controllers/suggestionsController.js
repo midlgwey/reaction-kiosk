@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { sendAlertTelegram } from '../utils/alertsUtils.js';
 
 // Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
-const TIME_OFFSET = '-8 hours';
+const TIME_OFFSET = '-7 hours';
 
 // Inicializar Gemini con tu API Key (Usamos el modelo que SI te funcionó)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
