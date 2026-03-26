@@ -127,73 +127,48 @@ export default function DashboardPage() {
         happinessByShift={happinessByShift} 
       />
 
-      {/* Sección 2: Desglose de respuestas por pregunta */}
-       <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-         <DailyQuestions />
-       </div>
 
-        {/* Sección 2: Desglose de respuestas por pregunta */}
-       <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
-         <RecentAlerts />
-       </div>
+      {/* Sección 2: Desglose de respuestas por pregunta */}
+      <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
+          <DailyQuestions />
+      </div>
 
       {/* Sección 3: Representaciones gráficas compuestas */}
-      <div className="grid grid-cols-12 gap-6">
-        
-        {/* Contenedor: Distribución Sentimental (Dona) */}
-        <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-              Distribución Sentimental
-            </h3>
-            <DashboardFilter 
-              options={DONA_OPTIONS} 
-              selectedOption={donaOption} 
-              setSelectedOption={setDonaOption} 
-              selectedDay={donaCustomDate} 
-              setSelectedDay={setDonaCustomDate} 
-            />
-          </div>
-         <div className="flex-1 flex items-center justify-center">
-            {sentiment.loading ? (
-              <ChartLoading />
-            ) : !sentiment.data || sentiment.data.total === 0 ? ( /* Validación de datos nulos o en cero */
-              <div className="h-full flex items-center justify-center text-slate-400 text-center font-medium text-sm">
-                No hay encuestas en esta fecha
-              </div>
-            ) : (
-              <SentimentDistributionDoughnut dataValues={sentimentValues} />
-            )}
-          </div>
-        </div>
+      {/* Sección 3: Alertas + Tendencia */}
+<div className="grid grid-cols-12 gap-6">
 
-        {/* Contenedor: Tendencia de Satisfacción (Área) */}
-        <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-              Tendencia de Satisfacción
-            </h3>
-            <DashboardFilter 
-              options={AREA_OPTIONS} 
-              selectedOption={areaOption} 
-              setSelectedOption={setAreaOption} 
-              selectedDay={areaCustomDate} 
-              setSelectedDay={setAreaCustomDate} 
-            />
-          </div>
-          <div className="flex-1 flex items-center justify-center w-full">
-            {trend.loading ? (
-              <ChartLoading />
-            ) : (
-              <DailySatisfactionArea 
-                labels={areaChartData.labels} 
-                dataValues={areaChartData.values} 
-              />
-            )}
-          </div>
-        </div>
-        
-      </div>
+  {/* Alertas Críticas */}
+  <div className="col-span-12 lg:col-span-4">
+    <RecentAlerts />
+  </div>
+
+  {/* Tendencia de Satisfacción (Área) */}
+  <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
+    <div className="flex justify-between items-start mb-6">
+      <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+        Tendencia de Satisfacción
+      </h3>
+      <DashboardFilter
+        options={AREA_OPTIONS}
+        selectedOption={areaOption}
+        setSelectedOption={setAreaOption}
+        selectedDay={areaCustomDate}
+        setSelectedDay={setAreaCustomDate}
+      />
+    </div>
+    <div className="flex-1 flex items-center justify-center w-full">
+      {trend.loading ? (
+        <ChartLoading />
+      ) : (
+        <DailySatisfactionArea
+          labels={areaChartData.labels}
+          dataValues={areaChartData.values}
+        />
+      )}
+    </div>
+  </div>
+
+</div>
     </div>
   );
 }
