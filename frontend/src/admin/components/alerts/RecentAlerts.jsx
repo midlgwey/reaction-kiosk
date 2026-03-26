@@ -20,7 +20,7 @@ export default function RecentAlerts() {
     <div className="bg-white border border-slate-100 rounded-3xl shadow-xl overflow-hidden">
       <div className="p-5 border-b border-slate-50 flex justify-between items-center bg-rose-50/30">
         <h3 className="font-black text-slate-800 flex items-center gap-2 text-sm uppercase tracking-tighter">
-          <ExclamationTriangleIcon className="w-5 h-5 text-rose-500" />
+          <ExclamationTriangleIcon className="w-5 h-5 text-rose-600" />
           Alertas Críticas (Últimas 5)
         </h3>
       </div>
