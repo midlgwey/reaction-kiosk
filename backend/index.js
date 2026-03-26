@@ -8,6 +8,7 @@ import statsRoutes from './routes/statsRoutes.js';
 import reactionRoutes from './routes/reactionRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import suggestionsRoutes from './routes/suggestionsRoutes.js';
+import alertsRoutes from './routes/alertsRoutes.js';
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 
@@ -39,6 +40,8 @@ app.use('/stats', statsRoutes);
 app.use('/reactions', reactionRoutes );
 
 app.use('/suggestions', suggestionsRoutes)
+
+app.use('/alerts', alertsRoutes) 
 
 app.use(errorHandlerMiddleware);
 

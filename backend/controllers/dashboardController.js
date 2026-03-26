@@ -73,7 +73,6 @@ export const getDailyServerScore = async (req, res) => {
   }
 };
 
-
 /* --------------------
    FELICIDAD DEL DÍA
 */

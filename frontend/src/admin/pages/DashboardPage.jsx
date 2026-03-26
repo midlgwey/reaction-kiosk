@@ -17,6 +17,7 @@ import {
   useDailySatisfactionTrend,
   useWeeklySentiment,
 } from "../hooks/dashboard/useDashboardWeekly";
+import RecentAlerts from "../components/alerts/RecentAlerts";
 
 /**
  * Componente indicador de estado de carga.
@@ -128,6 +129,11 @@ export default function DashboardPage() {
       {/* Sección 2: Desglose de respuestas por pregunta */}
        <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
          <DailyQuestions />
+       </div>
+
+        {/* Sección 2: Desglose de respuestas por pregunta */}
+       <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
+         <RecentAlerts />
        </div>
 
       {/* Sección 3: Representaciones gráficas compuestas */}
