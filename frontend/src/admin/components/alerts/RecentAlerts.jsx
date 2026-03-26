@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChatBubbleLeftRightIcon, StarIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useRecentAlerts } from '../../hooks/useRecentAlerts'; 
+import { useRecentAlerts } from '../../hooks/alerts/useRecentAlerts';
 
 export default function RecentAlerts() {
   // Ahora el componente obtiene su propia data
