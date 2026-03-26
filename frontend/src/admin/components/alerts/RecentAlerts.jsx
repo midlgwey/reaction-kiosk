@@ -3,52 +3,99 @@ import { ChatBubbleLeftRightIcon, StarIcon, ExclamationTriangleIcon } from "@her
 import { useRecentAlerts } from '../../hooks/alerts/useRecentAlerts';
 
 export default function RecentAlerts() {
-  // Ahora el componente obtiene su propia data
-  const { alerts, loading } = useRecentAlerts(); 
+  const { alerts, loading } = useRecentAlerts();
 
-  if (loading) return (
-    <div className="bg-white border border-slate-100 rounded-3xl shadow-xl overflow-hidden">
-        <div className="p-4 animate-pulse space-y-4">
-            <div className="h-6 bg-slate-100 rounded w-1/2"></div>
-            <div className="h-20 bg-slate-50 rounded"></div>
-            <div className="h-20 bg-slate-50 rounded"></div>
-        </div>
-    </div>
-  );
+  const getAlertStyles = (type) => {
+    if (type === 'rating') {
+      return {
+        wrapper: 'bg-rose-50 border-rose-200 hover:shadow-md',
+        iconBg: 'bg-rose-100 text-rose-600',
+        label: 'text-rose-800',
+        icon: <StarIcon className="w-5 h-5" />,
+      };
+    }
+    return {
+      wrapper: 'bg-amber-50 border-amber-200 hover:shadow-md',
+      iconBg: 'bg-amber-100 text-amber-600',
+      label: 'text-amber-800',
+      icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />,
+    };
+  };
 
   return (
-    <div className="bg-white border border-slate-100 rounded-3xl shadow-xl overflow-hidden">
-      <div className="p-5 border-b border-slate-50 flex justify-between items-center bg-rose-50/30">
-        <h3 className="font-black text-slate-800 flex items-center gap-2 text-sm uppercase tracking-tighter">
-          <ExclamationTriangleIcon className="w-5 h-5 text-rose-600" />
-          Alertas Críticas (Últimas 5)
-        </h3>
-      </div>
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full h-full overflow-hidden">
 
-      <div className="divide-y divide-slate-100">
-        {alerts.length === 0 ? (
-          <p className="p-10 text-center text-slate-400 text-sm italic">Sin alertas recientes. ¡Todo marcha bien!</p>
-        ) : (
-          alerts.map((alert, index) => (
-            <div key={index} className="p-4 hover:bg-slate-50 transition-colors flex gap-4">
-              <div className={`mt-1 p-2 rounded-xl shrink-0 ${
-                alert.type === 'comment' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'
-              }`}>
-                {alert.type === 'comment' ? <ChatBubbleLeftRightIcon className="w-4 h-4" /> : <StarIcon className="w-4 h-4" />}
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
-                   {new Date(alert.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} • {alert.type === 'comment' ? 'Comentario' : 'Baja Calificación'}
-                </span>
-                <p className="text-sm text-slate-700 font-medium leading-snug">
-                  {alert.type === 'comment' ? `"${alert.content}"` : `Mal puntaje en: ${alert.content}`}
-                </p>
-              </div>
-            </div>
-          ))
+      {/* Header */}
+      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+          </span>
+          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+            Alertas Críticas de Hoy
+          </h3>
+        </div>
+        {!loading && (
+          <span className="text-xs font-semibold text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm">
+            {alerts.length} {alerts.length === 1 ? 'Alerta' : 'Alertas'}
+          </span>
         )}
       </div>
+
+      {/* Lista */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        {loading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-20 bg-slate-100 rounded-2xl"></div>
+            <div className="h-20 bg-slate-100 rounded-2xl"></div>
+            <div className="h-20 bg-slate-100 rounded-2xl"></div>
+          </div>
+        ) : alerts.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+            <span className="text-4xl mb-3">✅</span>
+            <p className="font-medium text-sm">Todo en orden.</p>
+            <p className="text-xs">No hay alertas críticas hoy.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {alerts.map((alert, index) => {
+              const styles = getAlertStyles(alert.type);
+              return (
+                <div
+                  key={index}
+                  className={`flex gap-4 p-4 rounded-2xl border transition-all ${styles.wrapper}`}
+                >
+                  {/* Icono */}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+                    {styles.icon}
+                  </div>
+
+                  {/* Contenido */}
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className={`font-bold text-sm ${styles.label}`}>
+                        {alert.type === 'comment' ? 'Comentario negativo' : 'Baja calificación'}
+                      </h4>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white/60 px-2 py-0.5 rounded-full shrink-0 ml-2">
+                        {new Date(alert.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                        {' · '}
+                        {new Date(alert.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-slate-600 text-sm leading-relaxed">
+                      {alert.type === 'comment'
+                        ? `"${alert.content}"`
+                        : `Mal puntaje en: ${alert.content}`}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

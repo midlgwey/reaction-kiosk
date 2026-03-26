@@ -30,7 +30,6 @@ export const getRecentAlerts = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
-        /* 1. Traer los comentarios negativos */
         SELECT 
           'comment' as type,
           comment as content,
@@ -38,10 +37,10 @@ export const getRecentAlerts = async (req, res) => {
           created_at as raw_date
         FROM suggestions
         WHERE sentiment = 'Negative'
+          AND DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
 
         UNION ALL
 
-        /* 2. Traer las calificaciones malas (valor = 1) */
         SELECT 
           'rating' as type,
           q.text as content,
@@ -50,6 +49,7 @@ export const getRecentAlerts = async (req, res) => {
         FROM reactions r
         JOIN questions q ON r.question_id = q.id
         WHERE r.value = 1
+          AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
 
         ORDER BY raw_date DESC
         LIMIT 5
