@@ -1,8 +1,32 @@
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
-import { Chart } from 'react-chartjs-2'; // Cambiamos Line por Chart
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  BarElement, 
+  LineController, 
+  BarController, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  Filler 
+} from 'chart.js';
+import { Chart } from 'react-chartjs-2';
 
-// Registramos BarElement para las barras
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  BarElement, 
+  LineController, 
+  BarController, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  Filler
+);
 
 export default function DailySatisfactionArea({ labels, dataValues, volumeValues }) {
   const data = {
