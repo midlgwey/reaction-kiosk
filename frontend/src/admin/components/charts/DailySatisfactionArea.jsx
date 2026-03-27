@@ -33,24 +33,24 @@ export default function DailySatisfactionArea({ labels, dataValues, volumeValues
     labels,
     datasets: [
       {
-        type: 'line', // Especificamos que este es línea
+        type: 'line',
         label: 'Satisfacción (%)',
         data: dataValues,
         fill: true,
         backgroundColor: 'rgba(129,141,248,0.2)',
         borderColor: '#818df8',
         tension: 0.3,
-        pointBackgroundColor: '#facc15',
-        yAxisID: 'y', // Eje izquierdo
-        zIndex: 2, // Para que la línea quede arriba
+        pointBackgroundColor: 'rgba(190, 111, 177, 0.8)',
+        yAxisID: 'y',
+        zIndex: 2,
       },
       {
-        type: 'bar', // Especificamos que este es barra
+        type: 'bar',
         label: 'Total de Reacciones',
         data: volumeValues,
         backgroundColor: 'rgba(229, 185, 100, 0.8)',
         borderRadius: 8,
-        yAxisID: 'y1', // Eje derecho (Volumen)
+        yAxisID: 'y1',
         zIndex: 1,
       },
     ],
@@ -60,7 +60,16 @@ export default function DailySatisfactionArea({ labels, dataValues, volumeValues
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
+      legend: { 
+        position: 'top',
+        labels: {
+          color: '#000000', 
+          font: {
+            family: 'Inter, sans-serif',
+            weight: 'bold'
+          }
+        }
+      },
       tooltip: {
         mode: 'index',
         intersect: false,
@@ -73,17 +82,30 @@ export default function DailySatisfactionArea({ labels, dataValues, volumeValues
         position: 'left',
         min: 0,
         max: 100,
-        ticks: { callback: (value) => value + '%' },
+        ticks: { 
+          color: '#000000',
+          font: { weight: 'bold' },
+          callback: (value) => value + '%' 
+        },
       },
       y1: { // Eje de Volumen (Derecho)
         type: 'linear',
         display: true,
         position: 'right',
         min: 0,
-        // Evita que las líneas de cuadrícula se encimen con el otro eje
         grid: { drawOnChartArea: false }, 
-        ticks: { beginAtZero: true }
+        ticks: { 
+          color: '#000000', 
+          font: { weight: 'bold' },
+          beginAtZero: true 
+        }
       },
+      x: { // Eje X (Días)
+        ticks: { 
+          color: '#000000', 
+          font: { weight: 'bold' } 
+        }
+      }
     },
   };
 
