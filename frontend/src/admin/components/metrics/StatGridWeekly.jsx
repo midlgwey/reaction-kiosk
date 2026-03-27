@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 import StatCardWeekly from "./StatCardWeekly";
-import StatCard from "../metrics/dashboardcards/StatCard";
+import StatCard from "../../components/metrics/dashboardcards/StatCard";
 
 import {
   useBestQuestionWeek,
