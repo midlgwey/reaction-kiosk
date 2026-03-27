@@ -6,7 +6,7 @@ import {
   HandThumbUpIcon,
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/solid'; 
-import StatCard from '../metrics/StatCard';
+import StatCard from '../../components/metrics/dashboardcards/StatCard';
 import { useFeedbackStats } from '../../../admin/hooks/feedback/useSuggestionsStats';
 
 const Spinner = () => (
