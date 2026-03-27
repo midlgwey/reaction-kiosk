@@ -48,7 +48,7 @@ export default function DailySatisfactionArea({ labels, dataValues, volumeValues
         type: 'bar', // Especificamos que este es barra
         label: 'Total de Reacciones',
         data: volumeValues,
-        backgroundColor: 'rgba(226, 232, 240, 0.6)',
+        backgroundColor: 'rgba(229, 185, 100, 0.8)',
         borderRadius: 8,
         yAxisID: 'y1', // Eje derecho (Volumen)
         zIndex: 1,
