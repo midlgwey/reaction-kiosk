@@ -1,67 +1,71 @@
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
+import { Chart } from 'react-chartjs-2'; // Cambiamos Line por Chart
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+// Registramos BarElement para las barras
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
-export default function DailySatisfactionArea({ labels, dataValues }) {
+export default function DailySatisfactionArea({ labels, dataValues, volumeValues }) {
   const data = {
     labels,
     datasets: [
       {
-        label: 'Promedio de satisfacción (%)',
+        type: 'line', // Especificamos que este es línea
+        label: 'Satisfacción (%)',
         data: dataValues,
         fill: true,
-        backgroundColor: 'rgba(129,141,248,0.3)', // color de relleno
-        borderColor: '#818df8', // color de la línea
-        tension: 0.3, // curva suave
+        backgroundColor: 'rgba(129,141,248,0.2)',
+        borderColor: '#818df8',
+        tension: 0.3,
         pointBackgroundColor: '#facc15',
-        pointRadius: 5
+        yAxisID: 'y', // Eje izquierdo
+        zIndex: 2, // Para que la línea quede arriba
+      },
+      {
+        type: 'bar', // Especificamos que este es barra
+        label: 'Total de Reacciones',
+        data: volumeValues,
+        backgroundColor: 'rgba(226, 232, 240, 0.6)',
+        borderRadius: 8,
+        yAxisID: 'y1', // Eje derecho (Volumen)
+        zIndex: 1,
       },
     ],
   };
 
   const options = {
     responsive: true,
-    maintainAspectRatio: false, // permite que la gráfica se adapte al contenedor
+    maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          color: 'black',
-          font: { family: 'Inter, sans-serif', weight: 'normal', size: 12 },
-        },
-      },
+      legend: { position: 'top' },
       tooltip: {
-        titleFont: { family: 'Inter, sans-serif', weight: '500', size: 12 },
-        bodyFont: { family: 'Inter, sans-serif', weight: 'normal', size: 12 },
-        callbacks: {
-          label: (tooltipItem) => `${tooltipItem.dataset.label}: ${tooltipItem.formattedValue}%`,
-        },
-      },
+        mode: 'index',
+        intersect: false,
+      }
     },
     scales: {
-      y: {
+      y: { // Eje de Porcentaje (Izquierdo)
+        type: 'linear',
+        display: true,
+        position: 'left',
         min: 0,
         max: 100,
-        ticks: {
-          color: 'black',
-          font: { family: 'Inter, sans-serif', weight: 'bold', size: 12 },
-          stepSize: 10,
-          callback: (value) => value + '%',
-        },
+        ticks: { callback: (value) => value + '%' },
       },
-      x: {
-        ticks: {
-          color: 'black',
-          font: { family: 'Inter, sans-serif', weight: 'bold', size: 12 },
-        },
+      y1: { // Eje de Volumen (Derecho)
+        type: 'linear',
+        display: true,
+        position: 'right',
+        min: 0,
+        // Evita que las líneas de cuadrícula se encimen con el otro eje
+        grid: { drawOnChartArea: false }, 
+        ticks: { beginAtZero: true }
       },
     },
   };
 
   return (
     <div className="w-full h-80 md:h-96">
-      <Line data={data} options={options} />
+      <Chart type='bar' data={data} options={options} />
     </div>
   );
 }

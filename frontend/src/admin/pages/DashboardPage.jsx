@@ -88,22 +88,22 @@ export default function DashboardPage() {
 
   // Mapeo y formateo de la respuesta del servidor para la gráfica de tendencia (Chart.js)
   const areaChartData = useMemo(() => {
-    if (!trend.data || trend.loading) return { labels: [], values: [] };
-    
-    const labels = trend.data.map(d => {
-      const [year, month, day] = d.day.split('-');
-      const date = new Date(year, month - 1, day);
-      
-      // Ajuste de formato: si el rango supera los 7 días, se simplifica la etiqueta
-      return areaParams.days > 7 
-        ? format(date, 'dd MMM') 
-        : date.toLocaleDateString("es-MX", { weekday: "long" });
-    });
-    
-    const values = trend.data.map(d => Math.round((d.avg_satisfaction / 4) * 100));
-    
-    return { labels, values };
-  }, [trend.data, trend.loading, areaParams]);
+  if (!trend.data || trend.loading) return { labels: [], values: [], counts: [] };
+  
+  const labels = trend.data.map(d => {
+    const [year, month, day] = d.day.split('-');
+    const date = new Date(year, month - 1, day);
+    return areaParams.days > 7 
+      ? format(date, 'dd MMM') 
+      : date.toLocaleDateString("es-MX", { weekday: "long" });
+  });
+  
+  // Extraemos ambos valores: el índice calculado y el conteo real
+  const values = trend.data.map(d => Math.round((d.avg_satisfaction / 4) * 100));
+  const counts = trend.data.map(d => d.total_responses); // <--- Nuevo campo
+  
+  return { labels, values, counts };
+}, [trend.data, trend.loading, areaParams]);
 
   // Mapeo y formateo de la respuesta del servidor para la gráfica de distribución (Chart.js)
   const sentimentValues = useMemo(() => {
@@ -161,9 +161,10 @@ export default function DashboardPage() {
         <ChartLoading />
       ) : (
         <DailySatisfactionArea
-          labels={areaChartData.labels}
-          dataValues={areaChartData.values}
-        />
+        labels={areaChartData.labels}
+        dataValues={areaChartData.values}
+        volumeValues={areaChartData.counts} 
+      />
       )}
     </div>
   </div>
