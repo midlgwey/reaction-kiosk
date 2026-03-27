@@ -15,7 +15,7 @@ import {
 import { Chart } from "react-chartjs-2";
  
 import DashboardFilter from "../../shared/DashboardFilter";
-import { useDailySatisfactionArea } from "../../../hooks/dashboard/useDashboardWeekly";
+import { useDailySatisfactionArea } from "./useDailySatisfactionArea";
 import { AREA_OPTIONS, buildChartDataset, CHART_OPTIONS } from "../../../utils/satisfactionAreaUtils";
  
 ChartJS.register(
