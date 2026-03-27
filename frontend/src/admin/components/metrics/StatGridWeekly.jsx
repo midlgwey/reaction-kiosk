@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 import StatCardWeekly from "./StatCardWeekly";
-import StatCard from "./StatCard"; // Reutilizamos la card simple para días fuertes/débiles
+import StatCard from "../metrics/dashboardcards/StatCard";
 
 import {
   useBestQuestionWeek,
