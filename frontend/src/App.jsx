@@ -8,6 +8,7 @@ import StatsPage from "./admin/pages/StatsPage";
 import SuggestionsPage from "./admin/pages/SuggestionsPage";
 import ReportsPage from "./admin/pages/ReportsPage";
 import QuestionScreen from "./user/pages/QuestionScreen";
+import WaiterPage from "./admin/pages/WaiterPage";
 // layout admin
 import AdminLayout from "./admin/layouts/AdminLayout";
 
@@ -41,6 +42,7 @@ function App() {
         }
       >
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="waiter" element={<WaiterPage />} />
         <Route path="stats" element={<StatsPage />} />
         <Route path="feedback" element={<SuggestionsPage />} />
         <Route path="recovery" element={<ReportsPage />} />

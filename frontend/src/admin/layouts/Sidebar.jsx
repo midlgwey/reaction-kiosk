@@ -3,7 +3,8 @@ import {
   HomeIcon,
   ChatBubbleBottomCenterTextIcon,
   ArrowRightOnRectangleIcon,
-  DocumentCheckIcon
+  DocumentCheckIcon,
+  UserIcon
 } from "@heroicons/react/24/solid";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logoutAdminService } from "../services/authService";
@@ -66,6 +67,15 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
             >
               <HomeIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Dashboard</span>
+            </NavLink>
+
+             <NavLink
+              to="/admin/waiter"
+              onClick={() => setOpen(false)}
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+            >
+              <UserIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Meseros</span>
             </NavLink>
 
             <NavLink
