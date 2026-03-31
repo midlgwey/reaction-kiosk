@@ -11,7 +11,6 @@ export const getRecentAlerts = async (req, res) => {
           a.id,
           a.type,
           a.message,
-          a.is_read,
           datetime(a.created_at, '${TIME_OFFSET}') as date,
           a.created_at as raw_date,
           w.name as waiter_name,     

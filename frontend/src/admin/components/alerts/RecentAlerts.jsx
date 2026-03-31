@@ -85,8 +85,8 @@ export default function RecentAlerts() {
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed">
                       {alert.type === 'comment'
-                        ? `"${alert.content}"`
-                        : `Mal puntaje en: ${alert.content}`}
+                        ? `"${alert.message}"`
+                        : `Mal puntaje en: ${alert.message}`}
                     </p>
                   </div>
                 </div>

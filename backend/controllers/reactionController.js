@@ -32,6 +32,14 @@ export const createReaction = async (req, res) => {
       4: "Instalaciones del restaurante",
     };
 
+    const waiterResult = await db.execute({
+      sql: "SELECT name FROM waiters WHERE id = ?",
+      args: [waiter_id]
+    });
+
+    // Si no existe el mesero, podrías usar un nombre genérico o manejar el error
+    const waiterName = waiterResult.rows[0]?.name || "Mesero desconocido";
+
     //Procesamiento de Respuestas (Ciclo Protegido)
     for (const resp of responses) {
       const { question_id, value } = resp;
@@ -49,7 +57,7 @@ export const createReaction = async (req, res) => {
       // Si la calificación es mala (1), enviamos alerta a Telegram
       if (value === 1) {
         const questionText = listQuestions[question_id] || `Pregunta #${question_id}`;
-        const messageAlert = `⚠️ ALERTA DE SERVICIO\n📍 Mesa: ${table_number}\n👤 Mesero ID: ${waiter_id}\n📝 Problema: ${questionText}`;
+        const messageAlert = `⚠️ ALERTA DE SERVICIO\n📍 Mesa: ${table_number}\n👤 Mesero ID: ${waiterName}\n📝 Problema: ${questionText}`;
         
         // Enviamos a Telegram
         await sendAlertTelegram(messageAlert);

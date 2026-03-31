@@ -113,7 +113,7 @@ async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, t
     
     // Diccionario de incidencias operativas críticas
     const criticalKeywords = [
-      'grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron',
+      'grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron', 'pesimo servicio','mala atención','desatención','mal servicio',
       "tardo en atender","no me atendieron","me dejaron esperando","sin atender","desatendieron","distraido", "no se pudo comer", "no se pudo tomar",
       'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
       'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor','rancio','desabrido','desabrida',
