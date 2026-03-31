@@ -13,8 +13,6 @@ export const useWaiterRanking = (selectedDate, activeShift) => {
         const shiftParam = activeShift === 'matutino' ? 'Desayuno' : 'Comida/Cena';
         const dateParam = selectedDate === 'hoy' ? new Date().toISOString().split('T')[0] : selectedDate;
 
-        // USA 'api.get' en lugar de 'axios.get'
-        // El path debe coincidir con como lo registres en index.js
         const response = await api.get('/waiter-stats/get-waitersranking', {
           params: { date: dateParam, shift: shiftParam }
         });

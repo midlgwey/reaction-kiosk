@@ -1,11 +1,13 @@
 import { useSuggestions } from '../../hooks/useSuggestions.js';
 import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/solid";
 
-export default function SuggestionCard({ ratingActual, onFinish, onCancel }) {
+export default function SuggestionCard({ ratingActual, waiterId, tableNumber, onFinish, onCancel }) {
   
   const { text, setText, loading, handleSend } = useSuggestions(
-    ratingActual,
-    onFinish, 
+     ratingActual,
+      waiterId,    
+      tableNumber, 
+    onFinish,
     () => alert("Hubo un error al enviar, intente nuevamente.") 
   );
 

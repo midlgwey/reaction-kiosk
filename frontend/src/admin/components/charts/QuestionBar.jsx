@@ -3,7 +3,7 @@ import React from 'react';
 export default function QuestionBar({ question }) {
   // Helper para calcular porcentajes internamente
   const getPercentage = (value, total) => total > 0 ? `${(value / total) * 100}%` : '0%';
-  const total = question.totalRespuestas;
+  const total = question.total;
 
   return (
     <div className="flex flex-col gap-2">

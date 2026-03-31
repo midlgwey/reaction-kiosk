@@ -2,75 +2,85 @@ import { db } from '../db.js';
 import { getShiftByTime } from '../utils/shiftUtils.js'; 
 import { BadRequestError, InternalServerError } from '../errors/customErrors.js';
 import { sendAlertTelegram } from '../utils/alertsUtils.js'; 
+import crypto from 'crypto';
 
 export const createReaction = async (req, res) => {
+  
   try {
-    const { question_id, value } = req.body;
+    const { waiter_id, table_number, responses } = req.body;
 
-    // Calculamos turno con hora de Tijuana
     const shift = getShiftByTime();
 
-    // Validaciones básicas
-    if (!question_id || !value) {
-      throw new BadRequestError("Faltan datos (question_id o value)");
-    }
-
-    // Validar rango de estrellas
-    if (value < 1 || value > 4) {
-      throw new BadRequestError("Valor inválido (1-4)");
-    }
-
-    // Si está cerrado, no guardamos nada
+     // Validación de turno: No se permiten registros fuera de horario o en días cerrados
     if (shift === "Cerrado" || shift === "Fuera de horario") {
-      throw new BadRequestError("Restaurante cerrado");
+      throw new BadRequestError(`No se pueden registrar datos: Restaurante ${shift}`);
     }
 
-    // Insertar en BD y capturar el resultado
-    const result = await db.execute({
-      sql: `INSERT INTO reactions (question_id, value, shift) VALUES (?, ?, ?)`,
-      args: [question_id, value, shift],
-    });
+    // Validación de campos obligatorios, incluyendo el número de mesa
+    if (!waiter_id || !table_number || !responses || !Array.isArray(responses)) {
+      throw new BadRequestError("Faltan datos críticos: mesero, mesa o el listado de respuestas.");
+    }
 
-    // Extraer el ID de la reacción recién creada
-    const newReactionId = result.lastInsertRowid;
+    // Generamos un ID único para la encuesta
+    const survey_id = crypto.randomUUID();
 
-    // Lógica de Alertas: Si el valor es 1 (Malo)
-    // Lógica de Alertas: Si el valor es 1 (Malo)
-    if (value === 1) {
-      const listQuestions = {
-        1: "Atención del mesero",
-        2: "Tiempo de las bebidas",
-        3: "Calidad de la comida",
-        4: "Instalaciones del restaurante",
-      };
+    //Mapeo de preguntas para las alertas de Telegram
+    const listQuestions = {
+      1: "Atención del mesero",
+      2: "Tiempo de las bebidas",
+      3: "Calidad de la comida",
+      4: "Instalaciones del restaurante",
+    };
 
-      const questionText = listQuestions[question_id] || `Pregunta #${question_id}`;
-      const messageAlert = `⚠️ Alerta de Servicio: Se registró una calificación MALA en: ${questionText}.`;
-      
-      // Enviamos la alerta a Telegram (sin esperar a que se guarde en BD para no retrasar la respuesta al cliente)
-      await sendAlertTelegram(messageAlert);
+    //Procesamiento de Respuestas (Ciclo Protegido)
+    for (const resp of responses) {
+      const { question_id, value } = resp;
 
-      //  2. Luego intentamos guardar la alerta en la BD.
-      try {
-        await db.execute({
-          sql: `INSERT INTO alerts (type, message, reaction_id) VALUES (?, ?, ?)`,
-          args: ['calificacion', messageAlert, Number(newReactionId)]
-        });
-      } catch (alertDbError) {
-        console.warn(`Advertencia: No se pudo guardar la alerta de reacción en BD.`, alertDbError.message);
+      // Validación de rango
+      if (value < 1 || value > 4) continue; // Si una viene mal, saltamos a la siguiente para no romper todo
+
+      // Guardamos la reacción en la base de datos
+      const result = await db.execute({
+        sql: `INSERT INTO reactions (question_id, value, waiter_id, table_number, shift, survey_id)
+              VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [question_id, value, waiter_id, table_number, shift, survey_id], 
+      });
+
+      // Si la calificación es mala (1), enviamos alerta a Telegram
+      if (value === 1) {
+        const questionText = listQuestions[question_id] || `Pregunta #${question_id}`;
+        const messageAlert = `⚠️ ALERTA DE SERVICIO\n📍 Mesa: ${table_number}\n👤 Mesero ID: ${waiter_id}\n📝 Problema: ${questionText}`;
+        
+        // Enviamos a Telegram
+        await sendAlertTelegram(messageAlert);
+
+        // Guardamos rastro de la alerta en la BD
+        try {
+          const newId = result.lastInsertRowid;
+          await db.execute({
+            sql: `INSERT INTO alerts (type, message, reaction_id) VALUES (?, ?, ?)`,
+            args: ['calificacion_mala', messageAlert, Number(newId)]
+          });
+        } catch (e) {
+          console.warn("No se pudo registrar el rastro de la alerta, pero el proceso continúa.");
+        }
       }
     }
 
-    res.status(201).json({ message: "Reacción guardada", shift });
+    // 7. Respuesta Final Exitosa
+    res.status(201).json({ 
+      message: "Encuesta completa registrada con éxito", 
+      survey_id,
+      shift 
+    });
 
   } catch (error) {
-    console.error("Error createReaction:", error);
-
-    // Si es error de validación (400), se deja pasar
+    console.error("Error crítico en createReaction:", error);
+    
+    // Si es un error que nosotros definimos (400), lo lanzamos tal cual
     if (error.statusCode) throw error;
     
-    // Error inesperado (BD, código, etc)
-    throw new InternalServerError("Error al guardar reacción");
+    // Si es un error de conexión o de código inesperado, lanzamos 500
+    throw new InternalServerError("Error al procesar la encuesta completa");
   }
 };
-

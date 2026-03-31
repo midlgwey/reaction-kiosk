@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Si es producción usa "/api", si es local usa la URL de entorno o localhost
 const API_URL = import.meta.env.PROD 
   ? "/api" 
   : (import.meta.env.VITE_API_URL || "http://localhost:3000/api");

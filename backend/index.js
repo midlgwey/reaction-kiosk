@@ -8,6 +8,8 @@ import statsRoutes from './routes/statsRoutes.js';
 import reactionRoutes from './routes/reactionRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import suggestionsRoutes from './routes/suggestionsRoutes.js';
+import waiterStatsRoutes from './routes/waiterStatsRoutes.js';
+import waiterRoutes from './routes/waiterRoutes.js';
 import alertsRoutes from './routes/alertsRoutes.js';
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
@@ -40,6 +42,10 @@ app.use('/stats', statsRoutes);
 app.use('/reactions', reactionRoutes );
 
 app.use('/suggestions', suggestionsRoutes)
+
+app.use('/waiter-stats', waiterStatsRoutes)
+
+app.use('/waiter', waiterRoutes)
 
 app.use('/alerts', alertsRoutes) 
 

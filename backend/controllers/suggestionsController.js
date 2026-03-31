@@ -7,53 +7,60 @@ import { sendAlertTelegram } from '../utils/alertsUtils.js';
 // Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
 const TIME_OFFSET = '-7 hours';
 
-// Inicializar Gemini con tu API Key (Usamos el modelo que SI te funcionó)
+// Inicializar Gemini 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// --- GUARDAR SUGERENCIA (Modo Rápido / Fire and Forget) ---
+// Crear Sugerencia (Fire and Forget)
 export const createSuggestion = async (req, res) => {
+
+  const { comment, rating_context, waiter_id, table_number } = req.body;
+  const shift = getShiftByTime();
+
+
+  // Validación: el comentario es obligatorio para evitar registros vacíos
+  if (!comment || comment.trim() === "") {
+    throw new BadRequestError("El comentario no puede estar vacío");
+  }
+
+  // Validación de identidad: se requiere el ID del mesero y el número de mesa
+  if (!waiter_id || !table_number) {
+    throw new BadRequestError("Se requiere ID de mesero y número de mesa");
+  }
+
   try {
-    const { comment, rating_context } = req.body;
-    const shift = getShiftByTime();
 
-    if (!comment || comment.trim() === "") {
-      return res.status(400).json({ error: "Comentario vacío" });
-    }
-
+    // Guardamos la sugerencia en la base de datos con un sentimiento inicial de "Neutral"
     const result = await db.execute({
-      sql: `INSERT INTO suggestions (comment, rating_context, shift, sentiment) VALUES (?, ?, ?, ?)`,
-      args: [comment.trim(), rating_context || null, shift, 'Neutral'],
+      sql: `INSERT INTO suggestions (comment, rating_context, shift, sentiment, waiter_id, table_number) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [comment.trim(), rating_context || null, shift, 'Neutral', waiter_id, table_number],
     });
 
+    // Obtenemos el ID del nuevo registro para su posterior actualización después del análisis de sentimiento
     const newId = result.lastInsertRowid; 
 
     res.status(201).json({ 
       success: true, 
       message: "Sugerencia recibida", 
-      sentiment: "Procesando..." 
+      shift
     });
 
-    // Esto ocurre despues de responder
-    analyzeSentimentInBackground(newId, comment.trim(), shift);
+    // Análisis en segundo plano, después de responder al cliente
+    analyzeSentimentInBackground(newId, comment.trim(), shift, waiter_id, table_number);
 
   } catch (error) {
-    console.error("Error:", error);
-    if (!res.headersSent) res.status(500).json({ error: "Error" });
+    console.error("Error al insertar sugerencia:", error);
+    throw new InternalServerError("No se pudo guardar la sugerencia");
   }
 };
 
+//Helpers
+//Lista de conectores comunes que indican contraste o queja
 const complaintConnectors = [
-  "pero",
-  "solo que",
-  "aunque",
-  "excepto",
-  "nada mas que",
-  "nada más que",
-  "lo unico",
-  "lo único",
-  "deberian", 
-  "les falta"
+  "pero", "solo que", "aunque", "excepto",
+  "nada mas que", "nada más que", "lo unico",
+  "lo único", "deberian", "les falta"
 ];
 
 //Extrae la parte del comentario que sigue después de conectores de contraste
@@ -67,9 +74,7 @@ function extractComplaintSegment(text) {
       return lower.slice(index + connector.length).trim();
     }
   }
-
   return null;
-
 }
 
 // Normaliza el texto para evitar problemas con acentos o variaciones de escritura
@@ -81,16 +86,17 @@ function normalizeText(text) {
 }
 
 
-// Proceso asíncrono para el análisis de sentimiento
-async function analyzeSentimentInBackground(id, commentText, shift) {
+// Análisis de sentimiento en segundo plano, con enfoque en detección de quejas ocultas y generación de alertas
+async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, table_number) {
   try {
+    //Prompt a Gemini
     const prompt = `Analiza el sentimiento de este comentario para un restaurante de comida mexicana en Tijuana, Mexico. 
       Responde ÚNICAMENTE con una de estas tres palabras: "Positive", "Negative" o "Neutral".
       Considera que el cliente puede tener mala ortografía y ser una persona mayor (40-60+ años).
       Comentario: "${commentText}"`;
 
+    //Envío del prompt a Gemini y obtención de la respuesta
     const result = await model.generateContent(prompt);
-
     // Convertimos la respuesta a minúsculas para evitar problemas de formato
     const rawResponse = result.response.text().trim().toLowerCase();
 
@@ -101,15 +107,16 @@ async function analyzeSentimentInBackground(id, commentText, shift) {
     
     console.log(`[ID: ${id}] IA terminó análisis: ${responseText}`);
 
+    // Detección de quejas ocultas en comentarios mixtos
     const lowerCaseText = normalizeText(commentText);
     const complaintSegment = extractComplaintSegment(commentText);
     
     // Diccionario de incidencias operativas críticas
     const criticalKeywords = [
       'grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron',
-      "tardo en atender","no me atendieron","me dejaron esperando","sin atender","desatendieron","distraido",
+      "tardo en atender","no me atendieron","me dejaron esperando","sin atender","desatendieron","distraido", "no se pudo comer", "no se pudo tomar",
       'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
-      'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor',
+      'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor','rancio','desabrido','desabrida',
       "echado a perder","incomible","asqueroso","repugnante","apestoso",
       "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal","no sabe bien" ,"no sabia bien","sabor raro","sabor mal","sabor a agua","sabor a nada",
       'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
@@ -133,12 +140,24 @@ async function analyzeSentimentInBackground(id, commentText, shift) {
         sql: `UPDATE suggestions SET sentiment = ? WHERE id = ?`,
         args: [finalSentiment, BigInt(id)]
       });
+        console.log(`[ID: ${id}] BD actualizada: ${finalSentiment}`);
     }
 
     // Formateo y envío de la alerta vía Telegram
     if (finalSentiment === "Negative" || finalSentiment === "Review") {
-       const alertReason = finalSentiment === "Review" ? "Queja mixta detectada" : "Comentario Negativo";
-       const alertMessage = `🔴 ALERTA DE CRITICA\nTurno: ${shift}\nMotivo: ${alertReason}\n\nComentario:\n"${commentText}"`;
+
+         // Buscar nombre del mesero
+        let waiterName = "Sin asignar";
+        if (waiter_id) {
+        const waiterResult = await db.execute({
+          sql: `SELECT name FROM waiters WHERE id = ?`,
+          args: [waiter_id]
+        });
+        if (waiterResult.rows.length > 0) waiterName = waiterResult.rows[0].name;
+      }
+
+      const alertReason = finalSentiment === "Review" ? "Queja mixta detectada" : "Comentario Negativo";
+      const alertMessage = `🔴 ALERTA DE CRITICA\nTurno: ${shift}\nMotivo: ${alertReason}\n👤 Mesero: ${waiterName}\n📍 Mesa: ${table_number || "N/A"}\n\nComentario:\n"${commentText}"`;
        
        // Se envía la alerta a Telegram para notificar al gerente sobre la crítica recibida, incluyendo el comentario original para contexto.
        await sendAlertTelegram(alertMessage);
@@ -161,14 +180,17 @@ export const getSuggestions = async (req, res) => {
     const result = await db.execute({
       sql: `
         SELECT 
-          id, 
-          comment, 
-          rating_context, 
-          shift, 
-          sentiment,
+          s.id, 
+          s.comment, 
+          s.table_number,
+          w.name AS mesero, 
+          s.rating_context, 
+          s.shift, 
+          s.sentiment,
           datetime(created_at, '${TIME_OFFSET}') as date
-        FROM suggestions
-        ORDER BY created_at DESC
+        FROM suggestions s
+        LEFT JOIN waiters w ON s.waiter_id = w.id
+        ORDER BY s.created_at DESC
         LIMIT 200
       `
     });
@@ -239,7 +261,7 @@ export const getFeedbackStats = async (req, res) => {
             'cafe frio': 'Café Frío', 'cerveza caliente': 'Bebida Caliente', 'refresco caliente': 'Bebida Caliente', 'tibia': 'Bebida Tibia',
             'sabe a agua': 'Bebida Aguada', 'sabe mal': 'Sabor Raro',
             'fria': 'Comida Fría', 'frio': 'Comida Fría', 
-            'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor',
+            'sin sabor': 'Sin sabor', 'desabrida': 'Sin sabor', 'rancio': 'Rancio',
             'caro': 'Caro', 'cobro': 'Cobro',
             'lento': 'Lento', 'tarda': 'Lento', 'espera': 'Lento',
             'grosero': 'Grosero', 'actitud': 'Mala actitud',
@@ -307,5 +329,30 @@ export const getFeedbackStats = async (req, res) => {
   } catch (error) {
     console.error("Error en getFeedbackStats:", error);
     res.status(500).json({ error: "Error calculando estadísticas" });
+  }
+};
+
+export const getLatestSuggestions = async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT 
+          s.id, 
+          s.comment,
+          s.table_number,
+          w.name AS mesero,
+          s.shift, 
+          s.sentiment,
+          datetime(s.created_at, '${TIME_OFFSET}') as date
+        FROM suggestions s
+        LEFT JOIN waiters w ON s.waiter_id = w.id
+        ORDER BY s.created_at DESC
+        LIMIT 5
+      `
+    });
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error getLatestSuggestions:", error);
+    throw new InternalServerError("Error al obtener últimas sugerencias");
   }
 };
