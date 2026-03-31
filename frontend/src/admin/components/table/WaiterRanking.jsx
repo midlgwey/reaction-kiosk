@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import WaiterRow from './WaiterRow';
 import DashboardFilter from '../shared/DashboardFilter';
-import { useWaiterRanking } from '../../admin/hooks/waiters/useWaiterRanking';
+import { useWaiterRanking } from '../../../admin/hooks/waiters/useWaiterRanking';
 
 /**
  * Indicador visual de carga
