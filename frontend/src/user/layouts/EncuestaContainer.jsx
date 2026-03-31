@@ -1,6 +1,6 @@
 import { useKiosk } from "../../user/hooks/useKiosk";
 import WelcomeScreen from "../pages/WelcomeScreen";
-import PinPage from "../pages/PinPage";
+import PinpadPage from "../pages/PinpadPage";
 import QuestionScreen from "../pages/QuestionScreen";
 import ThanksScreen from "../pages/ThanksScreen";
 import CreateTable from "../pages/CreateTablePage";
@@ -23,7 +23,7 @@ export default function EncuestaContainer() {
 
     <div className="min-h-screen overflow-hidden">
       {step === 'HOME' && <WelcomeScreen onStart={startKiosk} />}
-      {step === 'PIN' && <PinPage onUnlock={unlockKiosk} />}
+      {step === 'PIN' && <PinpadPage onUnlock={unlockKiosk} />}
       {step === 'TABLE' && <CreateTable onNext={assignTable} />}
       {step === 'SURVEY' && (
         <QuestionScreen
