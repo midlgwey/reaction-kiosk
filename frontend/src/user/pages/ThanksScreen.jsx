@@ -14,10 +14,6 @@ export default function ThanksScreen({ onReset, onSubmitSuggestion, waiterId, ta
     setView('SUCCESS');
   };
 
-  const handleSkip = () => {
-    onSubmitSuggestion(false);
-  };
-
   return (
     <div className="bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] min-h-[100dvh] flex flex-col items-center justify-center w-full h-full animate-fade-in relative">
 
@@ -33,16 +29,16 @@ export default function ThanksScreen({ onReset, onSubmitSuggestion, waiterId, ta
             Si pudieras mejorar una sola cosa para tu próxima visita, ¿qué sería?
           </p>
           <SuggestionButton onClick={() => setView('FORM')} />
-          <StaffResetButton onReset={handleSkip} /> {/* ✅ Skip también cierra bien */}
+          <StaffResetButton onReset={onReset} />
         </div>
       )}
 
       {view === 'FORM' && (
         <div className="w-full max-w-2xl animate-scale-in">
           <SuggestionCard
-            waiterId={waiterId}         // ✅
-            tableNumber={tableNumber}   // ✅
-            onFinish={handleSuggestionSubmit} // ✅ Pasa comentario al hook
+            waiterId={waiterId}         
+            tableNumber={tableNumber}   
+            onFinish={handleSuggestionSubmit} 
             onCancel={() => setView('THANKS')}
           />
         </div>

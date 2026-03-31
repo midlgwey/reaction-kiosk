@@ -4,9 +4,7 @@
  * configuración UTC predeterminada en servidores de alojamiento.
  */
 export function getShiftByTime() {
-  const now = new Date();
-
-  return "Comida/Cena"; // Valor temporal para pruebas    
+  const now = new Date();  
   
   // Extracción de componentes de fecha y hora en la zona horaria especificada
   const parts = new Intl.DateTimeFormat('en-US', {
