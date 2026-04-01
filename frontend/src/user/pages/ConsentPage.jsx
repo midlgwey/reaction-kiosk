@@ -12,7 +12,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] w-full flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-md border border-slate-100">
+      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-lg border border-slate-100">
 
         {/* Logo */}
         <div className="text-center">
@@ -25,7 +25,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
 
         {/* Texto */}
         <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight mb-3">
+          <h2 className="text-2xl md:text-2xl font-black text-slate-900 leading-tight mb-3">
             ¿Nos ayudas con una encuesta?
           </h2>
           <p className="text-slate-500 text-base md:text-lg font-medium">
@@ -48,7 +48,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
           <button
             onClick={handleDecline}
             disabled={processing}
-            className={`w-full py-4 bg-white text-indigo-600 font-bold text-lg rounded-full border-2 border-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+            className={`w-full py-4 bg-white text-indigo-500 font-bold text-lg rounded-full border-2 border-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed
               ${processing ? 'cursor-not-allowed' : 'hover:bg-slate-50'}`}
           >
             {processing ? (
