@@ -13,7 +13,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] w-full flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center max-w-xl w-full">
-        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-8 w-full border border-slate-100">
+        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-4 w-full border border-slate-100">
         
           <img 
             src={logodife} 
@@ -30,7 +30,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full">
+          <div className="flex flex-col sm:flex-row gap-4 w-full mt-4">
             {/* Sí */}
             <button
               onClick={onAccept}
