@@ -102,7 +102,7 @@ export default function WaiterRanking() {
         ) : (
           <div className="min-w-full">
             {/* Encabezado de Columnas (Visible solo en Desktop) */}
-            <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 text-xs text-indigo-600 font-semibold uppercase tracking-wider border-b border-slate-300">
+            <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-3 text-xs text-indigo-600 font-semibold uppercase tracking-wider border-b border-slate-300">
               <div className="col-span-1 text-center">#</div>
               <div className="col-span-4">Mesero</div>
               <div className="col-span-2 text-center">Desempeño</div>

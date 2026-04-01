@@ -11,15 +11,14 @@ const WaiterPage = () => {
               <WaiterPerformance />
             </div>
        
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-4">
-                <LatestSuggestionsWidget />
-              </div>
-              <div className="col-span-12 lg:col-span-8">
-                <WaiterRanking />
-              </div>
-            </div>
-          
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-4 min-w-0">
+                  <LatestSuggestionsWidget />
+                </div>
+                <div className="lg:col-span-8 min-w-0">
+                  <WaiterRanking />
+                </div>
+            </div>  
     </div>
   )
 }
