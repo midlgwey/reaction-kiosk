@@ -89,8 +89,8 @@ export default function WaiterRanking() {
         </div>
       </div>
 
-      {/* Contenedor de la Tabla */}
-      <div className="flex-1 p-2 min-h-[450px] flex flex-col">
+      {/* Contenedor de la Tabla con Scroll Horizontal */}
+      <div className="flex-1 p-2 min-h-[450px] flex flex-col overflow-x-auto">
         {loading ? (
           <div className="flex-1 flex items-center justify-center min-h-[350px]">
             <ChartLoading />
@@ -100,7 +100,7 @@ export default function WaiterRanking() {
             <p className="text-rose-500 font-medium italic text-center">{error}</p>
           </div>
         ) : (
-          <div className="min-w-full">
+          <div className="min-w-max lg:min-w-full">
             {/* Encabezado de Columnas (Visible solo en Desktop) */}
             <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-3 text-xs text-indigo-600 font-semibold uppercase tracking-wider border-b border-slate-300">
               <div className="col-span-1 text-center">#</div>
