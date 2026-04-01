@@ -19,7 +19,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
           <img
             src={logodife}
             alt="La Diferencia Logo"
-            className="w-40 sm:w-48 object-contain mx-auto"
+            className="w-46 sm:w-52 object-contain mx-auto"
           />
         </div>
 
