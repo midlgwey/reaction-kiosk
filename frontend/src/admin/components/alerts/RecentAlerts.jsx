@@ -6,19 +6,31 @@ export default function RecentAlerts() {
   const { alerts, loading } = useRecentAlerts();
 
   const getAlertStyles = (type) => {
-    if (type === 'rating') {
+    if (type === 'calificacion_mala') {
       return {
         wrapper: 'bg-rose-50 border-rose-200 hover:shadow-md',
         iconBg: 'bg-rose-100 text-rose-600',
         label: 'text-rose-800',
         icon: <StarIcon className="w-5 h-5" />,
+        titulo: 'Baja calificación'
       };
     }
+    if (type === 'rechazo_encuesta') {
+      return {
+        wrapper: 'bg-slate-50 border-slate-200 hover:shadow-md',
+        iconBg: 'bg-slate-100 text-slate-600',
+        label: 'text-slate-700',
+        icon: <ExclamationTriangleIcon className="w-5 h-5" />,
+        titulo: 'Encuesta rechazada'
+      };
+    }
+    // critica (comentario negativo)
     return {
       wrapper: 'bg-amber-50 border-amber-200 hover:shadow-md',
       iconBg: 'bg-amber-100 text-amber-600',
       label: 'text-amber-800',
       icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />,
+      titulo: 'Comentario negativo'
     };
   };
 
@@ -44,9 +56,9 @@ export default function RecentAlerts() {
       </div>
 
       {/* Lista */}
-        <div className="divide-y divide-slate-50 overflow-y-auto max-h-[420px]">
+      <div className="divide-y divide-slate-50 overflow-y-auto max-h-[420px]">
         {loading ? (
-          <div className="animate-pulse space-y-3">
+          <div className="animate-pulse space-y-3 p-4">
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
@@ -58,7 +70,7 @@ export default function RecentAlerts() {
             <p className="text-xs">No hay alertas críticas hoy.</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 p-4">
             {alerts.map((alert, index) => {
               const styles = getAlertStyles(alert.type);
               return (
@@ -75,7 +87,7 @@ export default function RecentAlerts() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className={`font-bold text-sm ${styles.label}`}>
-                        {alert.type === 'comment' ? 'Comentario negativo' : 'Baja calificación'}
+                        {styles.titulo} {/* ✅ */}
                       </h4>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white/60 px-2 py-0.5 rounded-full shrink-0 ml-2">
                         {new Date(alert.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
@@ -84,9 +96,7 @@ export default function RecentAlerts() {
                       </span>
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed">
-                      {alert.type === 'comment'
-                        ? `"${alert.message}"`
-                        : `Mal puntaje en: ${alert.message}`}
+                      {alert.message}
                     </p>
                   </div>
                 </div>
