@@ -84,7 +84,7 @@ export default function WaiterPerformance() {
               options={waiterOptions}
               value={currentWaiterValue}
               isLoading={loadingWaiters}
-              onChange={(opt) => handleWaiterChange(opt ? opt.value : '')} // ✅ usa handleWaiterChange
+              onChange={(opt) => handleWaiterChange(opt ? opt.value : '')} 
               styles={customSelectStyles}
               placeholder="Seleccionar Mesero..."
               isSearchable={true}
@@ -172,7 +172,7 @@ export default function WaiterPerformance() {
           <div className="py-20 text-center text-rose-400 font-bold text-xs uppercase tracking-widest">{error}</div>
         ) : radiography.length > 0 ? (
           <div className="space-y-8">
-            {/* ✅ Indica si estás viendo una mesa específica */}
+            {/* Indica si estás viendo una mesa específica */}
             {selectedTable && (
               <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">
                 Mostrando resultados de Mesa {selectedTable}

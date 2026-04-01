@@ -27,7 +27,7 @@ export default function LatestSuggestionsWidget() {
       </div>
 
       {/* Lista */}
-       <div className="divide-y divide-slate-50 overflow-y-auto max-h-[420px]">
+       <div className="divide-y divide-slate-50">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px] p-4">
             <ChartLoading />

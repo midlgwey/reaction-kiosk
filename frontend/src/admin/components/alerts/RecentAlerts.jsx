@@ -64,7 +64,7 @@ export default function RecentAlerts() {
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
           </div>
         ) : alerts.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+          <div className="flex flex-col items-center gap-2 text-slate-400">
             <span className="text-4xl mb-3">✅</span>
             <p className="font-medium text-sm">Todo en orden.</p>
             <p className="text-xs">No hay alertas críticas hoy.</p>
@@ -87,7 +87,7 @@ export default function RecentAlerts() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className={`font-bold text-sm ${styles.label}`}>
-                        {styles.titulo} {/* ✅ */}
+                        {styles.titulo} 
                       </h4>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white/60 px-2 py-0.5 rounded-full shrink-0 ml-2">
                         {new Date(alert.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
