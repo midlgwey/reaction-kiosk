@@ -4,6 +4,7 @@ import PinpadPage from "../pages/PinpadPage";
 import QuestionScreen from "../pages/QuestionScreen";
 import ThanksScreen from "../pages/ThanksScreen";
 import CreateTable from "../pages/CreateTablePage";
+import ConsentPage from "../pages/ConsentPage";
 
 export default function EncuestaContainer() {
   const { 
@@ -12,6 +13,7 @@ export default function EncuestaContainer() {
     startKiosk, 
     unlockKiosk, 
     assignTable, 
+    handleConsent,
     handleAnswer, 
     resetKiosk, 
     handleSuggestionChoice,
@@ -25,6 +27,12 @@ export default function EncuestaContainer() {
       {step === 'HOME' && <WelcomeScreen onStart={startKiosk} />}
       {step === 'PIN' && <PinpadPage onUnlock={unlockKiosk} />}
       {step === 'TABLE' && <CreateTable onNext={assignTable} />}
+      {step === 'CONSENT' && (
+            <ConsentPage
+              onAccept={() => handleConsent(true)}
+              onDecline={() => handleConsent(false)}
+            />
+          )}
       {step === 'SURVEY' && (
         <QuestionScreen
           onAnswer={handleAnswer}

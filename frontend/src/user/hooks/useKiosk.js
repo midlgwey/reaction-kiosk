@@ -23,7 +23,7 @@ export const useKiosk = (totalQuestions = 4) => {
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    if (step === 'TABLE' || step === 'SURVEY' || step === 'SUGGESTION') {
+     if (step === 'TABLE' || step === 'CONSENT' || step === 'SURVEY' || step === 'SUGGESTION') {
       inactivityTimerRef.current = setTimeout(() => {
         resetKiosk();
       }, 45000);
@@ -51,8 +51,27 @@ export const useKiosk = (totalQuestions = 4) => {
 
   const assignTable = (number) => {
     setTableNumber(number);
-    setStep('SURVEY');
+    setStep('CONSENT');
   };
+
+  const handleConsent = async (accepted) => {
+  if (accepted) {
+    setStep('SURVEY');
+  } else {
+  
+    try {
+      await api.post('/declines/register-decline', {
+        waiter_id: waiterId,
+        table_number: tableNumber
+      });
+    } catch (error) {
+      console.error("Error al registrar rechazo:", error);
+    }
+    setStep('THANKS');
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => resetKiosk(), 10000);
+  }
+};
 
   const handleAnswer = async (questionId, value) => {
     const newResponses = [...responses, { question_id: questionId, value }];
@@ -87,6 +106,7 @@ export const useKiosk = (totalQuestions = 4) => {
     unlockKiosk,
     assignTable,
     handleAnswer,
+    handleConsent,
     handleSuggestionChoice,
     resetKiosk
   };

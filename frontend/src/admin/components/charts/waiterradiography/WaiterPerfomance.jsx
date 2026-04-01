@@ -62,7 +62,7 @@ export default function WaiterPerformance() {
   const waiterOptions = useMemo(() => waiters.map(w => ({ value: w.id, label: w.mesero })), [waiters]);
   const currentWaiterValue = waiterOptions.find(opt => opt.value === selectedWaiterId) || null;
 
-  // ✅ Opciones de mesas basadas en lo que devuelve el backend
+  // Opciones de mesas basadas en lo que devuelve el backend
   const tableOptions = useMemo(() => tables.map(t => ({ value: t, label: `Mesa ${t}` })), [tables]);
   const currentTableValue = selectedTable ? { value: selectedTable, label: `Mesa ${selectedTable}` } : null;
 
@@ -92,7 +92,7 @@ export default function WaiterPerformance() {
             />
           </div>
 
-          {/* ✅ Select Mesa — solo visible si hay mesero seleccionado */}
+          {/* Select Mesa — solo visible si hay mesero seleccionado */}
           {selectedWaiterId && (
             <div className="w-full sm:w-44">
               <Select
