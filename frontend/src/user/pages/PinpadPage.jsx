@@ -44,7 +44,8 @@ const PinPage = ({ onUnlock }) => {
       }, 600);
 
     } catch (error) {
-      setMensaje('❌ PIN INCORRECTO O INACTIVO');
+      const msg = error?.response?.data?.msg;
+      setMensaje(msg?.includes('Restaurante') ? `⛔ ${msg}` : '❌ PIN INCORRECTO O INACTIVO');
       setTimeout(() => setPin(''), 1000);
     } finally {
       setCargando(false);
@@ -69,7 +70,9 @@ const PinPage = ({ onUnlock }) => {
             <p className={`text-sm mt-2 max-w-[200px] mx-auto leading-tight transition-colors duration-300 ${
                 mensaje.includes('❌') ? 'text-red-500 font-bold' : 
                 mensaje.includes('✅') ? 'text-green-600 font-bold' : 
-                mensaje.includes('⚠️') ? 'text-orange-500 font-bold' : 'text-gray-600'
+                mensaje.includes('⚠️') ? 'text-orange-500 font-bold' :
+                mensaje.includes('⛔') ? 'text-red-600 font-bold' : // ✅
+                'text-gray-600'
             }`}>
                 {mensaje}
             </p>

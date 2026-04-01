@@ -38,6 +38,13 @@ export const loginWaiter = async (req, res) => {
     throw new BadRequestError("Por favor ingresa un PIN");
   }
 
+  const shift = getShiftByTime();
+
+  // Validación de turno: No se permiten accesos fuera de horario o en días cerrados
+  if (shift === "Cerrado" || shift === "Fuera de horario") {
+    throw new BadRequestError(`No se puede iniciar: Restaurante ${shift}`);
+  }
+
   // Buscar en la base de datos
   const waiter = await findWaiterByPin(pin);
 
