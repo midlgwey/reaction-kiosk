@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import logodife from "../../assets/logo/logodife.png";
-import { CheckCircleIcon, ClockIcon } from '@heroicons/react/24/solid';
 
 export default function ConsentPage({ onAccept, onDecline }) {
   const [processing, setProcessing] = useState(false);
@@ -38,7 +37,6 @@ export default function ConsentPage({ onAccept, onDecline }) {
               disabled={processing}
               className="flex-1 py-5 bg-indigo-400 hover:bg-indigo-600 text-white font-extrabold text-xl rounded-2xl shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CheckCircleIcon className="h-7 w-7 text-white" /> 
               <span>Sí, con gusto</span>
             </button>
 
@@ -53,7 +51,6 @@ export default function ConsentPage({ onAccept, onDecline }) {
                 <div className="w-6 h-6 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
               ) : (
                 <>
-                  <ClockIcon className="h-7 w-7 text-slate-400" /> 
                   <span>Quizá en otra ocasión</span>
                 </>
               )}
