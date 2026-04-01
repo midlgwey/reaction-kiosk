@@ -64,7 +64,7 @@ export default function RecentAlerts() {
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
           </div>
         ) : alerts.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 text-slate-400">
+          <div className="flex flex-col items-center justify-center gap-2 text-slate-400 min-h-[200px]">
             <span className="text-4xl mb-3">✅</span>
             <p className="font-medium text-sm">Todo en orden.</p>
             <p className="text-xs">No hay alertas críticas hoy.</p>
