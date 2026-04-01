@@ -86,10 +86,23 @@ export const getWaitersTableRanking = async (req, res) => {
  * Obtiene la lista completa de meseros para el selector del frontend.
  */
 export const getAllWaiters = async (req, res) => {
+    const { date } = req.query;
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+
     try {
-        const sql = `SELECT id, name FROM waiters ORDER BY name ASC`;
-        const result = await db.execute({ sql, args: [] });
-        
+        const result = await db.execute({
+            sql: `
+                SELECT DISTINCT w.id, w.name
+                FROM waiters w
+                INNER JOIN reactions r ON w.id = r.waiter_id
+                WHERE date(datetime(r.created_at, ?)) = date(?)
+                ORDER BY w.name ASC
+            `,
+            args: [TIME_OFFSET, safeDate]
+        });
+
         const waiters = result.rows.map(row => ({
             id: row.id,
             mesero: row.name
@@ -101,7 +114,6 @@ export const getAllWaiters = async (req, res) => {
         throw new InternalServerError("Error al obtener la lista de meseros");
     }
 };
-
 /**
  * Obtiene el detalle de respuestas por pregunta para un mesero específico.
  */

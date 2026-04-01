@@ -20,7 +20,9 @@ export const useWaiterRadiography = (waiterId, date, tableNumber = null, shift =
     const fetchWaiters = useCallback(async () => {
         setLoadingWaiters(true);
         try {
-            const { data } = await api.get('/waiter-stats/get-allwaiters');
+            const { data } = await api.get('/waiter-stats/get-allwaiters', {
+                params: { date }
+            });
             setWaiters(data);
         } catch (err) {
             console.error("Error al obtener la lista de meseros:", err);
@@ -28,7 +30,7 @@ export const useWaiterRadiography = (waiterId, date, tableNumber = null, shift =
         } finally {
             setLoadingWaiters(false);
         }
-    }, []);
+    }, [date]);
 
      const fetchTables = useCallback(async () => {
         if (!waiterId) {
