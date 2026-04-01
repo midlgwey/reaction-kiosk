@@ -12,7 +12,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] w-full flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm border border-slate-100">
+      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-md border border-slate-100">
 
         {/* Logo */}
         <div className="text-center">
@@ -39,7 +39,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
           <button
             onClick={onAccept}
             disabled={processing}
-            className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xl rounded-full shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-5 bg-indigo-400 hover:bg-indigo-700 text-white font-extrabold text-xl rounded-full shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Sí, con gusto
           </button>
