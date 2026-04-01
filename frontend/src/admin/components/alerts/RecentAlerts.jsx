@@ -44,7 +44,7 @@ export default function RecentAlerts() {
       </div>
 
       {/* Lista */}
-      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="divide-y divide-slate-50 overflow-y-auto max-h-[420px]">
         {loading ? (
           <div className="animate-pulse space-y-3">
             <div className="h-20 bg-slate-100 rounded-2xl"></div>
