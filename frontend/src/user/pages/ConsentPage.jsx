@@ -5,58 +5,60 @@ export default function ConsentPage({ onAccept, onDecline }) {
   const [processing, setProcessing] = useState(false);
 
   const handleDecline = async () => {
-    if (processing) return; 
+    if (processing) return;
     setProcessing(true);
     await onDecline();
   };
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-[#F4F6FB] to-[#c6b8d6] w-full flex flex-col items-center justify-center p-4">
-      <div className="flex flex-col items-center max-w-xl w-full">
-        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-4 w-full border border-slate-100">
-        
-          <img 
-            src={logodife} 
-            alt="La Diferencia Logo" 
-            className="w-48 sm:w-56 md:w-62 object-contain" 
+      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm border border-slate-100">
+
+        {/* Logo */}
+        <div className="text-center">
+          <img
+            src={logodife}
+            alt="La Diferencia Logo"
+            className="w-40 sm:w-48 object-contain mx-auto"
           />
-          
-          <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-black text-indigo-900 leading-tight mb-3">
-              ¿Nos ayudas con una encuesta?
-            </h2>
-            <p className="text-slate-600 text-base md:text-lg font-medium">
-              Nos encantaría saber cómo fue tu experiencia para seguir mejorando.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full mt-4">
-            {/* Sí */}
-            <button
-              onClick={onAccept}
-              disabled={processing}
-              className="flex-1 py-5 bg-indigo-400 hover:bg-indigo-600 text-white font-extrabold text-xl rounded-2xl shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>Sí, con gusto</span>
-            </button>
-
-            {/* No */}
-            <button
-              onClick={handleDecline}
-              disabled={processing}
-              className={`flex-1 py-5 bg-white text-slate-500 font-bold text-xl rounded-2xl border-2 border-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed
-                ${processing ? 'cursor-not-allowed' : 'hover:bg-slate-50'}`}
-            >
-              {processing ? (
-                <div className="w-6 h-6 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Quizá en otra ocasión</span>
-                </>
-              )}
-            </button>
-          </div>
         </div>
+
+        {/* Texto */}
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight mb-3">
+            ¿Nos ayudas con una encuesta?
+          </h2>
+          <p className="text-slate-500 text-base md:text-lg font-medium">
+            Nos encantaría saber cómo fue tu experiencia para seguir mejorando.
+          </p>
+        </div>
+
+        {/* Botones */}
+        <div className="flex flex-col gap-3 w-full mt-2">
+          {/* Sí */}
+          <button
+            onClick={onAccept}
+            disabled={processing}
+            className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xl rounded-full shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Sí, con gusto
+          </button>
+
+          {/* No */}
+          <button
+            onClick={handleDecline}
+            disabled={processing}
+            className={`w-full py-4 bg-white text-indigo-600 font-bold text-lg rounded-full border-2 border-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+              ${processing ? 'cursor-not-allowed' : 'hover:bg-slate-50'}`}
+          >
+            {processing ? (
+              <div className="w-6 h-6 border-4 border-slate-300 border-t-slate-500 rounded-full animate-spin mx-auto" />
+            ) : (
+              'Quizá en otra ocasión'
+            )}
+          </button>
+        </div>
+
       </div>
     </div>
   );
