@@ -1,6 +1,7 @@
 import { createWaiter, findWaiterByPin } from '../repositories/waiter.repo.js';
 import { StatusCodes } from 'http-status-codes';
 import { UnauthenticatedError, BadRequestError} from '../errors/customErrors.js';
+import { getShiftByTime } from '../utils/shiftUtils.js';
 
 export const registerWaiter = async (req, res) => {
   const { name, pin } = req.body;
