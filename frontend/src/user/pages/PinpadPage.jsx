@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import PinDisplay from '../../user/components/numpad/PinDisplay';
 import Numpad from '../../user/components/numpad/Numpad';
 import api from '../services/api'; 
+import toast from 'react-hot-toast';
+import { toastStyles } from "../../config/toastConfig";
 
 const PinPage = ({ onUnlock }) => {
   const [pin, setPin] = useState('');
@@ -44,9 +46,20 @@ const PinPage = ({ onUnlock }) => {
       }, 600);
 
     } catch (error) {
-      const msg = error?.response?.data?.msg;
-      setMensaje(msg?.includes('Restaurante') ? `⛔ ${msg}` : '❌ PIN INCORRECTO O INACTIVO');
-      setTimeout(() => setPin(''), 1000);
+  const msg = error?.response?.data?.msg;
+  
+  if (msg?.includes('Restaurante')) {
+    toast.error(`⛔ ${msg}`, {
+      ...toastStyles,
+      duration: 4000,
+    });
+    setMensaje('Ingrese su código de acceso de 6 dígitos');
+  } else {
+    setMensaje('❌ PIN INCORRECTO O INACTIVO');
+  }
+  
+  setTimeout(() => setPin(''), 1000);
+
     } finally {
       setCargando(false);
     }
