@@ -18,7 +18,7 @@ export default function ConsentPage({ onAccept, onDecline }) {
           <img 
             src={logodife} 
             alt="La Diferencia Logo" 
-            className="w-52 sm:w-64 md:w-72 object-contain mb-10" 
+            className="w-48 sm:w-56 md:w-62 object-contain mb-2" 
           />
           
           <div className="text-center">
