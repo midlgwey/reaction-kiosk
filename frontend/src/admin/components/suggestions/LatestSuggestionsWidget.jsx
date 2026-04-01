@@ -1,4 +1,3 @@
-
 import React from 'react';
 import SentimentBadge from './SentimentBadge';
 import { useLatestSuggestions } from '../../hooks/feedback/useLatestSuggestions';
@@ -26,52 +25,59 @@ export default function LatestSuggestionsWidget() {
         </span>
       </div>
 
-      {/* Lista */}
-       <div className="divide-y divide-slate-50">
-        {loading ? (
-          <div className="flex items-center justify-center min-h-[200px] p-4">
-            <ChartLoading />
-          </div>
-        ) : comments.length === 0 ? (
-          <div className="px-6 py-10 text-center text-slate-400 text-xs italic">
-            No hay comentarios recientes
-          </div>
-        ) : (
-          comments.map((item) => (
-            <div key={item.id} className="px-6 py-4 hover:bg-slate-50 transition-colors flex flex-col gap-2">
-              
-              {/* Fila superior: mesero, mesa y sentimiento */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-orange-100 text-indigo-800 font-bold flex items-center justify-center text-[10px] shrink-0">
-                    {item.mesero?.charAt(0) || '?'}
-                  </div>
-                  <span className="text-xs font-bold text-slate-700">{item.mesero || 'Sin nombre'}</span>
-                  <span className="bg-slate-100 border border-slate-200 text-cyan-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                    #{item.table_number || '-'}
-                  </span>
-                </div>
-                <SentimentBadge sentiment={item.sentiment} />
-              </div>
-
-              {/* Comentario */}
-              <p className="text-xs text-black leading-relaxed line-clamp-3 italic break-all">
-                "{item.comment}"
-              </p>
-
-              {/* Fecha y turno */}
-              <div className="flex items-center gap-2 text-[10px] text-cyan-600 font-bold">
-                <span>
-                  {new Date(item.date).toLocaleDateString('es-MX', { 
-                    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
-                  })}
-                </span>
-                <span>·</span>
-                <span className="uppercase">{item.shift}</span>
-              </div>
+      {/* Contenedor con scroll horizontal responsive */}
+      <div className="overflow-x-auto">
+        <div className="min-w-max md:min-w-full divide-y divide-slate-50">
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[200px] p-4 w-full">
+              <ChartLoading />
             </div>
-          ))
-        )}
+          ) : comments.length === 0 ? (
+            <div className="px-6 py-10 text-center text-slate-400 text-xs italic w-full">
+              No hay comentarios recientes
+            </div>
+          ) : (
+            comments.map((item) => (
+              <div 
+                key={item.id} 
+                className="px-6 py-4 hover:bg-slate-50 transition-colors flex flex-col gap-2 md:w-auto w-[380px] shrink-0"
+              >
+                
+                {/* Fila superior: mesero, mesa y sentimiento */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-orange-100 text-indigo-800 font-bold flex items-center justify-center text-[10px] shrink-0">
+                      {item.mesero?.charAt(0) || '?'}
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 truncate">{item.mesero || 'Sin nombre'}</span>
+                    <span className="bg-slate-100 border border-slate-200 text-cyan-600 px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap shrink-0">
+                      #{item.table_number || '-'}
+                    </span>
+                  </div>
+                  <div className="shrink-0">
+                    <SentimentBadge sentiment={item.sentiment} />
+                  </div>
+                </div>
+
+                {/* Comentario */}
+                <p className="text-xs text-black leading-relaxed line-clamp-3 italic break-all">
+                  "{item.comment}"
+                </p>
+
+                {/* Fecha y turno */}
+                <div className="flex items-center gap-2 text-[10px] text-cyan-600 font-bold whitespace-nowrap">
+                  <span>
+                    {new Date(item.date).toLocaleDateString('es-MX', { 
+                      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
+                    })}
+                  </span>
+                  <span>·</span>
+                  <span className="uppercase">{item.shift}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
