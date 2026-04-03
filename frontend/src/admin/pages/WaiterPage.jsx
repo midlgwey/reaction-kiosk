@@ -18,13 +18,12 @@ const WaiterPage = () => {
                 </div>
                 <div className="lg:col-span-8 min-w-0">
                   <WaiterRanking />
-            </div>
+                </div>
+            </div>  
 
-           <div className="w-full">
+              <div className="w-full">
             <WaiterDeclines />
           </div>
-
-            </div>  
     </div>
   )
 }
