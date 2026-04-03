@@ -236,7 +236,7 @@ export const getWaiterDeclines = async (req, res) => {
                 d.table_number AS mesa,
                 datetime(d.created_at, ?) AS hora      
             FROM declines d
-            JOIN waiters w ON d.waiter_id = w.id
+            LEFT JOIN waiters w ON d.waiter_id = w.id
             WHERE date(datetime(d.created_at, ?)) = date(?)
         `;      
         const args = [TIME_OFFSET, TIME_OFFSET, safeDate];

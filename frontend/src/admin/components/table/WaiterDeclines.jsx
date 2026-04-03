@@ -61,9 +61,15 @@ export default function WaiterDeclines() {
       </div>
 
       {/* Tabla */}
-      <div className="flex-1 p-2 min-h-[400px] flex flex-col overflow-x-auto">
-        {loading ? <ChartLoading /> : error ? (
-          <div className="flex-1 flex items-center justify-center"><p className="text-rose-500 italic">{error}</p></div>
+       <div className="flex-1 p-2 min-h-[450px] flex flex-col overflow-x-auto">
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center min-h-[350px]">
+            <ChartLoading />
+          </div>
+        ) : error ? (
+          <div className="flex-1 flex items-center justify-center min-h-[350px]">
+            <p className="text-rose-500 font-medium italic text-center">{error}</p>
+          </div>
         ) : (
           <div className="min-w-max lg:min-w-full">
             {/* Headers */}
