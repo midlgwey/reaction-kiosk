@@ -112,7 +112,7 @@ export default function WaiterRanking() {
             </div>
 
             {/* Listado Dinámico de Resultados */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 overflow-y-auto max-h-[380px]">
               {Array.isArray(data) && data.length > 0 ? (
                 data.map((waiter, index) => (
                   <WaiterRow 

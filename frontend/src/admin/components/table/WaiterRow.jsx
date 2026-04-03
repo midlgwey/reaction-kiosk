@@ -39,7 +39,7 @@ export default function WaiterRow({ waiter, index }) {
 
       {/* Rechazos */}
       <div className="col-span-1 lg:col-span-2 flex justify-start lg:justify-center">
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border
+        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border text-center
           ${waiter.rechazos > 0 
             ? 'bg-rose-100 border-rose-200 text-rose-600' 
             : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
