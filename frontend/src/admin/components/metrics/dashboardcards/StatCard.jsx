@@ -1,13 +1,13 @@
 import React from 'react';
 
 const variants = {
-  indigo: { // Tu color original (Default)
+  indigo: { //color original 
     bg: "bg-indigo-100",
     border: "border-indigo-200",
     textTitle: "text-indigo-800",
     iconContainer: "bg-white/60 text-indigo-600" 
   },
-  emerald: { // Para cosas positivas / Reacciones
+  emerald: { // Para cosas positivas
     bg: "bg-emerald-100",
     border: "border-emerald-200",
     textTitle: "text-emerald-800",
@@ -31,7 +31,7 @@ const variants = {
     textTitle: "text-purple-800",
     iconContainer: "bg-white/60 text-purple-600"
   },
-  rose: { // Para ALERTAS 
+  rose: { // Para Alertas
     bg: "bg-rose-100",
     border: "border-rose-200",
     textTitle: "text-rose-800",
@@ -59,22 +59,21 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
       min-h-32.5          
     `}>
       
-      {/* HEADER: Título e Icono */}
+      {/* Título e Icono */}
       <div className="flex justify-between items-start gap-2">
         <p className={`${theme.textTitle} text-[10px] lg:text-xs font-extrabold uppercase tracking-wider mt-1`}>
           {title}
         </p>
         
         {icon && (
-          // Icono más compacto (w-10 en vez de w-14)
+    
           <div className={`${theme.iconContainer} p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0`}>
-            {/* Forzamos al SVG a ser pequeño también */}
             {React.cloneElement(icon, { className: "w-5 h-5 lg:w-6 lg:h-6" })}
           </div>
         )}
       </div>
 
-      {/* BODY: Valor y Subtítulo */}
+      {/* Valor y Subtítulo */}
       <div className="mt-3">
         <h3 className="text-xl lg:text-2xl font-black text-slate-800 leading-tight line-clamp-2 min-h-[3rem]" 
         title={value}>
@@ -82,7 +81,7 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
         </h3>
 
         {subtitle && (
-          // Texto pequeño y SIN truncate para que baje de línea si no cabe
+          // Texto pequeño para que baje de línea si no cabe
           <p className="text-slate-800 text-[10px] lg:text-xs font-bold mt-1 leading-snug">
             {subtitle}
           </p>

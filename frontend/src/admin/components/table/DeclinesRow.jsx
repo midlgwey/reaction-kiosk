@@ -1,0 +1,36 @@
+
+export default function DeclineRow({ decline }) {
+  return (
+    <div className="grid grid-cols-12 gap-2 lg:gap-4 px-4 lg:px-6 py-4 items-center hover:bg-rose-50/30 rounded-xl transition-colors border-b border-slate-100 last:border-0 lg:w-auto w-[600px] shrink-0">
+      
+      {/* Hora con estilo de Badge */}
+      <div className="col-span-2 text-center">
+        <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-200">
+          {decline.hora}
+        </span>
+      </div>
+
+      {/* Mesero */}
+      <div className="col-span-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold flex items-center justify-center text-xs border border-rose-200">
+          {decline.mesero?.charAt(0) || '?'}
+        </div>
+        <p className="font-bold text-slate-700 text-xs lg:text-sm truncate">{decline.mesero}</p>
+      </div>
+
+      {/* Mesa */}
+      <div className="col-span-3 text-center">
+        <span className="bg-cyan-50 border border-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-[11px] font-black">
+          MESA {decline.mesa}
+        </span>
+      </div>
+
+      {/* Estado / Motivo */}
+      <div className="col-span-3 text-right">
+        <span className="bg-rose-100 border border-rose-200 text-rose-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter">
+          Encuesta Omitida
+        </span>
+      </div>
+    </div>
+  );
+}

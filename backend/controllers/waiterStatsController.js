@@ -221,3 +221,44 @@ export const getWaiterTables = async (req, res) => {
     throw new InternalServerError('Error al obtener las mesas');
   }
 };
+
+
+export const getWaiterDeclines = async (req, res) => {
+    const { date, shift } = req.query;  
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    
+    try {
+        let sql = `
+            SELECT
+                d.id,
+                w.name AS mesero,
+                d.table_number AS mesa,
+                datetime(d.created_at, ?) AS hora      
+            FROM declines d
+            JOIN waiters w ON d.waiter_id = w.id
+            WHERE date(datetime(d.created_at, ?)) = date(?)
+        `;      
+        const args = [TIME_OFFSET, TIME_OFFSET, safeDate];
+
+        if (shift && shift !== 'Todos') {
+            sql += ` AND d.shift = ? `;
+            args.push(shift);
+        }
+
+        sql += ` ORDER BY d.created_at DESC `;
+
+        const result = await db.execute({ sql, args });
+        const declines = result.rows.map(row => ({
+            id: row.id,
+            mesero: row.mesero || "Sin nombre",
+            mesa: row.mesa || "Desconocida",
+            hora: row.hora ? new Date(row.hora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Hora desconocida"
+        }));
+        res.status(StatusCodes.OK).json(declines);
+    } catch (error) {
+        console.error("Error al obtener rechazos:", error);
+        throw new InternalServerError("Error al obtener los rechazos");
+    }
+
+};
