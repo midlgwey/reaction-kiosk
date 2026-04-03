@@ -36,6 +36,16 @@ export default function WaiterRow({ waiter, index }) {
       <div className="col-span-2 text-center">
         <span className="bg-slate-100 border border-slate-200 text-cyan-600 px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap">{waiter.interacciones}</span>
       </div>
+
+      {/* Rechazos */}
+      <div className="col-span-1 lg:col-span-2 flex justify-start lg:justify-center">
+        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border
+          ${waiter.rechazos > 0 
+            ? 'bg-rose-100 border-rose-200 text-rose-600' 
+            : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
+          {waiter.rechazos}
+        </span>
+      </div>
  
       {/* Mesas */}
       <div className="col-span-3 flex justify-end flex-wrap gap-1">

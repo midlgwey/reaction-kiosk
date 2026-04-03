@@ -23,7 +23,8 @@ export const getWaitersTableRanking = async (req, res) => {
                 AVG(r.promedio_encuesta) AS average_rating,
                 COUNT(r.survey_id) AS total_interactions,
                 SUM(r.puntos_encuesta) AS score_total,
-                GROUP_CONCAT(r.table_number) AS tables_list
+                GROUP_CONCAT(r.table_number) AS tables_list,
+                COUNT(d.id) AS total_declines
             FROM waiters w
             JOIN (
                 /* Consolidación de respuestas y cálculo de puntos por encuesta */
@@ -46,10 +47,12 @@ export const getWaitersTableRanking = async (req, res) => {
                 FROM reactions
                 GROUP BY survey_id
             ) r ON w.id = r.waiter_id
+            LEFT JOIN declines d ON w.id = d.waiter_id  
+        AND date(datetime(d.created_at, ?)) = date(?)  
             WHERE date(datetime(r.created_at, ?)) = date(?)
         `;
 
-        const args = [TIME_OFFSET, safeDate];
+        const args = [TIME_OFFSET, safeDate, TIME_OFFSET, safeDate];
 
         // Filtro por turno
         if (shift && shift !== 'Todos') {
@@ -71,6 +74,7 @@ export const getWaitersTableRanking = async (req, res) => {
             promedio: row.average_rating ? Number(row.average_rating).toFixed(1) : "0.0",
             puntuacion: row.score_total || 0,
             interacciones: row.total_interactions || 0,
+            rechazos: row.total_declines || 0 ,
             detalle_mesas: row.tables_list || "" 
         }));
 
