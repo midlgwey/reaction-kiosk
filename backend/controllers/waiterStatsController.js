@@ -11,8 +11,6 @@ const TIME_OFFSET = '-7 hours';
  */
 export const getWaitersTableRanking = async (req, res) => {
     const { date, shift } = req.query;
-
-    // Validación de formato de fecha o uso de la fecha actual
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
 
@@ -24,10 +22,14 @@ export const getWaitersTableRanking = async (req, res) => {
                 COUNT(r.survey_id) AS total_interactions,
                 SUM(r.puntos_encuesta) AS score_total,
                 GROUP_CONCAT(r.table_number) AS tables_list,
-                COUNT(d.id) AS total_declines
+                COALESCE((
+                    SELECT COUNT(*) 
+                    FROM declines d 
+                    WHERE d.waiter_id = w.id 
+                    AND date(datetime(d.created_at, ?)) = date(?)
+                ), 0) AS total_declines
             FROM waiters w
             JOIN (
-                /* Consolidación de respuestas y cálculo de puntos por encuesta */
                 SELECT 
                     waiter_id, 
                     survey_id, 
@@ -35,10 +37,10 @@ export const getWaitersTableRanking = async (req, res) => {
                     AVG(value) as promedio_encuesta, 
                     SUM(
                         CASE 
-                            WHEN value = 4 THEN 4   /* Excelente: +4 puntos */
-                            WHEN value = 3 THEN 2   /* Bueno: +2 puntos */
-                            WHEN value = 2 THEN 0   /* Regular: 0 puntos */
-                            WHEN value = 1 THEN -5  /* Malo: -5 puntos */
+                            WHEN value = 4 THEN 4
+                            WHEN value = 3 THEN 2
+                            WHEN value = 2 THEN 0
+                            WHEN value = 1 THEN -5
                             ELSE 0
                         END
                     ) as puntos_encuesta,
@@ -47,35 +49,28 @@ export const getWaitersTableRanking = async (req, res) => {
                 FROM reactions
                 GROUP BY survey_id
             ) r ON w.id = r.waiter_id
-            LEFT JOIN declines d ON w.id = d.waiter_id  
-        AND date(datetime(d.created_at, ?)) = date(?)  
             WHERE date(datetime(r.created_at, ?)) = date(?)
         `;
 
         const args = [TIME_OFFSET, safeDate, TIME_OFFSET, safeDate];
 
-        // Filtro por turno
         if (shift && shift !== 'Todos') {
             sql += ` AND r.shift = ? `;
             args.push(shift);
         }
 
-        sql += `
-            GROUP BY w.id, w.name
-            ORDER BY score_total DESC
-        `;
+        sql += ` GROUP BY w.id, w.name ORDER BY score_total DESC `;
 
         const result = await db.execute({ sql, args });
 
-        // Mapeo de resultados para el cliente
         const rankingTable = result.rows.map((row, index) => ({
             rank: index + 1,
-            mesero: row.waiter_name || "Sin nombre", 
+            mesero: row.waiter_name || "Sin nombre",
             promedio: row.average_rating ? Number(row.average_rating).toFixed(1) : "0.0",
             puntuacion: row.score_total || 0,
             interacciones: row.total_interactions || 0,
-            rechazos: row.total_declines || 0 ,
-            detalle_mesas: row.tables_list || "" 
+            rechazos: row.total_declines || 0,
+            detalle_mesas: row.tables_list || ""
         }));
 
         res.status(StatusCodes.OK).json(rankingTable);
