@@ -20,10 +20,9 @@ const WaiterPage = () => {
                   <WaiterRanking />
             </div>
 
-            <div className="w-full">
-              <WaiterDeclines />
-            </div>
-
+           <div className="w-full">
+            <WaiterDeclines />
+          </div>
 
             </div>  
     </div>
