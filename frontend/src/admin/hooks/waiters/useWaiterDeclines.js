@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api'; // Ajusta esta ruta hacia donde tengas tu archivo api.js
 
 export const useWaiterDeclines = (date, shift) => {
+
+  
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,9 +14,11 @@ export const useWaiterDeclines = (date, shift) => {
       setError(null);
 
       try {
-        // Axios arma automáticamente los query parameters (?date=...&shift=...)
-        const response = await api.get('/waiter-stats/get-waiterdeclines', {
-          params: { date, shift }
+
+        const shiftParam = shift === 'matutino' ? 'Desayuno' : 'Comida/Cena'; 
+
+          const response = await api.get('/waiter-stats/get-waiterdeclines', {
+          params: { date, shift: shiftParam }
         });
 
         // Con Axios, la respuesta ya viene parseada dentro de .data

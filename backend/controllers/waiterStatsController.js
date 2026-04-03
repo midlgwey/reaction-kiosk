@@ -242,9 +242,9 @@ export const getWaiterDeclines = async (req, res) => {
         const args = [TIME_OFFSET, TIME_OFFSET, safeDate];
 
         if (shift && shift !== 'Todos') {
-            sql += ` AND d.shift = ? `;
-            args.push(shift);
-        }
+        sql += ` AND LOWER(d.shift) = LOWER(?) `; 
+        args.push(shift);
+}
 
         sql += ` ORDER BY d.created_at DESC `;
 
