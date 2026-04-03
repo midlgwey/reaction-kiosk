@@ -106,8 +106,8 @@ export default function WaiterRanking() {
               <div className="col-span-1 text-center">#</div>
               <div className="col-span-3">Mesero</div>
               <div className="col-span-2 text-center">Desempeño</div>
-              <div className="col-span-1 text-center">Encuestas</div>
-              <div className="col-span-2 text-center">Rechazos</div>
+              <div className="col-span-2 text-center">Encuestas</div>
+              <div className="col-span-1 text-center">Rechazos</div>
               <div className="col-span-3 text-right">Mesas</div>
             </div>
 

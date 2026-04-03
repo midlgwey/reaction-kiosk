@@ -17,7 +17,7 @@ export default function WaiterRow({ waiter, index }) {
       </div>
  
       {/* Avatar y Nombre */}
-      <div className="col-span-4 flex items-center gap-2 lg:gap-3 min-w-0">
+      <div className="col-span-3 flex items-center gap-2 lg:gap-3 min-w-0">
         <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-orange-100 text-indigo-900 font-bold flex items-center justify-center text-xs shrink-0 border border-orange-200">
           {waiter.mesero?.charAt(0) || '?'}
         </div>
