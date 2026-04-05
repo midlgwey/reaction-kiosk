@@ -49,10 +49,10 @@ export default function WaiterLogbook() {
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex bg-slate-100 p-1 rounded-lg">
             <button onClick={() => setActiveTab('realizadas')} className={`... ${activeTab === 'realizadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              ☀️ Realizadas
+              Realizadas
             </button>
             <button onClick={() => setActiveTab('rechazadas')} className={`... ${activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              🌙 No Realizadas
+              No Realizadas
             </button>
           </div>
           <DashboardFilter options={dateOptions} selectedOption={selectedOption} setSelectedOption={setSelectedOption} selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
