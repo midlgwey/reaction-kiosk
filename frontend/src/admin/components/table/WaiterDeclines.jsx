@@ -42,18 +42,18 @@ export default function WaiterDeclines() {
       <div className="p-4 md:p-6 border-b border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-rose-50/20">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-            Historial de Rechazos
+            Bitacora de Encuestas Realizadas y No Realizadas 
           </h3>
-          <p className="text-[10px] text-slate-500 font-medium">Auditoría de encuestas no realizadas</p>
+          <p className="text-[10px] text-slate-500 font-medium"> Auditoria de encuestas del restaurante</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex bg-slate-100 p-1 rounded-lg">
             <button onClick={() => setActiveShift('matutino')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeShift === 'matutino' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              ☀️ Matutino
+              ☀️ Realizadas
             </button>
             <button onClick={() => setActiveShift('vespertino')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeShift === 'vespertino' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              🌙 Vespertino
+              🌙 No Realizadas
             </button>
           </div>
           <DashboardFilter options={dateOptions} selectedOption={selectedOption} setSelectedOption={setSelectedOption} selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
@@ -86,7 +86,7 @@ export default function WaiterDeclines() {
                 data.map((decline, i) => <DeclinesRow key={i} decline={decline} />)
               ) : (
                 <div className="flex items-center justify-center min-h-[300px]">
-                  <p className="italic text-sm text-slate-400">Sin rechazos registrados en este periodo.</p>
+                  <p className="italic text-sm text-slate-400">Sin encuestas registradas en este periodo.</p>
                 </div>
               )}
             </div>

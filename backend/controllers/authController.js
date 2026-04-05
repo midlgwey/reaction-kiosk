@@ -65,7 +65,7 @@ export const loginAdmin = async (req, res) => {
  
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     
-    maxAge: 1000 * 60 * 60 * 24 * 30, // 1000ms * 60s * 60m * 24h * 30 días
+    maxAge: 1000 * 60 * 60, // 1 hora
     path: '/' // Recomendado asegurar que sea para todo el sitio
 });
 
