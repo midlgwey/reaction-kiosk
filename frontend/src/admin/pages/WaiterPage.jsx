@@ -2,7 +2,7 @@ import React from 'react'
 import WaiterPerformance from '../components/charts/waiterradiography/WaiterPerfomance'
 import LatestSuggestionsWidget from '../components/suggestions/LatestSuggestionsWidget';
 import WaiterRanking from '../components/table/WaiterRanking';
-import WaiterDeclines from '../components/table/WaiterDeclines';
+import WaiterLogbook from '../components/table/WaiterLogbook';
 
 const WaiterPage = () => {
   return (
@@ -22,7 +22,7 @@ const WaiterPage = () => {
             </div>  
 
               <div className="w-full">
-            <WaiterDeclines />
+            <WaiterLogbook />
           </div>
     </div>
   )
