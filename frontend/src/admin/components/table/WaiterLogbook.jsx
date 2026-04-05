@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import DeclinesRow from './DeclinesRow'; 
+import DeclinesRow from './LogbookRow'; 
 import DashboardFilter from '../shared/DashboardFilter';
-import { useWaiterDeclines } from '../../../admin/hooks/waiters/useWaiterDeclines'; 
+import { useWaiterLogbook } from '../../hooks/waiters/useWaiterLogbook'; 
 
 const ChartLoading = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200 p-10">
@@ -19,8 +19,9 @@ const dateOptions = [
   { value: 'custom',  label: '📅 Historial...' },
 ];
 
-export default function WaiterDeclines() {
-  const [activeShift, setActiveShift] = useState('matutino');
+export default function WaiterLogbook() {
+  const [activeTab, setActiveTab] = useState('realizadas');
+  const { data, loading, error } = useWaiterLogbook(selectedDate, activeTab);
   const [selectedOption, setSelectedOption] = useState(dateOptions[0]);
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -32,8 +33,6 @@ export default function WaiterDeclines() {
     return format(d, 'yyyy-MM-dd');
   }, [selectedOption, selectedDay]);
 
-  // Hook que consulta tu tabla 'declines' en Turso
-  const { data, loading, error } = useWaiterDeclines(selectedDate, activeShift);
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full overflow-hidden">
@@ -49,10 +48,10 @@ export default function WaiterDeclines() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex bg-slate-100 p-1 rounded-lg">
-            <button onClick={() => setActiveShift('matutino')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeShift === 'matutino' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
+            <button onClick={() => setActiveTab('realizadas')} className={`... ${activeTab === 'realizadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
               ☀️ Realizadas
             </button>
-            <button onClick={() => setActiveShift('vespertino')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeShift === 'vespertino' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
+            <button onClick={() => setActiveTab('rechazadas')} className={`... ${activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
               🌙 No Realizadas
             </button>
           </div>
@@ -83,7 +82,7 @@ export default function WaiterDeclines() {
             {/* Listado */}
             <div className="flex flex-col gap-1 overflow-y-auto max-h-[400px]">
               {data?.length > 0 ? (
-                data.map((decline, i) => <DeclinesRow key={i} decline={decline} />)
+                data.map((item, i) => <LogbookRow key={i} decline={item} />)
               ) : (
                 <div className="flex items-center justify-center min-h-[300px]">
                   <p className="italic text-sm text-slate-400">Sin encuestas registradas en este periodo.</p>

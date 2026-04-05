@@ -262,3 +262,83 @@ export const getWaiterDeclines = async (req, res) => {
     }
 
 };
+
+
+// Encuestas realizadas — primera reacción por survey_id
+export const getSurveysLog = async (req, res) => {
+    const { date } = req.query;
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+
+    try {
+        const result = await db.execute({
+            sql: `
+                SELECT
+                    r.survey_id,
+                    w.name AS mesero,
+                    r.table_number AS mesa,
+                    r.shift AS turno,
+                    datetime(MIN(r.created_at), ?) AS hora
+                FROM reactions r
+                LEFT JOIN waiters w ON r.waiter_id = w.id
+                WHERE date(datetime(r.created_at, ?)) = date(?)
+                GROUP BY r.survey_id
+                ORDER BY MIN(r.created_at) ASC
+            `,
+            args: [TIME_OFFSET, TIME_OFFSET, safeDate]
+        });
+
+        const log = result.rows.map(row => ({
+            id: row.survey_id,
+            mesero: row.mesero || 'Sin nombre',
+            mesa: row.mesa || '-',
+            turno: row.turno || '-',
+            hora: row.hora ? new Date(row.hora).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '-',
+            estado: 'Realizada'
+        }));
+
+        res.status(StatusCodes.OK).json(log);
+    } catch (error) {
+        console.error("Error en getSurveysLog:", error);
+        throw new InternalServerError("Error al obtener bitácora de encuestas");
+    }
+};
+
+// Encuestas rechazadas
+export const getDeclinesLog = async (req, res) => {
+    const { date } = req.query;
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+
+    try {
+        const result = await db.execute({
+            sql: `
+                SELECT
+                    d.id,
+                    w.name AS mesero,
+                    d.table_number AS mesa,
+                    d.shift AS turno,
+                    datetime(d.created_at, ?) AS hora
+                FROM declines d
+                LEFT JOIN waiters w ON d.waiter_id = w.id
+                WHERE date(datetime(d.created_at, ?)) = date(?)
+                ORDER BY d.created_at ASC
+            `,
+            args: [TIME_OFFSET, TIME_OFFSET, safeDate]
+        });
+
+        const log = result.rows.map(row => ({
+            id: row.id,
+            mesero: row.mesero || 'Sin nombre',
+            mesa: row.mesa || '-',
+            turno: row.turno || '-',
+            hora: row.hora ? new Date(row.hora).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '-',
+            estado: 'Rechazada'
+        }));
+
+        res.status(StatusCodes.OK).json(log);
+    } catch (error) {
+        console.error("Error en getDeclinesLog:", error);
+        throw new InternalServerError("Error al obtener bitácora de rechazos");
+    }
+};
