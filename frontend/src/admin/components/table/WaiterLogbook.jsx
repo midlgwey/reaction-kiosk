@@ -21,7 +21,6 @@ const dateOptions = [
 
 export default function WaiterLogbook() {
   const [activeTab, setActiveTab] = useState('realizadas');
-  const { data, loading, error } = useWaiterLogbook(selectedDate, activeTab);
   const [selectedOption, setSelectedOption] = useState(dateOptions[0]);
   const [selectedDay, setSelectedDay] = useState(new Date());
 
@@ -32,6 +31,8 @@ export default function WaiterLogbook() {
     if (selectedOption.value === 'custom' && selectedDay) return format(selectedDay, 'yyyy-MM-dd');
     return format(d, 'yyyy-MM-dd');
   }, [selectedOption, selectedDay]);
+
+  const { data, loading, error } = useWaiterLogbook(selectedDate, activeTab);
 
 
   return (
