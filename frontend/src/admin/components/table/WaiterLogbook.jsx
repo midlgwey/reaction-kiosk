@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import DeclinesRow from './LogbookRow'; 
+import LogbookRow from './LogbookRow'; 
 import DashboardFilter from '../shared/DashboardFilter';
-import { useWaiterLogbook } from '../../hooks/waiters/useWaiterLogbook'; 
+import { useWaiterLogbook } from '../../../admin/hooks/waiters/useWaiterLogbook'; 
 
 const ChartLoading = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200 p-10">
