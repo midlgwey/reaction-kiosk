@@ -2,14 +2,14 @@ import {
   useDailyReactions,
   useDailyServerScore,
   useDailyHappinessIndex,
-  useDailySurveyCount,
+  useDailySurveyCount
 } from "../../../hooks/dashboard/useDashboardSummary";
  
 import {
   buildReactionsCard,
   buildServerScoreCard,
   buildHappinessCard,
-  buildSurveyCountCard,
+  buildSurveyCountCard
 } from "../../../utils/statGridUtils";
  
 export function useStatGrid() {

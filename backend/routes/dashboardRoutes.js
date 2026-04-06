@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { authenticateAdmin } from "../middlewares/authMiddleware.js"
-import { getDailyReactions, getDailyServerScore, getTodayHappinessIndex, getDailySurveyCount, getDailySatisfactionTrend, getWeeklySentimentSummary, getDailyQuestions } from '../controllers/dashboardController.js'
+import { getDailyReactions, getDailyServerScore, getTodayHappinessIndex, getDailySurveyCount, getDailySatisfactionTrend, getDailyQuestions } from '../controllers/dashboardController.js'
 
 const router = express.Router();
 
@@ -12,12 +12,10 @@ router.get('/daily-serverscore', authenticateAdmin, getDailyServerScore)
 //Ruta para la card de indice de felicidad
 router.get('/happiness-index', authenticateAdmin, getTodayHappinessIndex )
 //Ruta para la card de encuestas realizadas o no por dia
-router.get('/get-daily-survey-count', authenticateAdmin, getDailySurveyCount)
+router.get('/daily-survey-count', authenticateAdmin, getDailySurveyCount)
 //Ruta para la grafica de area de satisfaccion por dia
 router.get('/daily-satisfaction', authenticateAdmin, getDailySatisfactionTrend)
-//Ruta para la grafica de dona de distribucion de reacciones
-router.get('/weekly-sentiment', authenticateAdmin, getWeeklySentimentSummary)
-
+//Ruta para la radiografia de preguntas respondidas por dia
 router.get('/daily-questions', authenticateAdmin, getDailyQuestions)
 
 
