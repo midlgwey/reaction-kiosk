@@ -30,14 +30,7 @@ const StatsPage = () => {
         </div>
       </div>
 
-      <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm w-full">
-        <h3 className="text-slate-800 font-bold mb-6 uppercase text-sm tracking-wider text-center">
-          Distribución de Sentimiento por Pregunta
-        </h3>
-        <div className="max-w-5xl mx-auto">
-          <TotalQuestionBar/>
-        </div>
-      </section>
+   
     </div>
   )
 }
