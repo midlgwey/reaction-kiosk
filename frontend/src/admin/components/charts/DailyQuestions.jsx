@@ -145,14 +145,14 @@ export default function DailyQuestions() {
       </div>
 
       {/* Leyenda y Listado de Datos */}
-      <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+      <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600 mt-4 mb-2">
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-400"></span> Excelente</div>
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-400"></span> Bueno</div>
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-400"></span> Puede Mejorar</div>
         <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-rose-400"></span> Malo</div>
       </div>
 
-      <div className="min-h-[150px]">
+      <div className="min-h-[150px] mt-2">
         {loading ? <ChartLoading /> : 
          error ? <div className="text-center py-10 text-red-400 font-semibold">Error al cargar datos</div> :
          (!data || data.length === 0) ? <div className="text-center py-10 text-slate-400">No hay encuestas en esta fecha</div> :

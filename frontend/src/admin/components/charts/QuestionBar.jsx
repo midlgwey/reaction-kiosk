@@ -6,7 +6,7 @@ export default function QuestionBar({ question }) {
   const total = question.total ?? question.totalRespuestas ?? 0;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {/* Título y contador */}
       <div className="flex justify-between items-end">
         <span className="text-sm font-bold text-slate-700">{question.label}</span>
