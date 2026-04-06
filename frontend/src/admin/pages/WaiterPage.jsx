@@ -9,7 +9,7 @@ const WaiterPage = () => {
     <div className="space-y-6">
 
         <div className="">
-              <WaiterPerformance />
+                 <WaiterRanking />
             </div>
        
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -17,7 +17,7 @@ const WaiterPage = () => {
                   <LatestSuggestionsWidget />
                 </div>
                 <div className="lg:col-span-8 min-w-0">
-                  <WaiterRanking />
+                 <WaiterPerformance />
                 </div>
             </div>  
 
