@@ -98,22 +98,28 @@ export const getLowInteractionWaiters = async (req, res) => {
         `
       }),
       db.execute({
-        sql: `
-          SELECT
-            w.name AS mesero,
-            'Comida/Cena' AS turno,
-            COUNT(DISTINCT r.survey_id) AS encuestas
-          FROM waiters w
-          LEFT JOIN reactions r ON w.id = r.waiter_id
-            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-            AND r.shift = 'Comida/Cena'
-          WHERE w.active = 1
-          GROUP BY w.id, w.name
-          HAVING encuestas >= 1        
-          ORDER BY encuestas ASC
-          LIMIT 1
-        `
-      })
+          sql: `
+            SELECT
+              w.name AS mesero,
+              'Comida/Cena' AS turno,
+              COUNT(DISTINCT r.survey_id) AS encuestas
+            FROM waiters w
+            LEFT JOIN reactions r ON w.id = r.waiter_id
+              AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+              AND r.shift = 'Comida/Cena'
+            WHERE w.active = 1
+            AND w.id NOT IN (
+              SELECT DISTINCT waiter_id 
+              FROM reactions
+              WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+              AND shift = 'Desayuno'
+            )                              -- ✅ excluye meseros de desayuno
+            GROUP BY w.id, w.name
+            HAVING encuestas >= 1
+            ORDER BY encuestas ASC
+            LIMIT 1
+          `
+        })
     ]);
 
     const result = [
