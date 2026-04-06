@@ -79,30 +79,49 @@ export const getDailyServerScore = async (req, res) => {
 */
 export const getLowInteractionWaiters = async (req, res) => {
   try {
-    const result = await db.execute({
-      sql: `
-        SELECT
-          w.name AS mesero,
-          r.shift AS turno,
-          COUNT(DISTINCT r.survey_id) AS encuestas
-        FROM waiters w
-        LEFT JOIN reactions r ON w.id = r.waiter_id
-          AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-        WHERE w.active = 1
-        GROUP BY w.id, w.name, r.shift
-        HAVING (
-          (r.shift = 'Desayuno'    AND encuestas < 3) OR
-          (r.shift = 'Comida/Cena' AND encuestas < 2) OR
-          r.shift IS NULL
-        )
-        ORDER BY encuestas ASC
-        LIMIT 4
-      `
-    });
+    const [breakfastResult, lunchResult] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT
+            w.name AS mesero,
+            'Desayuno' AS turno,
+            COUNT(DISTINCT r.survey_id) AS encuestas
+          FROM waiters w
+          LEFT JOIN reactions r ON w.id = r.waiter_id
+            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+            AND r.shift = 'Desayuno'
+          WHERE w.active = 1
+          GROUP BY w.id, w.name
+          ORDER BY encuestas ASC
+          LIMIT 1
+        `
+      }),
+      db.execute({
+        sql: `
+          SELECT
+            w.name AS mesero,
+            'Comida/Cena' AS turno,
+            COUNT(DISTINCT r.survey_id) AS encuestas
+          FROM waiters w
+          LEFT JOIN reactions r ON w.id = r.waiter_id
+            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+            AND r.shift = 'Comida/Cena'
+          WHERE w.active = 1
+          GROUP BY w.id, w.name
+          ORDER BY encuestas ASC
+          LIMIT 1
+        `
+      })
+    ]);
 
-    res.status(200).json(result.rows.map(row => ({
+    const result = [
+      ...(breakfastResult.rows[0] ? [breakfastResult.rows[0]] : []),
+      ...(lunchResult.rows[0] ? [lunchResult.rows[0]] : [])
+    ];
+
+    res.status(200).json(result.map(row => ({
       mesero: row.mesero,
-      turno: row.turno || 'Sin encuestas',
+      turno: row.turno,
       encuestas: row.encuestas || 0
     })));
 

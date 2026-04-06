@@ -25,13 +25,13 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
 }
  
 export function buildLowInteractionCard({ loading, error, data }) {
-  if (loading) return { value: null,    subtitle: null };
+  if (loading) return { value: null, subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (data.length === 0) return { value: "0", subtitle: "No hay meseros con poca interacción" };
- 
+  if (data.length === 0) return { value: "Sin datos", subtitle: "No hay registros hoy" };
+
   return {
-    value:    `${data.length}`, 
-    subtitle: "Meseros con poca interacción",
+    value: data.map(w => w.mesero).join(' | '),
+    subtitle: data.map(w => `${w.turno}: ${w.encuestas} enc.`).join(' · ')
   };
 }
  
