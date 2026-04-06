@@ -92,6 +92,7 @@ export const getLowInteractionWaiters = async (req, res) => {
             AND r.shift = 'Desayuno'
           WHERE w.active = 1
           GROUP BY w.id, w.name
+          HAVING encuestas >= 2        
           ORDER BY encuestas ASC
           LIMIT 1
         `
@@ -108,6 +109,7 @@ export const getLowInteractionWaiters = async (req, res) => {
             AND r.shift = 'Comida/Cena'
           WHERE w.active = 1
           GROUP BY w.id, w.name
+          HAVING encuestas >= 1        
           ORDER BY encuestas ASC
           LIMIT 1
         `
