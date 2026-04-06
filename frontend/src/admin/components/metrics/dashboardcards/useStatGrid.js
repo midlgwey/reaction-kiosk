@@ -15,7 +15,7 @@ import {
 export function useStatGrid() {
   const reactions      = useDailyReactions();
   const serverScore    = useDailyServerScore();
-  const lowInteractionWaiters = useLowInteractionWaiters ();
+  const lowInteractionWaiters = useLowInteractionWaiters();
   const surveyCount  = useDailySurveyCount();
  
   return {
