@@ -1,4 +1,4 @@
-import { ChartBarIcon, StarIcon, FaceSmileIcon, ClockIcon } from "@heroicons/react/24/solid";
+import { ChartBarIcon, StarIcon, FaceSmileIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/solid";
 import StatCard from "./StatCard";
 import { useStatGrid } from "./useStatGrid";
 
