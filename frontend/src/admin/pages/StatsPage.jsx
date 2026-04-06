@@ -1,4 +1,3 @@
-import TotalQuestionBar from "../components/charts/TotalQuestionsBar"
 import StatGridQWeekly from "../components/metrics/StatGridWeekly"
 import SatisfactionByShift from "../components/charts/SatisfactionByShift"
 import WeeklyCompRadar from "../components/charts/WeeklyCompRadar"
