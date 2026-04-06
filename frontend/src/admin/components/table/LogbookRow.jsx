@@ -7,7 +7,7 @@ export default function LogbookRow({ decline }) {
       <div className="grid grid-cols-12 gap-2 lg:gap-4 px-4 lg:px-6 py-4 items-center hover:bg-rose-50/30 rounded-xl transition-colors lg:w-auto w-[600px] shrink-0">
         
         <div className="col-span-2 text-center">
-          <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-200">
+          <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-black border border-slate-200">
             {decline.hora}
           </span>
         </div>
@@ -33,7 +33,7 @@ export default function LogbookRow({ decline }) {
         </div>
 
         <div className="col-span-3 text-right">
-          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter
+          <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter
             ${isRealizada 
               ? 'bg-slate-100 border border-slate-200 text-emerald-600' 
               : 'bg-rose-100 border border-rose-200 text-rose-600'}`}>
