@@ -58,7 +58,7 @@ export default function SatisfactionByShift() {
   };
 
   return (
-    <div className="w-full flex flex-col h-100 md:h-112 p-4 pt-0">
+    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col h-full">
       
       {/* Controles de encabezado con el filtro */}
       <div className="flex justify-end items-center mb-4 relative z-10">

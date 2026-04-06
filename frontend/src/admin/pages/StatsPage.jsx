@@ -11,7 +11,7 @@ const StatsPage = () => {
       </section>
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col h-full">
+        <div className="col-span-12 lg:col-span-5 ">
           <h3 className="text-slate-800 font-bold mb-4 uppercase text-sm tracking-wider">
             Equilibrio de Servicio
           </h3>
@@ -20,7 +20,7 @@ const StatsPage = () => {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col h-full">
+        <div className="col-span-12 lg:col-span-7 ">
           <h3 className="text-slate-800 font-bold mb-4 uppercase text-sm tracking-wider">
             Satisfacción por Turno y Día
           </h3>
@@ -28,6 +28,8 @@ const StatsPage = () => {
              <SatisfactionByShift />
           </div>
         </div>
+
+        <h2>AQUI VA IR LA GRAFICA DE SATISFACCION DE LA PREGUNTA 1 POR MESERO Y ARROJAR EL TOTAL DE MESAS QUE TUVO POR MES</h2>
       </div>
 
    

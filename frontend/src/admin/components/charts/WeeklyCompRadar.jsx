@@ -203,7 +203,8 @@ export default function WeeklyCompRadar() {
   };
 
   return (
-    <div className="w-full flex flex-col h-100 md:h-112 p-4 pt-0">
+     <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
+      <div className="flex justify-between items-start mb-6">
       
       {/* Selector de rango de fechas */}
       <div className="flex justify-end items-center mb-4 relative z-10">
