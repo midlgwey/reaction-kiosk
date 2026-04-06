@@ -40,7 +40,7 @@ export default function WaiterLogbook() {
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full overflow-hidden">
       
       {/* Cabecera */}
-      <div className="p-4 md:p-6 border-b border-indigo-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-indigo-300">
+      <div className="p-4 md:p-6 border-b border-indigo-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-indigo-100">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Bitacora de Encuestas Realizadas y No Realizadas 

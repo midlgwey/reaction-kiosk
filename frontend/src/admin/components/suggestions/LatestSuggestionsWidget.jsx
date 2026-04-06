@@ -19,10 +19,10 @@ export default function LatestSuggestionsWidget() {
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
         <h3 className="text-black font-bold uppercase text-xs tracking-widest">
-          Últimos Comentarios
+          Comentarios Recientes
         </h3>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          Más recientes
+          Últimos 5
         </span>
       </div>
 
