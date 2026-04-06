@@ -5,18 +5,18 @@
 export function buildReactionsCard({ loading, error, totalReactions }) {
   if (loading) return { value: null,    subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (totalReactions === 0) return { value: "0", subtitle: "Aún no hay respuestas hoy" };
+  if (totalReactions === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy" };
  
   return {
     value:    totalReactions,
-    subtitle: "Total de respuestas del día",
+    subtitle: "Total de reacciones del día",
   };
 }
  
 export function buildServerScoreCard({ loading, error, totalResponses, avgScore }) {
   if (loading) return { value: null,    subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (totalResponses === 0) return { value: "0", subtitle: "Aún no hay respuestas hoy" };
+  if (totalResponses === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy" };
  
   return {
     value:    `${(avgScore || 0).toFixed(1)} / 4`,
@@ -27,7 +27,7 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
 export function buildLowInteractionCard({ loading, error, data }) {
   if (loading) return { value: null, subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (data.length === 0) return { value: "Sin datos", subtitle: "No hay registros hoy" };
+  if (data.length === 0) return { value: "Sin datos", subtitle: "No hay encuestas hoy" };
 
   return {
     value: data.map(w => w.mesero).join(' · '),
@@ -41,7 +41,7 @@ export function buildSurveyCountCard({ loading, error, data }) {
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
 
   return {
-    value:    `${data.realizadas}✅| ${data.rechazadas}❌`,
+    value:    `${data.realizadas} | ${data.rechazadas}`,
     subtitle: `Realizadas | No Realizadas`,
   };
 }
