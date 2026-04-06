@@ -8,18 +8,14 @@ const WaiterPage = () => {
   return (
     <div className="space-y-6">
 
-        <div className="">
+        <div className="w-full">
                  <WaiterRanking />
             </div>
        
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-4 min-w-0">
-                  <LatestSuggestionsWidget />
-                </div>
-                <div className="lg:col-span-8 min-w-0">
+                <div className="w-full">
                  <WaiterPerformance />
                 </div>
-            </div>  
+  
 
               <div className="w-full">
             <WaiterLogbook />
