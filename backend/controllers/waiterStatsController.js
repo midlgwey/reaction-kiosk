@@ -278,7 +278,11 @@ export const getSurveysLog = async (req, res) => {
                     w.name AS mesero,
                     r.table_number AS mesa,
                     r.shift AS turno,
-                    datetime(MIN(r.created_at), ?) AS hora
+                    datetime(MIN(r.created_at), ?) AS hora,
+                    MAX(CASE WHEN r.question_id = 1 THEN r.value END) AS q1,
+                    MAX(CASE WHEN r.question_id = 2 THEN r.value END) AS q2,
+                    MAX(CASE WHEN r.question_id = 3 THEN r.value END) AS q3,
+                    MAX(CASE WHEN r.question_id = 4 THEN r.value END) AS q4
                 FROM reactions r
                 LEFT JOIN waiters w ON r.waiter_id = w.id
                 WHERE date(datetime(r.created_at, ?)) = date(?)
@@ -288,13 +292,32 @@ export const getSurveysLog = async (req, res) => {
             args: [TIME_OFFSET, TIME_OFFSET, safeDate]
         });
 
+        const LABELS = {
+            1: 'Servicio',
+            2: 'Bebidas',
+            3: 'Comida',
+            4: 'Instalaciones'
+        };
+
+        const SCORE = {
+            4: { label: 'Excelente', color: 'emerald' },
+            3: { label: 'Bueno', color: 'blue' },
+            2: { label: 'Regular', color: 'amber' },
+            1: { label: 'Malo', color: 'rose' },
+        };
+
         const log = result.rows.map(row => ({
             id: row.survey_id,
             mesero: row.mesero || 'Sin nombre',
             mesa: row.mesa || '-',
             turno: row.turno || '-',
             hora: row.hora ? new Date(row.hora).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '-',
-            estado: 'Realizada'
+            estado: 'Realizada',
+            respuestas: [1, 2, 3, 4].map(q => ({
+                label: LABELS[q],
+                value: row[`q${q}`] || null,
+                score: SCORE[row[`q${q}`]] || null
+            }))
         }));
 
         res.status(StatusCodes.OK).json(log);
