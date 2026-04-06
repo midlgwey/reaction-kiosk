@@ -42,22 +42,29 @@ export default function LogbookRow({ decline }) {
         </div>
       </div>
 
-      {/* ✅ Respuestas — solo para encuestas realizadas */}
       {isRealizada && decline.respuestas?.length > 0 && (
-        <div className="flex flex-wrap gap-2 px-6 pb-4 lg:w-auto w-[600px]">
+        <div className="grid grid-cols-4 gap-2 px-6 pb-4 lg:w-auto w-[600px]">
           {decline.respuestas.map((r, i) => (
-            <div key={i} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
-              <span className="text-[10px] text-slate-500 font-medium">{r.label}:</span>
-              <span className={`text-[10px] font-bold
+            <div key={i} className={`flex flex-col items-center py-2 px-3 rounded-xl border
+              ${r.score?.color === 'emerald' ? 'bg-emerald-50 border-emerald-200' :
+                r.score?.color === 'blue' ? 'bg-blue-50 border-blue-200' :
+                r.score?.color === 'amber' ? 'bg-amber-50 border-amber-200' :
+                r.score?.color === 'rose' ? 'bg-rose-50 border-rose-200' :
+                'bg-slate-50 border-slate-200'}`}>
+              <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                {r.label}
+              </span>
+              <span className={`text-[11px] font-black
                 ${r.score?.color === 'emerald' ? 'text-emerald-600' :
                   r.score?.color === 'blue' ? 'text-blue-600' :
                   r.score?.color === 'amber' ? 'text-amber-600' :
                   r.score?.color === 'rose' ? 'text-rose-600' : 'text-slate-400'}`}>
-                {r.score?.label || 'Sin resp.'}
+                {r.score?.label || '—'}
               </span>
             </div>
           ))}
         </div>
+
       )}
     </div>
   );

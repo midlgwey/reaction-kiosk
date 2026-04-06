@@ -327,6 +327,9 @@ export const getSurveysLog = async (req, res) => {
     }
 };
 
+
+
+
 // Encuestas rechazadas
 export const getDeclinesLog = async (req, res) => {
     const { date } = req.query;
