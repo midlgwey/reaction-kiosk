@@ -40,7 +40,7 @@ export function buildSurveyCountCard({ loading, error, data }) {
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
 
   return {
-    value:    `${data.realizadas} % | ${data.rechazadas} %`,
-    subtitle: `Realizadas vs No Realizadas`,
+    value:    `${data.realizadas}✅| ${data.rechazadas}❌`,
+    subtitle: `Realizadas | No Realizadas`,
   };
 }

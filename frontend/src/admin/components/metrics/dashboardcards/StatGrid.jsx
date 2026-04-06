@@ -32,11 +32,11 @@ export default function StatGrid() {
       />
 
       <StatCard
-        title="INDICE DE FELICIDAD"
+        title="MENOR INTERACCIÓN"
         value={happinessCard.value ?? <Spinner />}
         subtitle={happinessCard.subtitle}
         icon={<FaceSmileIcon className={ICON_CLASS} />}
-        color="blue"
+        color="orange"
       />
 
      <StatCard
@@ -44,7 +44,7 @@ export default function StatGrid() {
         value={surveyCountCard.value ?? <Spinner />}
         subtitle={surveyCountCard.subtitle}
         icon={<ClipboardDocumentCheckIcon className={ICON_CLASS} />}
-        color="emerald"
+        color="indigo"
       />
 
     </div>
