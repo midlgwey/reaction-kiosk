@@ -49,13 +49,23 @@ export default function WaiterLogbook() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex bg-slate-100 p-1 rounded-lg">
-            <button onClick={() => setActiveTab('realizadas')} className={`... ${activeTab === 'realizadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              Realizadas
-            </button>
-            <button onClick={() => setActiveTab('rechazadas')} className={`... ${activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              No Realizadas
-            </button>
-          </div>
+              <button
+                onClick={() => setActiveTab('realizadas')}
+                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                  activeTab === 'realizadas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                ✅ Realizadas
+              </button>
+              <button
+                onClick={() => setActiveTab('rechazadas')}
+                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                  activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                ❌ No Realizadas
+              </button>
+            </div>
           <DashboardFilter options={dateOptions} selectedOption={selectedOption} setSelectedOption={setSelectedOption} selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
         </div>
       </div>
@@ -73,10 +83,11 @@ export default function WaiterLogbook() {
         ) : (
           <div className="min-w-max lg:min-w-full">
             {/* Headers */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs text-rose-600 font-semibold uppercase tracking-wider border-b border-slate-300 lg:w-auto w-[600px] shrink-0">
+           <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs text-rose-600 font-semibold uppercase tracking-wider border-b border-slate-300 lg:w-auto w-[600px] shrink-0">
               <div className="col-span-2 text-center">Hora</div>
-              <div className="col-span-4">Mesero responsable</div>
-              <div className="col-span-3 text-center">Mesa</div>
+              <div className="col-span-3">Mesero</div>
+              <div className="col-span-2 text-center">Mesa</div>
+              <div className="col-span-2 text-center">Turno</div>  {/* ✅ */}
               <div className="col-span-3 text-right">Estado</div>
             </div>
 
