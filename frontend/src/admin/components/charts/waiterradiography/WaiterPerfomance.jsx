@@ -67,7 +67,7 @@ export default function WaiterPerformance() {
   const currentTableValue = selectedTable ? { value: selectedTable, label: `Mesa ${selectedTable}` } : null;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full h-full">
 
       {/* Encabezado y Filtros */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 border-b border-slate-100 pb-6">

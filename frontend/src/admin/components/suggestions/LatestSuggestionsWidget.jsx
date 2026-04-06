@@ -13,7 +13,7 @@ export default function LatestSuggestionsWidget() {
   const { comments, loading } = useLatestSuggestions();
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden w-full">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden w-full h-full flex flex-col">
       
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -26,7 +26,7 @@ export default function LatestSuggestionsWidget() {
       </div>
 
       {/* Contenedor con scroll horizontal responsive */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-auto flex-1 custom-scrollbar">
         <div className="min-w-max md:min-w-full divide-y divide-slate-50">
           {loading ? (
             <div className="flex items-center justify-center min-h-[200px] p-4 w-full">
