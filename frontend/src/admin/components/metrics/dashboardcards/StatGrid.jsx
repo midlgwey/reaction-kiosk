@@ -1,4 +1,4 @@
-import { ChartBarIcon, StarIcon, FaceSmileIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/solid";
+import { ChartBarIcon, StarIcon, ArrowTrendingDownIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/solid";
 import StatCard from "./StatCard";
 import { useStatGrid } from "./useStatGrid";
 
@@ -11,7 +11,7 @@ const Spinner = () => (
 const ICON_CLASS = "w-8 h-8 md:w-10 md:h-10";
 
 export default function StatGrid() {
-  const { reactionsCard, serverScoreCard, happinessCard, surveyCountCard } = useStatGrid();
+  const { reactionsCard, serverScoreCard, lowInteractionCard, surveyCountCard } = useStatGrid();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -32,10 +32,10 @@ export default function StatGrid() {
       />
 
       <StatCard
-        title="MENOR INTERACCIÓN"
-        value={happinessCard.value ?? <Spinner />}
-        subtitle={happinessCard.subtitle}
-        icon={<FaceSmileIcon className={ICON_CLASS} />}
+        title="MESEROS CON MENOS INTERACCIONES"
+        value={lowInteractionCard.value ?? <Spinner />}
+        subtitle={lowInteractionCard.subtitle}
+        icon={<ArrowTrendingDownIcon className={ICON_CLASS} />}
         color="orange"
       />
 

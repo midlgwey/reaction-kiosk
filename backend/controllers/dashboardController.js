@@ -74,36 +74,42 @@ export const getDailyServerScore = async (req, res) => {
 };
 
 /* --------------------
-   FELICIDAD DEL DÍA
+   MESEROS CON MENOR INTERACCIÓN (QUE LLEVA POCAS ENCUESTAS EN DESAYUNO Y COMIDA/CENA DEL DIA)
+
 */
-export const getTodayHappinessIndex = async (req, res) => {
+export const getLowInteractionWaiters = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
-        SELECT 
-          COALESCE(ROUND(AVG(value),2), 0) AS avg_score,
-          COUNT(*) as total
-        FROM reactions
-        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}');
-      `,
+        SELECT
+          w.name AS mesero,
+          r.shift AS turno,
+          COUNT(DISTINCT r.survey_id) AS encuestas
+        FROM waiters w
+        LEFT JOIN reactions r ON w.id = r.waiter_id
+          AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+        WHERE w.active = 1
+        GROUP BY w.id, w.name, r.shift
+        HAVING (
+          (r.shift = 'Desayuno'    AND encuestas < 3) OR
+          (r.shift = 'Comida/Cena' AND encuestas < 2) OR
+          r.shift IS NULL
+        )
+        ORDER BY encuestas ASC
+        LIMIT 4
+      `
     });
 
-    const avg = result.rows[0].avg_score;
-    const total = result.rows[0].total;
+    res.status(200).json(result.rows.map(row => ({
+      mesero: row.mesero,
+      turno: row.turno || 'Sin encuestas',
+      encuestas: row.encuestas || 0
+    })));
 
-    // Cálculo del porcentaje basado en el máximo de 4 estrellas
-    const percent = total > 0 ? Math.round((avg / 4) * 100) : 0;
-
-    res.status(200).json({
-      happinessPercent: percent,
-      avgScore: avg,
-      totalResponses: total
-    });
   } catch (error) {
-    throw new InternalServerError("Error índice felicidad");
+    throw new InternalServerError("Error meseros con poca interacción");
   }
 };
-
 
 /* ----------------------------
    TOTAL ENCUESTAS REALIZADAS Y NO REALIZADAS POR DIA

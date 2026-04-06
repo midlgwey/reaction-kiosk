@@ -75,45 +75,35 @@ export function useDailyServerScore() {
 }
 
 /* ===============================
-   INDICE FELICIDAD
+   MESEROS CON POCA INTERACCIÓN
 =================================*/
-export function useDailyHappinessIndex() {
-  const [state, setState] = useState({
-    happinessPercent: 0,
-    avgScore: 0,
-    totalResponses: 0,
-    loading: true,
-    error: null,
-  });
+
+export const useLowInteractionWaiters = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const res = await api.get("/dashboard/happiness-index");
-
-        setState({
-          happinessPercent: res.data.happinessPercent ?? 0,
-          avgScore: res.data.avgScore ?? 0,
-          totalResponses: res.data.totalResponses ?? 0,
-          loading: false,
-          error: null,
-        });
-      } catch {
-        setState({
-          happinessPercent: 0,
-          avgScore: 0,
-          totalResponses: 0,
-          loading: false,
-          error: "Error cargando felicidad",
-        });
+        const response = await api.get('/dashboard/daily-low-interaction');
+        setData(response.data);
+      } catch (err) {
+        console.error("Error en useLowInteractionWaiters:", err);
+        setError("No se pudo cargar");
+        setData([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  return state;
-}
+  return { data, loading, error };
+};
+
 
 /* ===============================
    ENCUESTAS REALIZADAS POR DIA

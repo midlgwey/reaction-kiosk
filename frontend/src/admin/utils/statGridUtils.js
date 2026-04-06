@@ -24,14 +24,14 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
   };
 }
  
-export function buildHappinessCard({ loading, error, totalResponses, happinessPercent }) {
+export function buildLowInteractionCard({ loading, error, data }) {
   if (loading) return { value: null,    subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (totalResponses === 0) return { value: "0%", subtitle: "Aún no hay respuestas hoy" };
+  if (data.length === 0) return { value: "0", subtitle: "No hay meseros con poca interacción" };
  
   return {
-    value:    `${happinessPercent}%`,
-    subtitle: "Nivel de satisfacción del día",
+    value:    `${data.length}`, 
+    subtitle: "Meseros con poca interacción",
   };
 }
  
