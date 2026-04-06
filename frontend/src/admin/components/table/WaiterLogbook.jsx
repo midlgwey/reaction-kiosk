@@ -28,6 +28,7 @@ export default function WaiterLogbook() {
     const d = new Date();
     if (selectedOption.value === 'hoy') return format(d, 'yyyy-MM-dd');
     if (selectedOption.value === 'ayer') { d.setDate(d.getDate() - 1); return format(d, 'yyyy-MM-dd'); }
+     if (selectedOption.value === 'antier') { d.setDate(d.getDate() - 2); return format(d, 'yyyy-MM-dd'); }
     if (selectedOption.value === 'custom' && selectedDay) return format(selectedDay, 'yyyy-MM-dd');
     return format(d, 'yyyy-MM-dd');
   }, [selectedOption, selectedDay]);
