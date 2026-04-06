@@ -30,10 +30,11 @@ export function buildLowInteractionCard({ loading, error, data }) {
   if (data.length === 0) return { value: "Sin datos", subtitle: "No hay registros hoy" };
 
   return {
-    value: data.map(w => w.mesero).join(' | '),
-    subtitle: data.map(w => `${w.turno}: ${w.encuestas} enc.`).join(' · ')
+    value: data.map(w => w.mesero).join(' · '),
+    subtitle: data.map(w => `${w.turno}: ${w.encuestas} enc.`).join(' | ')
   };
 }
+
  
 export function buildSurveyCountCard({ loading, error, data }) {
   if (loading) return { value: null, subtitle: null };

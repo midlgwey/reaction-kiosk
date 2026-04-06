@@ -80,24 +80,23 @@ export const getDailyServerScore = async (req, res) => {
 export const getLowInteractionWaiters = async (req, res) => {
   try {
     const [breakfastResult, lunchResult] = await Promise.all([
-      db.execute({
-        sql: `
-          SELECT
-            w.name AS mesero,
-            'Desayuno' AS turno,
-            COUNT(DISTINCT r.survey_id) AS encuestas
-          FROM waiters w
-          LEFT JOIN reactions r ON w.id = r.waiter_id
-            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-            AND r.shift = 'Desayuno'
-          WHERE w.active = 1
-          GROUP BY w.id, w.name
-          HAVING encuestas >= 2        
-          ORDER BY encuestas ASC
-          LIMIT 1
-        `
-      }),
-      db.execute({
+        db.execute({
+          sql: `
+            SELECT
+              w.name AS mesero,
+              'Desayuno' AS turno,
+              COUNT(DISTINCT r.survey_id) AS encuestas
+            FROM waiters w
+            LEFT JOIN reactions r ON w.id = r.waiter_id
+              AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+              AND r.shift = 'Desayuno'
+            WHERE w.active = 1
+            GROUP BY w.id, w.name
+            HAVING encuestas >= 2       
+            ORDER BY encuestas ASC
+          `                         
+        }),
+        db.execute({
           sql: `
             SELECT
               w.name AS mesero,
@@ -113,14 +112,13 @@ export const getLowInteractionWaiters = async (req, res) => {
               FROM reactions
               WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
               AND shift = 'Desayuno'
-            )                              -- ✅ excluye meseros de desayuno
+            )
             GROUP BY w.id, w.name
-            HAVING encuestas >= 1
+            HAVING encuestas >= 1        
             ORDER BY encuestas ASC
-            LIMIT 1
-          `
+          `                              
         })
-    ]);
+      ]);
 
     const result = [
       ...(breakfastResult.rows[0] ? [breakfastResult.rows[0]] : []),
