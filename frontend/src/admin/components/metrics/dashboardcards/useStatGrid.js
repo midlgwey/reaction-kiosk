@@ -2,27 +2,27 @@ import {
   useDailyReactions,
   useDailyServerScore,
   useDailyHappinessIndex,
-  useDailyHappinessByShift,
+  useDailySurveyCount,
 } from "../../../hooks/dashboard/useDashboardSummary";
  
 import {
   buildReactionsCard,
   buildServerScoreCard,
   buildHappinessCard,
-  buildShiftCard,
+  buildSurveyCountCard,
 } from "../../../utils/statGridUtils";
  
 export function useStatGrid() {
   const reactions      = useDailyReactions();
   const serverScore    = useDailyServerScore();
   const happiness      = useDailyHappinessIndex();
-  const happyByShift   = useDailyHappinessByShift();
+  const surveyCount  = useDailySurveyCount();
  
   return {
     reactionsCard:   buildReactionsCard(reactions),
     serverScoreCard: buildServerScoreCard(serverScore),
     happinessCard:   buildHappinessCard(happiness),
-    shiftCard:       buildShiftCard(happyByShift),
+     surveyCountCard: buildSurveyCountCard(surveyCount),
   };
 }
  

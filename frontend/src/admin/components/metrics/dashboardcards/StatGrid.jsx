@@ -11,7 +11,7 @@ const Spinner = () => (
 const ICON_CLASS = "w-8 h-8 md:w-10 md:h-10";
 
 export default function StatGrid() {
-  const { reactionsCard, serverScoreCard, happinessCard, shiftCard } = useStatGrid();
+  const { reactionsCard, serverScoreCard, happinessCard, surveyCountCard } = useStatGrid();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -32,19 +32,19 @@ export default function StatGrid() {
       />
 
       <StatCard
-        title="ÍNDICE DE FELICIDAD"
+        title="INDICE DE FELICIDAD"
         value={happinessCard.value ?? <Spinner />}
         subtitle={happinessCard.subtitle}
         icon={<FaceSmileIcon className={ICON_CLASS} />}
         color="blue"
       />
 
-      <StatCard
-        title={<>SATISFACCIÓN POR<br />TURNO</>}
-        value={shiftCard.value ?? <Spinner />}
-        subtitle={shiftCard.subtitle}
-        icon={<ClockIcon className={ICON_CLASS} />}
-        color="purple"
+     <StatCard
+        title="ENCUESTAS DEL DÍA"
+        value={surveyCountCard.value ?? <Spinner />}
+        subtitle={surveyCountCard.subtitle}
+        icon={<ClipboardDocumentCheckIcon className={ICON_CLASS} />}
+        color="emerald"
       />
 
     </div>

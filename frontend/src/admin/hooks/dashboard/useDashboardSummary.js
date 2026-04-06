@@ -116,39 +116,30 @@ export function useDailyHappinessIndex() {
 }
 
 /* ===============================
-   FELICIDAD POR TURNO
+   ENCUESTAS REALIZADAS POR DIA
 =================================*/
-export function useDailyHappinessByShift() {
-  const [state, setState] = useState({
-    breakfast: 0,
-    lunchDinner: 0,
-    loading: true,
-    error: null,
-  });
+
+export const useDailySurveyCount = () => {
+  const [data, setData] = useState({ realizadas: 0, rechazadas: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCount = async () => {
+      setLoading(true);
       try {
-        const res = await api.get("/dashboard/happiness-shift");
-
-        setState({
-          breakfast: res.data.desayuno ?? 0,     // backend manda "desayuno"
-          lunchDinner: res.data.comidaCena ?? 0, // backend manda "comidaCena"
-          loading: false,
-          error: null,
-        });
-      } catch {
-        setState({
-          breakfast: 0,
-          lunchDinner: 0,
-          loading: false,
-          error: "Error cargando turnos",
-        });
+        const response = await api.get('/dashboard/daily-survey-count');
+        setData(response.data);
+      } catch (err) {
+        console.error("Error en useDailySurveyCount:", err);
+        setError("No se pudo cargar el conteo de encuestas");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchCount();
   }, []);
 
-  return state;
-}
+  return { data, loading, error };
+};

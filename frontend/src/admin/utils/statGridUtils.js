@@ -35,13 +35,12 @@ export function buildHappinessCard({ loading, error, totalResponses, happinessPe
   };
 }
  
-export function buildShiftCard({ loading, error, breakfast, lunchDinner }) {
-  if (loading) return { value: null,    subtitle: null };
+export function buildSurveyCountCard({ loading, error, data }) {
+  if (loading) return { value: null, subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
- 
+
   return {
-    value:    `${breakfast}% | ${lunchDinner}%`,
-    subtitle: "Desayuno | Comida y Cena",
+    value:    `${data.realizadas} realizadas`,
+    subtitle: `${data.rechazadas} no realizadas hoy`,
   };
 }
- 

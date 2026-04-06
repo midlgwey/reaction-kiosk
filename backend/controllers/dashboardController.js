@@ -106,36 +106,36 @@ export const getTodayHappinessIndex = async (req, res) => {
 
 
 /* ----------------------------
-   FELICIDAD POR TURNO DEL DÍA
-   */
-export const getTodayHappinessByShift = async (req, res) => {
+   TOTAL ENCUESTAS REALIZADAS Y NO REALIZADAS POR DIA
+*/
+export const getDailySurveyCount = async (req, res) => {
   try {
-    const result = await db.execute({
-      sql: `
-        SELECT 
-          shift,
-          ROUND(AVG(value),2) AS avg_score
-        FROM reactions
-        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-        GROUP BY shift;
-      `,
+    const [surveysResult, declinesResult] = await Promise.all([
+      // Encuestas realizadas — conta por survey_id único
+      db.execute({
+        sql: `
+          SELECT COUNT(DISTINCT survey_id) AS total
+          FROM reactions
+          WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+        `
+      }),
+      // Encuestas rechazadas
+      db.execute({
+        sql: `
+          SELECT COUNT(*) AS total
+          FROM declines
+          WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+        `
+      })
+    ]);
+
+    res.status(200).json({
+      realizadas: surveysResult.rows[0]?.total || 0,
+      rechazadas: declinesResult.rows[0]?.total || 0,
     });
-
-    const formatted = {
-      desayuno: 0,
-      comidaCena: 0
-    };
-
-    result.rows.forEach(row => {
-      const percent = Math.round((row.avg_score / 4) * 100);
-      if (row.shift === "Desayuno") formatted.desayuno = percent;
-      if (row.shift === "Comida/Cena") formatted.comidaCena = percent;
-    });
-
-    res.status(200).json(formatted);
 
   } catch (error) {
-    throw new InternalServerError("Error por turno");
+    throw new InternalServerError("Error conteo diario de encuestas");
   }
 };
 
@@ -201,42 +201,6 @@ export const getDailySatisfactionTrend = async (req, res) => {
   }
 };
 
-/*-------------
-   DONA SEMANAL 
- */
-export const getWeeklySentimentSummary = async (req, res) => {
-  try {
-    const filter = getDateFilters(req);
-    
-    // Validamos y reemplazamos el alias dependiendo del tipo de condicional
-    let conditionFixed = filter.condition;
-    if(conditionFixed.includes('r.created_at')) {
-        conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
-    }
-
-    const result = await db.execute({
-      sql: `
-        SELECT
-          COALESCE(SUM(CASE WHEN value = 4 THEN 1 ELSE 0 END),0) AS excelente,
-          COALESCE(SUM(CASE WHEN value = 3 THEN 1 ELSE 0 END),0) AS bueno,
-          COALESCE(SUM(CASE WHEN value = 2 THEN 1 ELSE 0 END),0) AS puede_mejorar,
-          COALESCE(SUM(CASE WHEN value = 1 THEN 1 ELSE 0 END),0) AS malo,
-          COUNT(*) as total
-        FROM reactions
-        WHERE ${conditionFixed};
-      `,
-      args: filter.args
-    });
-
-    res.status(200).json(result.rows[0] || {
-      excelente: 0, bueno: 0, puede_mejorar: 0, malo: 0, total: 0
-    });
-
-  } catch (error) {
-    console.error("Error en getWeeklySentimentSummary:", error);
-    throw new InternalServerError("Error obteniendo el resumen de sentimientos");
-  }
-};
 
 /* --------------------------------------------------
    RADIOGRAFÍA POR PREGUNTA (BARRAS APILADAS)
