@@ -48,14 +48,14 @@ export default function AssignWaiterPage({ onAssign, onSkip }) {
         <button
           onClick={() => selected && onAssign(selected)}
           disabled={!selected}
-          className="w-full py-4 bg-indigo-500 hover:bg-indigo-700 text-white font-extrabold text-lg rounded-2xl shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all mb-3"
+          className="w-full py-4 bg-indigo-500 hover:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all mb-3"
         >
           Confirmar mesero
         </button>
 
         <button
           onClick={onSkip}
-          className="w-full py-3 bg-white text-slate-500 font-bold text-sm rounded-2xl border-2 border-slate-200 hover:bg-slate-50 transition-all"
+          className="w-full py-4 bg-teal-500 text-white font-bold text-lg rounded-2xl border-2 border-teal-700 hover:bg-teal-700 transition-all"
         >
           Continuar con mi PIN
         </button>
