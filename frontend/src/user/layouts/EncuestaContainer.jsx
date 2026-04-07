@@ -5,6 +5,7 @@ import QuestionScreen from "../pages/QuestionScreen";
 import ThanksScreen from "../pages/ThanksScreen";
 import CreateTable from "../pages/CreateTablePage";
 import ConsentPage from "../pages/ConsentPage";
+import AssignWaiterPage from "../pages/AssignWaiterPage"
 
 export default function EncuestaContainer() {
   const { 
@@ -12,6 +13,8 @@ export default function EncuestaContainer() {
     responses, 
     startKiosk, 
     unlockKiosk, 
+    assignWaiter,  
+    skipAssign,
     assignTable, 
     handleConsent,
     handleAnswer, 
@@ -26,13 +29,19 @@ export default function EncuestaContainer() {
     <div className="min-h-screen overflow-hidden">
       {step === 'HOME' && <WelcomeScreen onStart={startKiosk} />}
       {step === 'PIN' && <PinpadPage onUnlock={unlockKiosk} />}
+      {step === 'ASSIGN' && (                        
+        <AssignWaiterPage
+          onAssign={assignWaiter}
+          onSkip={skipAssign}
+        />
+      )}
       {step === 'TABLE' && <CreateTable onNext={assignTable} />}
       {step === 'CONSENT' && (
-            <ConsentPage
-              onAccept={() => handleConsent(true)}
-              onDecline={() => handleConsent(false)}
-            />
-          )}
+        <ConsentPage
+          onAccept={() => handleConsent(true)}
+          onDecline={() => handleConsent(false)}
+        />
+      )}
       {step === 'SURVEY' && (
         <QuestionScreen
           onAnswer={handleAnswer}
