@@ -155,7 +155,7 @@ export default function DailyQuestions() {
       <div className="min-h-[150px] mt-2">
         {loading ? <ChartLoading /> : 
          error ? <div className="text-center py-10 text-red-400 font-semibold">Error al cargar datos</div> :
-         (!data || data.length === 0) ? <div className="text-center py-10 text-slate-400">No hay encuestas en esta fecha</div> :
+         (!data || data.length === 0) ? <div className="text-center py-20 italic text-slate-400 tracking-widest">No se encontraron registros en la fecha seleccionada</div> :
          <div className="space-y-6">
            {data.map((q) => <QuestionBar key={q.id} question={q} />)}
          </div>
