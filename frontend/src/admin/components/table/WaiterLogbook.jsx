@@ -16,7 +16,7 @@ const dateOptions = [
   { value: 'hoy',     label: 'Hoy' },
   { value: 'ayer',    label: 'Ayer' },
   { value: 'antier', label: 'Antier' },
-  { value: 'custom',  label: '📅 Historial...' },
+  { value: 'custom',  label: '📅 Eligir Fecha' },
 ];
 
 export default function WaiterLogbook() {
