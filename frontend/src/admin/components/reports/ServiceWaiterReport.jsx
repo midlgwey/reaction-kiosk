@@ -2,7 +2,7 @@ import React from 'react'
 
 const ServiceWaiterReport = () => {
   return (
-    <div>ServiceWaiterReport</div>
+    <div>hols ,r fsfsf</div>
   )
 }
 
