@@ -24,7 +24,7 @@ export default function AssignWaiterPage({ onAssign, onSkip }) {
         <div className="w-full flex flex-col gap-3 mb-6 max-h-64 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-6 h-6 border-4 border-indigo-300 border-t-indigo-500 rounded-full animate-spin" />
             </div>
           ) : error ? (
             <p className="text-red-500 text-sm text-center font-bold">{error}</p>
@@ -48,14 +48,14 @@ export default function AssignWaiterPage({ onAssign, onSkip }) {
         <button
           onClick={() => selected && onAssign(selected)}
           disabled={!selected}
-          className="w-full py-4 bg-indigo-500 hover:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all mb-3"
+          className="w-full py-4 bg-indigo-400 hover:bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all mb-3"
         >
           Confirmar mesero
         </button>
 
         <button
           onClick={onSkip}
-          className="w-full py-4 bg-teal-500 text-white font-bold text-lg rounded-2xl border-2 border-teal-700 hover:bg-teal-700 transition-all"
+          className="w-full py-4 bg-teal-400 text-white font-bold text-lg rounded-2xl border-2 border-teal-00 hover:bg-teal-600 transition-all"
         >
           Continuar con mi PIN
         </button>
