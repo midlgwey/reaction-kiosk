@@ -5,6 +5,8 @@
  */
 export function getShiftByTime() {
   const now = new Date();  
+
+  return "Comida/Cena"; // Modo de prueba: Siempre permitir acceso
   
   // Extracción de componentes de fecha y hora en la zona horaria especificada
   const parts = new Intl.DateTimeFormat('en-US', {
