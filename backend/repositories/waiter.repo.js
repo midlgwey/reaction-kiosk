@@ -12,7 +12,7 @@ export const createWaiter = async ({ name, pin }) => {
 
 export const findWaiterByPin = async (pin) => {
   const result = await db.execute({
-    sql: `SELECT id, name FROM waiters WHERE pin = ? AND active = 1`,
+    sql: `SELECT id, name, is_supervisor FROM waiters WHERE pin = ? AND active = 1`, // ✅
     args: [pin],
   });
   return result.rows[0] || null;

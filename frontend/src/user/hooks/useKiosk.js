@@ -4,6 +4,7 @@ import api from '../../user/services/api';
 export const useKiosk = (totalQuestions = 4) => {
   const [step, setStep] = useState('HOME');
   const [waiterId, setWaiterId] = useState(null);
+  const [isSupervisor, setIsSupervisor] = useState(false);
   const [tableNumber, setTableNumber] = useState(null);
   const [responses, setResponses] = useState([]);
 
@@ -15,6 +16,7 @@ export const useKiosk = (totalQuestions = 4) => {
   const resetKiosk = useCallback(() => {
     setStep('HOME');
     setWaiterId(null);
+    setIsSupervisor(false);
     setTableNumber(null);
     setResponses([]);
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -43,9 +45,19 @@ export const useKiosk = (totalQuestions = 4) => {
     };
   }, [resetInactivityTimer]);
 
-  const unlockKiosk = (id) => {
+   const unlockKiosk = (id, is_supervisor) => {
     setWaiterId(id);
+    setIsSupervisor(is_supervisor === 1);
     setResponses([]);
+    setStep(is_supervisor === 1 ? 'ASSIGN' : 'TABLE');
+  };
+
+  const assignWaiter = (selectedWaiterId) => {
+    setWaiterId(selectedWaiterId);
+    setStep('TABLE');
+  };
+
+  const skipAssign = () => {
     setStep('TABLE');
   };
 
@@ -91,7 +103,7 @@ export const useKiosk = (totalQuestions = 4) => {
     }
   };
 
-  const handleSuggestionChoice = (wantsToLeaveSuggestion) => {
+  const handleSuggestionChoice = () => {
     setStep('THANKS');
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => resetKiosk(), 10000);
@@ -100,10 +112,13 @@ export const useKiosk = (totalQuestions = 4) => {
   return {
     step,
     waiterId,
+    isSupervisor,
     tableNumber,
     responses,
     startKiosk,
     unlockKiosk,
+    assignWaiter,  
+    skipAssign, 
     assignTable,
     handleAnswer,
     handleConsent,

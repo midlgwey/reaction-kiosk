@@ -57,10 +57,30 @@ export const loginWaiter = async (req, res) => {
 
   // Responder con los datos del mesero 
   res.status(StatusCodes.OK).json({ 
-    message: "Acceso concedido", 
-    waiter: {
-      id: waiter.id,
-      name: waiter.name
-    }
-  });
+  message: "Acceso concedido", 
+  waiter: {
+    id: waiter.id,
+    name: waiter.name,
+    is_supervisor: waiter.is_supervisor // ✅
+  }
+});
+};
+
+//Controller para obtener meseros activos
+export const getActiveWaiters = async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: `SELECT id, name FROM waiters WHERE active = 1 ORDER BY name ASC`,
+      args: []
+    });
+
+    res.status(StatusCodes.OK).json(result.rows.map(row => ({
+      id: row.id,
+      name: row.name
+    })));
+
+  } catch (error) {
+    console.error("Error al obtener meseros activos:", error);
+    throw new InternalServerError("Error al obtener meseros");
+  }
 };

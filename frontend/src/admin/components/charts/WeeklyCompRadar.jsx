@@ -203,20 +203,25 @@ export default function WeeklyCompRadar() {
   };
 
   return (
-     <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
+     <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px] w-full">
  
-      
+       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+            Comparativa semanal de métricas 
+          </h3>
       {/* Selector de rango de fechas */}
-      <div className="flex justify-end items-center mb-4 relative z-10">
-        <div className="w-60">
-          <Select
-            options={selectOptions}
-            value={selectedOption}
-            onChange={(opt) => setSelectedOption(opt)}
-            styles={customSelectStyles}
-            isSearchable={false}
-          />
-        </div>
+            <div className="flex justify-end items-center mb-4 relative z-10">
+              <div className="w-60">
+                <Select
+                  options={selectOptions}
+                  value={selectedOption}
+                  onChange={(opt) => setSelectedOption(opt)}
+                  styles={customSelectStyles}
+                  isSearchable={false}
+                />
+              </div>
+            </div>
+
       </div>
 
       {/* Canvas de renderizado y manejo de estados vacíos/error */}

@@ -36,13 +36,10 @@ const PinPage = ({ onUnlock }) => {
       const response = await api.post('/waiter/login-waiter', { pin });
       
       // Extraemos el id y nombre que manda el backend
-      const { id, name } = response.data.waiter;
-      
+      const { id, name, is_supervisor } = response.data.waiter;
       setMensaje(`✅ BIENVENIDO, ${name.toUpperCase()}`);
-      
-      // Pausa para que se lea el mensaje antes de cambiar de pantalla
       setTimeout(() => {
-        onUnlock(id); 
+        onUnlock(id, is_supervisor);
       }, 600);
 
     } catch (error) {
