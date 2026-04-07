@@ -55,7 +55,7 @@ export default function AssignWaiterPage({ onAssign, onSkip }) {
 
         <button
           onClick={onSkip}
-          className="w-full py-4 bg-teal-400 text-white font-bold text-lg rounded-2xl border-2 border-teal-00 hover:bg-teal-600 transition-all"
+          className="w-full py-4 bg-teal-400 text-white font-bold text-lg rounded-2xl border-2 border-teal-500 hover:bg-teal-600 transition-all"
         >
           Continuar con mi PIN
         </button>
