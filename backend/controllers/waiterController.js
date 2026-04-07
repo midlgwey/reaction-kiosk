@@ -1,3 +1,4 @@
+import { db } from '../db.js';
 import { createWaiter, findWaiterByPin } from '../repositories/waiter.repo.js';
 import { StatusCodes } from 'http-status-codes';
 import { UnauthenticatedError, BadRequestError} from '../errors/customErrors.js';
@@ -61,7 +62,7 @@ export const loginWaiter = async (req, res) => {
   waiter: {
     id: waiter.id,
     name: waiter.name,
-    is_supervisor: waiter.is_supervisor // ✅
+    is_supervisor: waiter.is_supervisor 
   }
 });
 };
