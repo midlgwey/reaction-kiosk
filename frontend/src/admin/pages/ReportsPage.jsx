@@ -1,9 +1,8 @@
-import React from 'react';
 
 import SuggestionsReportCard from "../components/reports/SuggestionsReportCard";
 import TrendReportCard from '../components/reports/TrendReportCard';
 import ShiftReportCard from '../components/reports/ShiftReportCard';
-import QuestionsReportCard from '../components/reports/QuestionsReportCard';
+
 
 
 export default function ReportsPage() {
@@ -25,7 +24,7 @@ export default function ReportsPage() {
 
         <ShiftReportCard/>
 
-        <QuestionsReportCard/>
+   
 
   
       </div>
