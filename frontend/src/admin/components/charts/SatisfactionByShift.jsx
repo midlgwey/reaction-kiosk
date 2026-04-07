@@ -58,31 +58,33 @@ export default function SatisfactionByShift() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full h-full">
+  <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full h-full">
     
-        {/* Encabezado y Filtros */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
-          <div>
-            <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Satisfacción por turno y día</h3>
-          </div>
-
-      {/* Controles de encabezado con el filtro */}
-      <div className="flex justify-end items-center mb-4 relative z-10">
-        <DashboardFilter 
-          options={STATS_OPTIONS} 
-          selectedOption={filterOption} 
-          setSelectedOption={setFilterOption} 
-          selectedDay={customDate} 
-          setSelectedDay={setCustomDate} 
-        />
-      </div>
-
-          <div className="flex-1 relative z-0">
-          {loading ? <ChartLoading /> : error ? (
-            <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">Error al cargar datos</div>
-          ) : ( <Bar data={data} options={options} /> )}
-          </div>
-      </div>
+    {/* Encabezado y Filtros */}
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+      <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+        Satisfacción por turno y día
+      </h3>
+      <DashboardFilter
+        options={STATS_OPTIONS}
+        selectedOption={filterOption}
+        setSelectedOption={setFilterOption}
+        selectedDay={customDate}
+        setSelectedDay={setCustomDate}
+      />
     </div>
-  );
-}
+
+    {/* Gráfica — fuera del header */}
+    <div className="flex-1 relative min-h-[300px]">
+      {loading ? <ChartLoading /> : error ? (
+        <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">
+          Error al cargar datos
+        </div>
+      ) : (
+        <Bar data={data} options={options} />
+      )}
+    </div>
+
+  </div>
+);
+};

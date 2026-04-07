@@ -9,21 +9,16 @@ const StatsPage = () => {
         <StatGridQWeekly />
       </section>
 
-        <div className="grid grid-cols-12 gap-6">
-            <div className="lg:col-span-4 min-w-0">
-              <WeeklyCompRadar/>
-            </div>
-              <div className="lg:col-span-8 min-w-0">
-             <SatisfactionByShift />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-4 min-w-0">
+          <WeeklyCompRadar />
         </div>
-
-          
-
-        <h2>AQUI VA IR LA GRgdfgfdgdgAFICA DE SATISFACCION DE LA PREGUNTA 1 POR MESERO Y ARROJAR EL TOTAL DE MESAS QUE TUVO POR MES</h2>
+        <div className="col-span-12 lg:col-span-8 min-w-0">
+          <SatisfactionByShift />
+        </div>
       </div>
-
-  )
+    </div>
+  );
 }
 
 export default StatsPage;
