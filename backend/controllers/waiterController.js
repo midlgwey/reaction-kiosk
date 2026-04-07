@@ -71,7 +71,7 @@ export const loginWaiter = async (req, res) => {
 export const getActiveWaiters = async (req, res) => {
   try {
     const result = await db.execute({
-      sql: `SELECT id, name FROM waiters WHERE active = 1 ORDER BY name ASC`,
+      sql: `SELECT id, name FROM waiters WHERE active = 1 AND is_supervisor = 0 ORDER BY name ASC`,
       args: []
     });
 
