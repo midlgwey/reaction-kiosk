@@ -209,8 +209,9 @@ export default function WeeklyCompRadar() {
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Comparativa semanal de métricas 
           </h3>
+      
       {/* Selector de rango de fechas */}
-            <div className="flex justify-end items-center mb-4 relative z-10">
+
               <div className="w-full sm:w-60">
                 <Select
                   options={selectOptions}
@@ -220,8 +221,7 @@ export default function WeeklyCompRadar() {
                   isSearchable={false}
                 />
               </div>
-            </div>
-
+           
       </div>
 
       {/* Canvas de renderizado y manejo de estados vacíos/error */}
