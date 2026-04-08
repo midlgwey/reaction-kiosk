@@ -203,7 +203,7 @@ export default function WeeklyCompRadar() {
   };
 
   return (
-     <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px] w-full">
+     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6  flex flex-col w-full h-full">
  
        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-100 pb-4">
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
@@ -211,7 +211,7 @@ export default function WeeklyCompRadar() {
           </h3>
       {/* Selector de rango de fechas */}
             <div className="flex justify-end items-center mb-4 relative z-10">
-              <div className="w-60">
+              <div className="w-full sm:w-60">
                 <Select
                   options={selectOptions}
                   value={selectedOption}
@@ -225,7 +225,7 @@ export default function WeeklyCompRadar() {
       </div>
 
       {/* Canvas de renderizado y manejo de estados vacíos/error */}
-      <div className="flex-1 relative z-0">
+      <div className="flex-1 relative z-0 min-h-[300px]">
         {radar.loading ? (
           <ChartLoading />
         ) : radar.error ? (

@@ -10,10 +10,10 @@ const StatsPage = () => {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-4 min-w-0">
+        <div className="col-span-12 lg:col-span-4 min-w-0  min-h-[450px]">
           <WeeklyCompRadar />
         </div>
-        <div className="col-span-12 lg:col-span-8 min-w-0">
+        <div className="col-span-12 lg:col-span-8  min-h-[450px]">
           <SatisfactionByShift />
         </div>
       </div>

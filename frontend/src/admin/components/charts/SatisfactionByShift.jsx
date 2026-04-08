@@ -75,7 +75,7 @@ export default function SatisfactionByShift() {
     </div>
 
     {/* Gráfica — fuera del header */}
-    <div className="flex-1 relative min-h-[300px]">
+    <div className="flex-1 relative min-h-[350px] sm:min-h-[300px]">
       {loading ? <ChartLoading /> : error ? (
         <div className="h-full flex items-center justify-center text-red-400 text-sm font-semibold">
           Error al cargar datos
