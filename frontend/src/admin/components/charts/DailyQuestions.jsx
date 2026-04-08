@@ -86,7 +86,7 @@ export default function DailyQuestions() {
   };
 
   return (
-     <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col min-h-[450px]">
+     <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex flex-col w-full min-h-[450px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Pregunta</h3>
