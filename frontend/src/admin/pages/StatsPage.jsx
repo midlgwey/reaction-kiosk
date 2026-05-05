@@ -1,7 +1,7 @@
 import StatGridQWeekly from "../components/metrics/StatGridWeekly"
 import SatisfactionByShift from "../components/charts/SatisfactionByShift"
 import WeeklyCompRadar from "../components/charts/WeeklyCompRadar"
-import WaiterPerformanceTable from "../components/tables/WaiterPerformanceTable"
+import WaiterPerformanceTable from "../components/table/WaiterPerformanceTable"
 
 const StatsPage = () => {
   return (
