@@ -329,7 +329,6 @@ export const getSurveysLog = async (req, res) => {
 
 
 
-
 // Encuestas rechazadas
 export const getDeclinesLog = async (req, res) => {
     const { date } = req.query;
@@ -367,4 +366,67 @@ export const getDeclinesLog = async (req, res) => {
         console.error("Error en getDeclinesLog:", error);
         throw new InternalServerError("Error al obtener bitácora de rechazos");
     }
+};
+
+
+// Reporte de rendimiento mensual por mesero
+export const getWaiterPerformanceReport = async (req, res) => {
+  const { month, year } = req.query;
+
+  const now = new Date();
+  const targetMonth = parseInt(month) || (now.getMonth() + 1);
+  const targetYear = parseInt(year) || now.getFullYear();
+
+  // Primer y último día del mes
+  const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
+  const lastDay = new Date(targetYear, targetMonth, 0).getDate();
+  const endDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${lastDay}`;
+
+  try {
+    const [surveysResult, declinesResult] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT
+            w.id,
+            w.name AS mesero,
+            COUNT(DISTINCT r.survey_id) AS captadas,
+            COALESCE(SUM(CASE WHEN r.question_id = 1 THEN r.value ELSE 0 END), 0) AS suma_p1
+          FROM waiters w
+          LEFT JOIN reactions r ON w.id = r.waiter_id
+            AND date(datetime(r.created_at, ?)) BETWEEN date(?) AND date(?)
+          WHERE w.active = 1
+          GROUP BY w.id, w.name
+          ORDER BY w.name ASC
+        `,
+        args: [TIME_OFFSET, startDate, endDate]
+      }),
+      db.execute({
+        sql: `
+          SELECT waiter_id, COUNT(*) AS rechazos
+          FROM declines
+          WHERE date(datetime(created_at, ?)) BETWEEN date(?) AND date(?)
+          GROUP BY waiter_id
+        `,
+        args: [TIME_OFFSET, startDate, endDate]
+      })
+    ]);
+
+    const declinesMap = {};
+    declinesResult.rows.forEach(r => {
+      declinesMap[r.waiter_id] = r.rechazos;
+    });
+
+    const report = surveysResult.rows.map(row => ({
+      id: row.id,
+      mesero: row.mesero,
+      captadas: row.captadas || 0,
+      suma_p1: row.suma_p1 || 0,
+      rechazos: declinesMap[row.id] || 0
+    }));
+
+    res.status(StatusCodes.OK).json(report);
+  } catch (error) {
+    console.error("Error en getWaiterPerformanceReport:", error);
+    throw new InternalServerError("Error al obtener reporte de rendimiento");
+  }
 };
