@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useWaiterPerformance } from '../../hooks/waiters/useWaiterPerformance';
 import { usePeriodFilter } from '../../hooks/shared/usePeriodFilter';
 import PeriodSelector from '../shared/PeriodSelector';
@@ -21,10 +22,13 @@ export default function WaiterPerformanceTable({ onRefresh }) {
             Servicio + Cumplimiento — Mínimo aprobatorio: {MINIMO_APROBATORIO}%
           </p>
         </div>
-         <button 
+          <button 
           onClick={onRefresh}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
-        ></button>
+        >
+          <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden md:inline">Actualizar</span>
+        </button>
         <PeriodSelector
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
