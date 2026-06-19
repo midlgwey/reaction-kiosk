@@ -5,7 +5,7 @@ import PeriodSelector from '../shared/PeriodSelector';
 
 const MINIMO_APROBATORIO = 60;
 
-export default function WaiterPerformanceTable() {
+export default function WaiterPerformanceTable(onRefresh) {
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { data, loading, error } = useWaiterPerformance(selectedMonth.value, selectedYear);
 
@@ -21,6 +21,10 @@ export default function WaiterPerformanceTable() {
             Servicio + Cumplimiento — Mínimo aprobatorio: {MINIMO_APROBATORIO}%
           </p>
         </div>
+         <button 
+          onClick={onRefresh}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
+        ></button>
         <PeriodSelector
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
