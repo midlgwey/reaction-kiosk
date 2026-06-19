@@ -12,6 +12,7 @@ import waiterStatsRoutes from './routes/waiterStatsRoutes.js';
 import waiterRoutes from './routes/waiterRoutes.js';
 import alertsRoutes from './routes/alertsRoutes.js';
 import declineRoutes from './routes/declineRoutes.js';
+import realTablesRoutes from './routes/realTablesRoutes.js';
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 
@@ -51,6 +52,8 @@ app.use('/waiter', waiterRoutes)
 app.use('/alerts', alertsRoutes) 
 
 app.use('/declines', declineRoutes)
+
+app.use('/real-tables', realTablesRoutes);
 
 app.use(errorHandlerMiddleware);
 
