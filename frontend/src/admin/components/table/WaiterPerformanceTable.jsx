@@ -5,7 +5,7 @@ import PeriodSelector from '../shared/PeriodSelector';
 
 const MINIMO_APROBATORIO = 60;
 
-export default function WaiterPerformanceTable(onRefresh) {
+export default function WaiterPerformanceTable({ onRefresh }) {
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { data, loading, error } = useWaiterPerformance(selectedMonth.value, selectedYear);
 
