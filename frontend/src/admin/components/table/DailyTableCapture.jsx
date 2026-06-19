@@ -3,15 +3,18 @@ import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24
 import { format } from 'date-fns';
 import { useActiveWaitersAdmin } from '../../hooks/waiters/useActiveWaitersAdmin';
 import { useDailyTableCapture } from '../../hooks/waiters/useDailyTableCapture';
+import { usePeriodFilter } from '../../hooks/shared/usePeriodFilter';
+import PeriodSelector from '../shared/PeriodSelector';
 
-export default function DailyTableCapture({ month, year }) {
+export default function DailyTableCapture() {
   const [selectedWaiterId, setSelectedWaiterId] = useState('');
   const [tableCount, setTableCount] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
 
+  const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { waiters } = useActiveWaitersAdmin();
-  const { history, loading, error, captureToday, updateEntry, deleteEntry } = useDailyTableCapture(month, year);
+  const { history, loading, error, captureToday, updateEntry, deleteEntry } = useDailyTableCapture(selectedMonth.value, selectedYear);
 
   const handleSave = async () => {
     if (!selectedWaiterId || !tableCount) return;
@@ -33,13 +36,22 @@ export default function DailyTableCapture({ month, year }) {
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
 
-      <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50">
-        <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
-          Captura de Mesas Reales
-        </h3>
-        <p className="text-[10px] text-slate-500 mt-1 font-medium">
-          Registro diario por mesero — Hoy: {format(new Date(), "dd 'de' MMMM")}
-        </p>
+      <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+            Captura de Mesas Reales
+          </h3>
+          <p className="text-[10px] text-slate-500 mt-1 font-medium">
+            Registro diario por mesero — Hoy: {format(new Date(), "dd 'de' MMMM")}
+          </p>
+        </div>
+        <PeriodSelector
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
+          yearOptions={yearOptions}
+        />
       </div>
 
       <div className="px-6 py-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 bg-indigo-50/20">

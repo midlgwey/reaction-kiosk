@@ -377,13 +377,13 @@ export const getWaiterPerformanceReport = async (req, res) => {
   const targetMonth = parseInt(month) || (now.getMonth() + 1);
   const targetYear = parseInt(year) || now.getFullYear();
 
-  // Primer y último día del mes
   const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
   const lastDay = new Date(targetYear, targetMonth, 0).getDate();
   const endDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${lastDay}`;
 
   try {
-    const [surveysResult, declinesResult] = await Promise.all([
+    const [surveysResult, realTablesResult] = await Promise.all([
+      // Captadas (kiosko) + suma de P1
       db.execute({
         sql: `
           SELECT
@@ -400,29 +400,49 @@ export const getWaiterPerformanceReport = async (req, res) => {
         `,
         args: [TIME_OFFSET, startDate, endDate]
       }),
+      // Mesas reales capturadas día a día (sistema del gerente)
       db.execute({
         sql: `
-          SELECT waiter_id, COUNT(*) AS rechazos
-          FROM declines
-          WHERE date(datetime(created_at, ?)) BETWEEN date(?) AND date(?)
+          SELECT waiter_id, SUM(table_count) AS mesas_reales
+          FROM realtables
+          WHERE date BETWEEN ? AND ?
           GROUP BY waiter_id
         `,
-        args: [TIME_OFFSET, startDate, endDate]
+        args: [startDate, endDate]
       })
     ]);
 
-    const declinesMap = {};
-    declinesResult.rows.forEach(r => {
-      declinesMap[r.waiter_id] = r.rechazos;
+    const realTablesMap = {};
+    realTablesResult.rows.forEach(r => {
+      realTablesMap[r.waiter_id] = r.mesas_reales;
     });
 
-    const report = surveysResult.rows.map(row => ({
-      id: row.id,
-      mesero: row.mesero,
-      captadas: row.captadas || 0,
-      suma_p1: row.suma_p1 || 0,
-      rechazos: declinesMap[row.id] || 0
-    }));
+    const report = surveysResult.rows.map(row => {
+      const captadas = row.captadas || 0;
+      const sumaP1 = row.suma_p1 || 0;
+      const mesasReales = realTablesMap[row.id] || 0;
+
+      // Factor Servicio: satisfacción de P1 sobre lo captado
+      const satisfaccion = captadas > 0 ? (sumaP1 / (captadas * 4)) * 100 : 0;
+      const factorServicio = satisfaccion * 0.5;
+
+      // Factor Cumplimiento: captadas vs mesas reales del gerente
+      const cumplimiento = mesasReales > 0 ? (captadas / mesasReales) * 100 : 0;
+      const factorCumplimiento = cumplimiento * 0.5;
+
+      const resultadoFinal = factorServicio + factorCumplimiento;
+
+      return {
+        id: row.id,
+        mesero: row.mesero,
+        captadas,
+        suma_p1: sumaP1,
+        mesas_reales: mesasReales,
+        satisfaccion: satisfaccion.toFixed(2),
+        cumplimiento: cumplimiento.toFixed(2),
+        resultado_final: mesasReales > 0 ? resultadoFinal.toFixed(2) : null
+      };
+    });
 
     res.status(StatusCodes.OK).json(report);
   } catch (error) {
