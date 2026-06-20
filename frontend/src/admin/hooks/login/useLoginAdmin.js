@@ -5,6 +5,7 @@ import api from "../../services/api"
 export const useLoginAdmin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
@@ -42,6 +43,7 @@ export const useLoginAdmin = () => {
       await api.post("/admin/login-admin", {
         email,
         password,
+        rememberMe,
       });
       
       // Dirige al Dashboard
@@ -63,6 +65,7 @@ export const useLoginAdmin = () => {
   return {
     email, setEmail,
     password, setPassword,
+     rememberMe, setRememberMe,
     error,
     loading,
     shake,

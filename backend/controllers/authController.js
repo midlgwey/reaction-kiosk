@@ -32,7 +32,7 @@ res
 
 export const loginAdmin = async (req, res) => {
 
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   const admin = await findAdminByEmail(email);
 
@@ -57,16 +57,16 @@ export const loginAdmin = async (req, res) => {
 
   });
 
+    const maxAge = rememberMe
+    ? 1000 * 60 * 60 * 24 * 30  // 30 días
+    : undefined; 
+
     res.cookie("token", token, {
-    httpOnly: true,
-   
-    secure: process.env.NODE_ENV === "production", 
-    
- 
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    
-    maxAge: 1000 * 60 * 60, // 1 hora
-    path: '/' // Recomendado asegurar que sea para todo el sitio
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge, 
+      path: '/' // Recomendado asegurar que sea para todo el sitio
 });
 
   res.status(StatusCodes.OK).json({ message: "Login exitoso" });

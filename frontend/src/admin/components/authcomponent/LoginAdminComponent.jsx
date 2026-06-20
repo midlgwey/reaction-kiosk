@@ -6,6 +6,7 @@ export default function LoginAdminComponent() {
   const {
     email, setEmail,
     password, setPassword,
+    rememberMe, setRememberMe, 
     error,
     loading,
     shake,
@@ -102,6 +103,19 @@ export default function LoginAdminComponent() {
               )}
             </button>
           </div>
+        </div>
+
+        <div className="mb-6 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          <label htmlFor="rememberMe" className="text-sm text-slate-600 font-medium cursor-pointer">
+            Mantener sesión iniciada
+          </label>
         </div>
 
         {/* Botón de envío */}
