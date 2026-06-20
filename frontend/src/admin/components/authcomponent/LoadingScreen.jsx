@@ -10,7 +10,7 @@ export default function LoadingScreen() {
       </div>
       
       <p className="mt-6 text-slate-500 font-bold tracking-[0.2em] uppercase text-[10px] animate-pulse">
-        Validando Acceso
+        Validando Acceso al Panel
       </p>
     </div>
   );
