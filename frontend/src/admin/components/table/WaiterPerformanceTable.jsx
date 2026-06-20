@@ -6,9 +6,9 @@ import PeriodSelector from '../shared/PeriodSelector';
 
 const MINIMO_APROBATORIO = 60;
 
-export default function WaiterPerformanceTable({ onRefresh }) {
+export default function WaiterPerformanceTable() {
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
-  const { data, loading, error } = useWaiterPerformance(selectedMonth.value, selectedYear);
+  const { data, loading, error, refetch } = useWaiterPerformance(selectedMonth.value, selectedYear);
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
@@ -22,20 +22,23 @@ export default function WaiterPerformanceTable({ onRefresh }) {
             Servicio + Cumplimiento — Mínimo aprobatorio: {MINIMO_APROBATORIO}%
           </p>
         </div>
-          <button 
-          onClick={onRefresh}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-100 active:scale-95 whitespace-nowrap"
-        >
-          <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden md:inline">Actualizar</span>
-        </button>
-        <PeriodSelector
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-          yearOptions={yearOptions}
-        />
+         
+         <div className="flex gap-2 items-center">
+            <button
+              onClick={refetch}
+              className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200"
+              title="Actualizar"
+            >
+              <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <PeriodSelector
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              yearOptions={yearOptions}
+            />
+          </div>
       </div>
 
       <div className="overflow-x-auto">

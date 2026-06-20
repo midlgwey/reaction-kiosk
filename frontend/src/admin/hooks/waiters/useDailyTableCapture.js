@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
-import { format } from 'date-fns';
 
 export const useDailyTableCapture = (month, year) => {
   const [history, setHistory] = useState([]);
@@ -27,12 +26,12 @@ export const useDailyTableCapture = (month, year) => {
     if (month && year) fetchHistory();
   }, [fetchHistory, month, year]);
 
-  const captureToday = async (waiterId, tableCount) => {
-    const today = format(new Date(), 'yyyy-MM-dd');
+
+  const captureToday = async (waiterId, tableCount, date) => {
     try {
       await api.post('/real-tables/capture', {
         waiter_id: waiterId,
-        date: today,
+        date: date,
         table_count: tableCount
       });
       await fetchHistory();
@@ -62,5 +61,5 @@ export const useDailyTableCapture = (month, year) => {
     }
   };
 
-  return { history, loading, error, captureToday, updateEntry, deleteEntry };
+  return { history, loading, error, captureToday, updateEntry, deleteEntry, refetch: fetchHistory }; // ✅ expone refetch
 };

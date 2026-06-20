@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { useActiveWaitersAdmin } from '../../hooks/waiters/useActiveWaitersAdmin';
 import { useDailyTableCapture } from '../../hooks/waiters/useDailyTableCapture';
@@ -9,18 +9,20 @@ import PeriodSelector from '../shared/PeriodSelector';
 export default function DailyTableCapture() {
   const [selectedWaiterId, setSelectedWaiterId] = useState('');
   const [tableCount, setTableCount] = useState('');
+  const [captureDate, setCaptureDate] = useState(format(new Date(), 'yyyy-MM-dd')); // ✅ fecha editable
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
 
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { waiters } = useActiveWaitersAdmin();
-  const { history, loading, error, captureToday, updateEntry, deleteEntry } = useDailyTableCapture(selectedMonth.value, selectedYear);
+  const { history, loading, error, captureToday, updateEntry, deleteEntry, refetch } = useDailyTableCapture(selectedMonth.value, selectedYear);
 
   const handleSave = async () => {
-    if (!selectedWaiterId || !tableCount) return;
-    await captureToday(selectedWaiterId, parseInt(tableCount));
+    if (!selectedWaiterId || !tableCount || !captureDate) return;
+    await captureToday(selectedWaiterId, parseInt(tableCount), captureDate); // ✅ pasa la fecha elegida
     setSelectedWaiterId('');
     setTableCount('');
+    setCaptureDate(format(new Date(), 'yyyy-MM-dd')); // regresa a "hoy" por defecto
   };
 
   const startEdit = (entry) => {
@@ -42,18 +44,28 @@ export default function DailyTableCapture() {
             Captura de Mesas Reales
           </h3>
           <p className="text-[10px] text-slate-500 mt-1 font-medium">
-            Registro diario por mesero — Hoy: {format(new Date(), "dd 'de' MMMM")}
+            Registro diario por mesero — Puedes elegir cualquier fecha (incluso meses atrasados)
           </p>
         </div>
-        <PeriodSelector
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-          yearOptions={yearOptions}
-        />
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={refetch}
+            className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200"
+            title="Actualizar"
+          >
+            <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <PeriodSelector
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            yearOptions={yearOptions}
+          />
+        </div>
       </div>
 
+      {/* Formulario de captura */}
       <div className="px-6 py-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 bg-indigo-50/20">
 
         <div className="flex-1">
@@ -72,9 +84,23 @@ export default function DailyTableCapture() {
           </select>
         </div>
 
+        {/* Fecha editable */}
+        <div className="w-full sm:w-44">
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+            Fecha
+          </label>
+          <input
+            type="date"
+            value={captureDate}
+            max={format(new Date(), 'yyyy-MM-dd')}
+            onChange={(e) => setCaptureDate(e.target.value)}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+          />
+        </div>
+
         <div className="w-full sm:w-40">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
-            Mesas de hoy
+            Mesas
           </label>
           <input
             type="number"
@@ -88,13 +114,14 @@ export default function DailyTableCapture() {
 
         <button
           onClick={handleSave}
-          disabled={!selectedWaiterId || !tableCount}
+          disabled={!selectedWaiterId || !tableCount || !captureDate}
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2.5 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
         >
           Guardar
         </button>
       </div>
 
+      {/* Historial */}
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center items-center min-h-[150px]">
