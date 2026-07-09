@@ -4,7 +4,7 @@ import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
 
-//Recibimos "options" como prop para que el padre decida qué mostrar
+// Estilos base de react-day-picker
 export default function DashboardFilter({ 
   options, 
   selectedOption, 
@@ -23,9 +23,9 @@ export default function DashboardFilter({
 
   return (
     <div className="relative flex flex-col items-end gap-2" ref={containerRef}>
-      <div className="w-40"> {/* Un poco más ancho para textos largos como "Últimas 2 semanas" */}
+      <div className="w-40"> 
         <Select
-          options={options} // Usamos las opciones dinámicas aquí
+          options={options} 
           value={selectedOption}
           onChange={(opt) => {
             setSelectedOption(opt);
