@@ -9,9 +9,11 @@ import PeriodSelector from '../shared/PeriodSelector';
 export default function DailyTableCapture() {
   const [selectedWaiterId, setSelectedWaiterId] = useState('');
   const [tableCount, setTableCount] = useState('');
-  const [captureDate, setCaptureDate] = useState(format(new Date(), 'yyyy-MM-dd')); // ✅ fecha editable
+  const [captureDate, setCaptureDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [filterWaiterId, setFilterWaiterId] = useState('');
+  const [filterDate, setFilterDate] = useState('');
 
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { waiters } = useActiveWaitersAdmin();
@@ -19,10 +21,10 @@ export default function DailyTableCapture() {
 
   const handleSave = async () => {
     if (!selectedWaiterId || !tableCount || !captureDate) return;
-    await captureToday(selectedWaiterId, parseInt(tableCount), captureDate); // ✅ pasa la fecha elegida
+    await captureToday(selectedWaiterId, parseInt(tableCount), captureDate);
     setSelectedWaiterId('');
     setTableCount('');
-    setCaptureDate(format(new Date(), 'yyyy-MM-dd')); // regresa a "hoy" por defecto
+    setCaptureDate(format(new Date(), 'yyyy-MM-dd'));
   };
 
   const startEdit = (entry) => {
@@ -35,9 +37,17 @@ export default function DailyTableCapture() {
     setEditingId(null);
   };
 
+  // Filtro local
+  const filteredHistory = history.filter(entry => {
+    const matchWaiter = filterWaiterId ? entry.waiter_id === filterWaiterId : true;
+    const matchDate = filterDate ? entry.date === filterDate : true;
+    return matchWaiter && matchDate;
+  });
+
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
 
+      {/* Header */}
       <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
@@ -84,7 +94,6 @@ export default function DailyTableCapture() {
           </select>
         </div>
 
-        {/* Fecha editable */}
         <div className="w-full sm:w-44">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
             Fecha
@@ -121,6 +130,48 @@ export default function DailyTableCapture() {
         </button>
       </div>
 
+      {/* Filtros */}
+      <div className="px-6 py-3 flex flex-col sm:flex-row gap-3 border-b border-slate-100 bg-slate-50/30">
+        <div className="flex-1">
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+            Filtrar por mesero
+          </label>
+          <select
+            value={filterWaiterId}
+            onChange={(e) => setFilterWaiterId(e.target.value)}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+          >
+            <option value="">Todos los meseros</option>
+            {waiters.map(w => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="w-full sm:w-44">
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+            Filtrar por fecha
+          </label>
+          <input
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+          />
+        </div>
+
+        {(filterWaiterId || filterDate) && (
+          <div className="flex items-end">
+            <button
+              onClick={() => { setFilterWaiterId(''); setFilterDate(''); }}
+              className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-rose-500 border border-slate-200 rounded-lg hover:border-rose-200 transition-all whitespace-nowrap"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Historial */}
       <div className="overflow-x-auto">
         {loading ? (
@@ -140,18 +191,18 @@ export default function DailyTableCapture() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {history.length === 0 ? (
+              {filteredHistory.length === 0 ? (
                 <tr>
                   <td colSpan="4" className="px-6 py-10 text-center text-slate-400 text-sm italic">
-                    Sin capturas registradas este mes
+                    Sin capturas registradas
                   </td>
                 </tr>
               ) : (
-                history.map((entry) => (
+                filteredHistory.map((entry) => (
                   <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
 
                     <td className="px-5 py-3 text-sm text-slate-600 font-medium whitespace-nowrap">
-                      {format(new Date(entry.date), 'dd MMM')}
+                      {format(new Date(entry.date + 'T12:00:00'), 'dd MMM')} 
                     </td>
 
                     <td className="px-5 py-3">
