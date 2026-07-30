@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import { useWaiterRadiography } from '../../../hooks/waiters/useWaiterRadiography';
 import { useWaiterPerformanceFilters, dateOptions} from './useWaiterPerformanceFilters';
 import QuestionBar from '../QuestionBar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUtensils } from '@fortawesome/free-solid-svg-icons';
 // Estilos base de react-day-picker
 import 'react-day-picker/dist/style.css';
 
@@ -162,7 +164,7 @@ export default function WaiterPerformance() {
         {!selectedWaiterId ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-2 text-slate-400">
-              <span className="text-3xl">🍽️</span>
+              <FontAwesomeIcon icon={faUtensils} className="w-8 h-8 opacity-50 mb-2" />
               <p className="italic text-sm">Seleccione a un mesero para visualizar sus métricas</p>
             </div>
           </div>
