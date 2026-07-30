@@ -1,23 +1,22 @@
 import { db } from '../db.js';
 import { NotFoundError, InternalServerError } from '../errors/customErrors.js';
 
-// Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
 const TIME_OFFSET = '-7 hours';
 
-// Nuevo Helper para manejar rangos de fechas o días relativos
+// Subquery reutilizable para excluir al tester
+const EXCLUDE_TEST = `AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
+
 const getDateFilters = (req) => {
   const { startDate, endDate, days } = req.query;
 
-  // Si el frontend manda un rango de fechas exacto (ej. 2026-02-24 a 2026-03-02)
   if (startDate && endDate) {
     return {
       condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
       args: [startDate, endDate],
-      isRadar: false // El radar tiene lógica especial, se maneja aparte
+      isRadar: false
     };
   }
 
-  // Comportamiento original (fallback por si no hay fechas)
   const dias = parseInt(days) || 7;
   const timeModifier = `-${dias - 1} days`;
   
@@ -28,9 +27,6 @@ const getDateFilters = (req) => {
   };
 };
 
-/* ======================================================
-   MEJOR PREGUNTA SEMANA (Umbral de 5 votos)
-====================================================== */
 export const getBestQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -45,6 +41,7 @@ export const getBestQuestionWeek = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        ${EXCLUDE_TEST}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score DESC, total_votes DESC
@@ -60,9 +57,6 @@ export const getBestQuestionWeek = async (req, res) => {
   }
 };
 
-/* ======================================================
-   PEOR PREGUNTA SEMANA (Umbral de 5 votos)
-====================================================== */
 export const getWorstQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -77,6 +71,7 @@ export const getWorstQuestionWeek = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        ${EXCLUDE_TEST}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score ASC, total_votes DESC
@@ -92,9 +87,6 @@ export const getWorstQuestionWeek = async (req, res) => {
   }
 };
 
-/*======================================================
-   BARRAS POR PREGUNTA (SEMANA)
-====================================================== */
 export const getWeeklySurveyChart = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -110,6 +102,7 @@ export const getWeeklySurveyChart = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        ${EXCLUDE_TEST}
         GROUP BY q.id
         ORDER BY q.id;
       `,
@@ -117,16 +110,12 @@ export const getWeeklySurveyChart = async (req, res) => {
     });
 
     res.status(200).json(result.rows);
-
   } catch (error) {
     console.error("Error al armar la gráfica de barras:", error);
     throw new InternalServerError("Error gráfico por pregunta semanal");
   }
 };
 
-/* ======================================================
-   RADAR SEMANA ACTUAL VS PASADA
-====================================================== */
 export const getWeeklyComparisonRadar = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -143,7 +132,6 @@ export const getWeeklyComparisonRadar = async (req, res) => {
             WHEN DATE(r.created_at,'${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)
             THEN r.value END
           ) * 25, 1), 0) as current_week_score,
-
           COALESCE(ROUND(AVG(CASE 
             WHEN DATE(r.created_at,'${TIME_OFFSET}') >= DATE(?, '-${diffDays} days')
             AND DATE(r.created_at,'${TIME_OFFSET}') < DATE(?)
@@ -151,27 +139,27 @@ export const getWeeklyComparisonRadar = async (req, res) => {
           ) * 25, 1), 0) as last_week_score
         FROM questions q
         LEFT JOIN reactions r ON r.question_id = q.id
+          AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         GROUP BY q.id
         ORDER BY q.id;
       `;
       args = [startDate, endDate, startDate, startDate];
     } else {
-       sql = `
+      sql = `
         SELECT
           q.text as question,
           COALESCE(ROUND(AVG(CASE 
             WHEN r.created_at >= datetime('now','${TIME_OFFSET}','-6 days')
             THEN r.value END
           ) * 25, 1), 0) as current_week_score,
-
           COALESCE(ROUND(AVG(CASE 
             WHEN r.created_at < datetime('now','${TIME_OFFSET}','-6 days')
             AND r.created_at >= datetime('now','${TIME_OFFSET}','-13 days')
             THEN r.value END
           ) * 25, 1), 0) as last_week_score
-
         FROM questions q
         LEFT JOIN reactions r ON r.question_id = q.id
+          AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         GROUP BY q.id
         ORDER BY q.id;
       `;
@@ -186,9 +174,6 @@ export const getWeeklyComparisonRadar = async (req, res) => {
   }
 };
 
-/* ======================================================
-   SATISFACCIÓN POR TURNO Y DÍA (SEMANA REAL)
-====================================================== */
 export const getOverallDistributionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -203,6 +188,7 @@ export const getOverallDistributionWeek = async (req, res) => {
         FROM reactions r
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
           AND r.shift IS NOT NULL
+          ${EXCLUDE_TEST}
         GROUP BY day, r.shift, r.value
         ORDER BY day ASC;
       `,
@@ -210,20 +196,16 @@ export const getOverallDistributionWeek = async (req, res) => {
     });
 
     res.status(200).json(result.rows);
-
   } catch (error) {
     console.error("Error en distribucion turnos:", error);
     throw new InternalServerError("Error distribución turnos semanal");
   }
 };
 
-/* ======================================================
-   MEJOR DÍA SEMANA
-====================================================== */
 export const getWeeklyDayStrong = async (req, res) => {
   try {
     const filter = getDateFilters(req);
-    const MIN_RESPONSES = 5; 
+    const MIN_RESPONSES = 5;
 
     const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
@@ -236,6 +218,7 @@ export const getWeeklyDayStrong = async (req, res) => {
           COUNT(*) as total_responses
         FROM reactions
         WHERE ${condition}
+        AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         GROUP BY day
         HAVING COUNT(*) >= ${MIN_RESPONSES}
       )
@@ -266,13 +249,10 @@ export const getWeeklyDayStrong = async (req, res) => {
   }
 };
 
-/* ======================================================
-   PEOR DÍA SEMANA
-====================================================== */
 export const getWeeklyDayWeak = async (req, res) => {
   try {
     const filter = getDateFilters(req);
-    const MIN_RESPONSES = 5; 
+    const MIN_RESPONSES = 5;
 
     const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
@@ -285,6 +265,7 @@ export const getWeeklyDayWeak = async (req, res) => {
           COUNT(*) as total_responses
         FROM reactions
         WHERE ${condition}
+        AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         GROUP BY day
         HAVING COUNT(*) >= ${MIN_RESPONSES}
       )

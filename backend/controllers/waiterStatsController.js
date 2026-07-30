@@ -1,9 +1,13 @@
 import { db } from '../db.js';
 import { StatusCodes } from 'http-status-codes';
-import { InternalServerError, BadRequestError  } from '../errors/customErrors.js';
+import { InternalServerError, BadRequestError } from '../errors/customErrors.js';
 
 // Ajuste de hora para Tijuana (UTC-7)
-const TIME_OFFSET = '-7 hours'; 
+const TIME_OFFSET = '-7 hours';
+
+// Excluye al mesero tester de todos los queries
+const EXCLUDE_TEST_WAITER = `AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
+const EXCLUDE_TEST_W = `AND w.is_test = 0`;
 
 /**
  * Obtiene el ranking de meseros basado en un sistema de puntuación acumulada.
@@ -47,9 +51,11 @@ export const getWaitersTableRanking = async (req, res) => {
                     created_at, 
                     shift
                 FROM reactions
+                WHERE waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
                 GROUP BY survey_id
             ) r ON w.id = r.waiter_id
             WHERE date(datetime(r.created_at, ?)) = date(?)
+            ${EXCLUDE_TEST_W}
         `;
 
         const args = [TIME_OFFSET, safeDate, TIME_OFFSET, safeDate];
@@ -97,6 +103,7 @@ export const getAllWaiters = async (req, res) => {
                 FROM waiters w
                 INNER JOIN reactions r ON w.id = r.waiter_id
                 WHERE date(datetime(r.created_at, ?)) = date(?)
+                AND w.is_test = 0
                 ORDER BY w.name ASC
             `,
             args: [TIME_OFFSET, safeDate]
@@ -113,6 +120,7 @@ export const getAllWaiters = async (req, res) => {
         throw new InternalServerError("Error al obtener la lista de meseros");
     }
 };
+
 /**
  * Obtiene el detalle de respuestas por pregunta para un mesero específico.
  */
@@ -146,6 +154,7 @@ export const getWaiterRadiography = async (req, res) => {
             FROM reactions
             WHERE waiter_id = ? 
               AND date(datetime(created_at, ?)) = date(?)
+              AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         `;
 
         const args = [waiterId, TIME_OFFSET, safeDate];
@@ -210,6 +219,7 @@ export const getWaiterTables = async (req, res) => {
         FROM reactions
         WHERE waiter_id = ?
           AND date(datetime(created_at, ?)) = date(?)
+          AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         ORDER BY table_number ASC
       `,
       args: [waiterId, TIME_OFFSET, safeDate]
@@ -222,12 +232,11 @@ export const getWaiterTables = async (req, res) => {
   }
 };
 
-
 export const getWaiterDeclines = async (req, res) => {
-    const { date, shift } = req.query;  
+    const { date, shift } = req.query;
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
-    
+
     try {
         let sql = `
             SELECT
@@ -238,13 +247,15 @@ export const getWaiterDeclines = async (req, res) => {
             FROM declines d
             LEFT JOIN waiters w ON d.waiter_id = w.id
             WHERE date(datetime(d.created_at, ?)) = date(?)
-        `;      
+            AND d.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+        `;
+
         const args = [TIME_OFFSET, TIME_OFFSET, safeDate];
 
         if (shift && shift !== 'Todos') {
-        sql += ` AND LOWER(d.shift) = LOWER(?) `; 
-        args.push(shift);
-}
+            sql += ` AND LOWER(d.shift) = LOWER(?) `;
+            args.push(shift);
+        }
 
         sql += ` ORDER BY d.created_at DESC `;
 
@@ -260,9 +271,7 @@ export const getWaiterDeclines = async (req, res) => {
         console.error("Error al obtener rechazos:", error);
         throw new InternalServerError("Error al obtener los rechazos");
     }
-
 };
-
 
 // Encuestas realizadas — primera reacción por survey_id
 export const getSurveysLog = async (req, res) => {
@@ -286,6 +295,7 @@ export const getSurveysLog = async (req, res) => {
                 FROM reactions r
                 LEFT JOIN waiters w ON r.waiter_id = w.id
                 WHERE date(datetime(r.created_at, ?)) = date(?)
+                AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
                 GROUP BY r.survey_id
                 ORDER BY MIN(r.created_at) ASC
             `,
@@ -327,8 +337,6 @@ export const getSurveysLog = async (req, res) => {
     }
 };
 
-
-
 // Encuestas rechazadas
 export const getDeclinesLog = async (req, res) => {
     const { date } = req.query;
@@ -347,6 +355,7 @@ export const getDeclinesLog = async (req, res) => {
                 FROM declines d
                 LEFT JOIN waiters w ON d.waiter_id = w.id
                 WHERE date(datetime(d.created_at, ?)) = date(?)
+                AND d.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
                 ORDER BY d.created_at ASC
             `,
             args: [TIME_OFFSET, TIME_OFFSET, safeDate]
@@ -368,7 +377,6 @@ export const getDeclinesLog = async (req, res) => {
     }
 };
 
-
 // Reporte de rendimiento mensual por mesero
 export const getWaiterPerformanceReport = async (req, res) => {
   const { month, year } = req.query;
@@ -383,7 +391,7 @@ export const getWaiterPerformanceReport = async (req, res) => {
 
   try {
     const [surveysResult, realTablesResult] = await Promise.all([
-      // Captadas (kiosko) + suma de P1
+      // Captadas (kiosko) + suma de P1 — excluye tester
       db.execute({
         sql: `
           SELECT
@@ -395,6 +403,7 @@ export const getWaiterPerformanceReport = async (req, res) => {
           LEFT JOIN reactions r ON w.id = r.waiter_id
             AND date(datetime(r.created_at, ?)) BETWEEN date(?) AND date(?)
           WHERE w.active = 1
+          AND w.is_test = 0
           GROUP BY w.id, w.name
           ORDER BY w.name ASC
         `,
