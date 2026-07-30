@@ -66,7 +66,7 @@ export default function WaiterRanking() {
                 activeShift === 'matutino' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              <FontAwesomeIcon icon={faSun} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faSun} className="w-4 h-4 text-amber-500" />
                 Matutino
             </button>
             <button
@@ -75,7 +75,7 @@ export default function WaiterRanking() {
                 activeShift === 'vespertino' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
+              <FontAwesomeIcon icon={faMoon} className="w-4 h-4 text-amber-500" />
                 Vespertino
             </button>
           </div>
