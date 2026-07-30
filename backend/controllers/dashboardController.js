@@ -1,14 +1,14 @@
 import { db } from '../db.js';
 import { InternalServerError } from '../errors/customErrors.js';
 
-// Tijuana Invierno: '-8 hours' | Tijuana Verano: '-7 hours' (Ajustar según temporada)
-const TIME_OFFSET = '-7 hours'; 
+const TIME_OFFSET = '-7 hours';
 
-// Helper: Construye las condiciones de fecha dinámicas (Rangos exactos o últimos X días)
+// Subquery reutilizable para excluir al tester
+const EXCLUDE_TEST = `AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
+
 const getDateFilters = (req) => {
   const { startDate, endDate, days } = req.query;
 
-  // Rango de fechas explícito
   if (startDate && endDate) {
     return {
       condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
@@ -16,7 +16,6 @@ const getDateFilters = (req) => {
     };
   }
 
-  // Comportamiento por defecto (últimos X días)
   const dias = parseInt(days) || 7;
   const timeModifier = `-${dias - 1} days`;
   
@@ -26,16 +25,14 @@ const getDateFilters = (req) => {
   };
 };
 
-/* ----------------------------
-   TOTAL REACCIONES DEL DÍA 
- */
 export const getDailyReactions = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
         SELECT COUNT(*) AS total
         FROM reactions
-        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}');
+        WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+        ${EXCLUDE_TEST}
       `,
     });
 
@@ -48,23 +45,21 @@ export const getDailyReactions = async (req, res) => {
   }
 };
 
-
-/* --------------------------
-   SERVICIO MESERO DEL DÍA
-*/
 export const getDailyServerScore = async (req, res) => {
   try {
     const result = await db.execute({
       sql: `
         SELECT 
-          COALESCE(ROUND(AVG(value),2), 0) AS avg_score, -- COALESCE evita valores null
+          COALESCE(ROUND(AVG(value),2), 0) AS avg_score,
           COUNT(id) AS total_votes
         FROM reactions
         WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-        AND question_id = 1;
+        AND question_id = 1
+        ${EXCLUDE_TEST}
       `,
     });
-      res.status(200).json({
+
+    res.status(200).json({
       avgScore: result.rows[0].avg_score,
       totalResponses: result.rows[0].total_votes
     });
@@ -73,52 +68,51 @@ export const getDailyServerScore = async (req, res) => {
   }
 };
 
-/* --------------------
-   MESEROS CON MENOR INTERACCIÓN (QUE LLEVA POCAS ENCUESTAS EN DESAYUNO Y COMIDA/CENA DEL DIA)
-
-*/
 export const getLowInteractionWaiters = async (req, res) => {
   try {
     const [breakfastResult, lunchResult] = await Promise.all([
-        db.execute({
-          sql: `
-            SELECT
-              w.name AS mesero,
-              'Desayuno' AS turno,
-              COUNT(DISTINCT r.survey_id) AS encuestas
-            FROM waiters w
-            LEFT JOIN reactions r ON w.id = r.waiter_id
-              AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-              AND r.shift = 'Desayuno'
-            WHERE w.active = 1
-            GROUP BY w.id, w.name
-            HAVING encuestas >= 2       
-            ORDER BY encuestas ASC
-          `                         
-        }),
-        db.execute({
-          sql: `
-            SELECT
-              w.name AS mesero,
-              'Comida/Cena' AS turno,
-              COUNT(DISTINCT r.survey_id) AS encuestas
-            FROM waiters w
-            LEFT JOIN reactions r ON w.id = r.waiter_id
-              AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-              AND r.shift = 'Comida/Cena'
-            WHERE w.active = 1
-            AND w.id NOT IN (
-              SELECT DISTINCT waiter_id 
-              FROM reactions
-              WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-              AND shift = 'Desayuno'
-            )
-            GROUP BY w.id, w.name
-            HAVING encuestas >= 1        
-            ORDER BY encuestas ASC
-          `                              
-        })
-      ]);
+      db.execute({
+        sql: `
+          SELECT
+            w.name AS mesero,
+            'Desayuno' AS turno,
+            COUNT(DISTINCT r.survey_id) AS encuestas
+          FROM waiters w
+          LEFT JOIN reactions r ON w.id = r.waiter_id
+            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+            AND r.shift = 'Desayuno'
+          WHERE w.active = 1
+          AND w.is_test = 0
+          GROUP BY w.id, w.name
+          HAVING encuestas >= 2
+          ORDER BY encuestas ASC
+        `
+      }),
+      db.execute({
+        sql: `
+          SELECT
+            w.name AS mesero,
+            'Comida/Cena' AS turno,
+            COUNT(DISTINCT r.survey_id) AS encuestas
+          FROM waiters w
+          LEFT JOIN reactions r ON w.id = r.waiter_id
+            AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+            AND r.shift = 'Comida/Cena'
+          WHERE w.active = 1
+          AND w.is_test = 0
+          AND w.id NOT IN (
+            SELECT DISTINCT waiter_id 
+            FROM reactions
+            WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+            AND shift = 'Desayuno'
+            AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+          )
+          GROUP BY w.id, w.name
+          HAVING encuestas >= 1
+          ORDER BY encuestas ASC
+        `
+      })
+    ]);
 
     const result = [
       ...(breakfastResult.rows[0] ? [breakfastResult.rows[0]] : []),
@@ -136,26 +130,23 @@ export const getLowInteractionWaiters = async (req, res) => {
   }
 };
 
-/* ----------------------------
-   TOTAL ENCUESTAS REALIZADAS Y NO REALIZADAS POR DIA
-*/
 export const getDailySurveyCount = async (req, res) => {
   try {
     const [surveysResult, declinesResult] = await Promise.all([
-      // Encuestas realizadas — conta por survey_id único
       db.execute({
         sql: `
           SELECT COUNT(DISTINCT survey_id) AS total
           FROM reactions
           WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+          ${EXCLUDE_TEST}
         `
       }),
-      // Encuestas rechazadas
       db.execute({
         sql: `
           SELECT COUNT(*) AS total
           FROM declines
           WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+          ${EXCLUDE_TEST}
         `
       })
     ]);
@@ -170,15 +161,11 @@ export const getDailySurveyCount = async (req, res) => {
   }
 };
 
-/* ---------------------
-   AREA CHART SEMANA REAL 
-*/
 export const getDailySatisfactionTrend = async (req, res) => {
   try {
     const filter = getDateFilters(req);
     let sql, args;
 
-    // Si hay un rango de fechas explícito
     if (filter.condition.includes('BETWEEN')) {
       sql = `
       WITH RECURSIVE days(day) AS (
@@ -195,13 +182,12 @@ export const getDailySatisfactionTrend = async (req, res) => {
       FROM days
       LEFT JOIN reactions r 
         ON DATE(r.created_at, '${TIME_OFFSET}') = days.day
+        AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
       GROUP BY days.day
       ORDER BY days.day ASC;
       `;
-      // Es vital suministrar los argumentos a la CTE para el inicio y fin recursivo
-      args = [filter.args[0], filter.args[1]]; 
+      args = [filter.args[0], filter.args[1]];
     } else {
-      // Comportamiento original (últimos X días)
       sql = `
       WITH RECURSIVE days(day) AS (
         SELECT DATE('now', '${TIME_OFFSET}', ?)
@@ -217,10 +203,11 @@ export const getDailySatisfactionTrend = async (req, res) => {
       FROM days
       LEFT JOIN reactions r 
         ON DATE(r.created_at, '${TIME_OFFSET}') = days.day
+        AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
       GROUP BY days.day
       ORDER BY days.day ASC;
       `;
-      args = filter.args; // [timeModifier]
+      args = filter.args;
     }
 
     const result = await db.execute({ sql, args });
@@ -232,22 +219,15 @@ export const getDailySatisfactionTrend = async (req, res) => {
   }
 };
 
-
-/* --------------------------------------------------
-   RADIOGRAFÍA POR PREGUNTA (BARRAS APILADAS)
--------------------------------------------------- */
 export const getDailyQuestions = async (req, res) => {
   try {
-    // Usamos tu helper para saber qué rango de fechas pidió el cliente
     const filter = getDateFilters(req);
     
-    // Arreglamos el alias por si el helper regresa 'r.created_at' en lugar de 'created_at'
     let conditionFixed = filter.condition;
-    if(conditionFixed.includes('r.created_at')) {
-        conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
+    if (conditionFixed.includes('r.created_at')) {
+      conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
     }
 
-    // La consulta mágica que cuenta cada tipo de respuesta separada por pregunta
     const result = await db.execute({
       sql: `
         SELECT 
@@ -259,13 +239,13 @@ export const getDailyQuestions = async (req, res) => {
           COUNT(*) as total_respuestas
         FROM reactions
         WHERE ${conditionFixed}
+        ${EXCLUDE_TEST}
         GROUP BY question_id
         ORDER BY question_id ASC;
       `,
       args: filter.args
     });
 
-    // Mapeo de nombres de preguntas según su ID para mandarlo bonito al frontend
     const QUESTION_LABELS = {
       1: '¿Qué le pareció el servicio de su mesero?',
       2: '¿Las bebidas llegaron en el tiempo esperado?',
@@ -273,7 +253,6 @@ export const getDailyQuestions = async (req, res) => {
       4: '¿Nuestras instalaciones estuvieron a la altura de su visita?'
     };
 
-    // Formateamos la respuesta para que el Frontend la consuma facilísimo
     const formattedData = result.rows.map(row => ({
       id: row.question_id,
       label: QUESTION_LABELS[row.question_id] || `Pregunta ${row.question_id}`,
