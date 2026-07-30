@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import WaiterRow from './WaiterRow';
 import DashboardFilter from '../shared/DashboardFilter';
 import { useWaiterRanking } from '../../../admin/hooks/waiters/useWaiterRanking';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Indicador visual de carga
@@ -64,7 +66,8 @@ export default function WaiterRanking() {
                 activeShift === 'matutino' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              ☀️ Matutino
+              <FontAwesomeIcon icon={faSun} className="w-4 h-4" />
+                Matutino
             </button>
             <button
               onClick={() => setActiveShift('vespertino')}
@@ -72,7 +75,8 @@ export default function WaiterRanking() {
                 activeShift === 'vespertino' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
               }`}
             >
-              🌙 Vespertino
+              <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
+                Vespertino
             </button>
           </div>
 

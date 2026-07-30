@@ -164,7 +164,7 @@ export default function WaiterPerformance() {
         {!selectedWaiterId ? (
           <div className="flex items-center justify-center min-h-[300px]">
             <div className="flex flex-col items-center gap-2 text-slate-400">
-              <FontAwesomeIcon icon={faUtensils} className="w-8 h-8 opacity-50 mb-2" />
+              <FontAwesomeIcon icon={faUtensils} className="w-14 h-14 opacity-50 mb-2" />
               <p className="italic text-sm">Seleccione a un mesero para visualizar sus métricas</p>
             </div>
           </div>
