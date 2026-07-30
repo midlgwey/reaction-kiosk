@@ -1,30 +1,8 @@
 import { db } from '../db.js';
 import { InternalServerError } from '../errors/customErrors.js';
+import { TIME_OFFSET, EXCLUDE_TEST, getDateFilters } from '../utils/queryHelpers.js';
 
-const TIME_OFFSET = '-7 hours';
-
-// Subquery reutilizable para excluir al tester
-const EXCLUDE_TEST = `AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
-
-const getDateFilters = (req) => {
-  const { startDate, endDate, days } = req.query;
-
-  if (startDate && endDate) {
-    return {
-      condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
-      args: [startDate, endDate],
-    };
-  }
-
-  const dias = parseInt(days) || 7;
-  const timeModifier = `-${dias - 1} days`;
-  
-  return {
-    condition: `DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)`,
-    args: [timeModifier],
-  };
-};
-
+// Total de reacciones del día
 export const getDailyReactions = async (req, res) => {
   try {
     const result = await db.execute({
@@ -45,6 +23,7 @@ export const getDailyReactions = async (req, res) => {
   }
 };
 
+// Promedio de calificación del servicio del mesero (Pregunta 1)
 export const getDailyServerScore = async (req, res) => {
   try {
     const result = await db.execute({
@@ -68,6 +47,9 @@ export const getDailyServerScore = async (req, res) => {
   }
 };
 
+// Mesero con menos encuestas por turno del día
+// Desayuno: mínimo 2 encuestas | Comida/Cena: mínimo 1
+// Excluye de Comida/Cena a los meseros que ya aparecen en Desayuno
 export const getLowInteractionWaiters = async (req, res) => {
   try {
     const [breakfastResult, lunchResult] = await Promise.all([
@@ -130,6 +112,7 @@ export const getLowInteractionWaiters = async (req, res) => {
   }
 };
 
+// Conteo de encuestas realizadas y rechazadas del día
 export const getDailySurveyCount = async (req, res) => {
   try {
     const [surveysResult, declinesResult] = await Promise.all([
@@ -161,6 +144,8 @@ export const getDailySurveyCount = async (req, res) => {
   }
 };
 
+// Evolución de satisfacción por día — alimenta la gráfica de área
+// Soporta rango de fechas exacto o últimos X días
 export const getDailySatisfactionTrend = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -219,10 +204,12 @@ export const getDailySatisfactionTrend = async (req, res) => {
   }
 };
 
+// Distribución de respuestas por pregunta — alimenta las barras apiladas del dashboard
 export const getDailyQuestions = async (req, res) => {
   try {
     const filter = getDateFilters(req);
     
+    // El helper regresa r.created_at pero esta query no usa alias r
     let conditionFixed = filter.condition;
     if (conditionFixed.includes('r.created_at')) {
       conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
