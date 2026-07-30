@@ -1,22 +1,16 @@
 import { db } from '../db.js';
 import { StatusCodes } from 'http-status-codes';
 import { InternalServerError, BadRequestError } from '../errors/customErrors.js';
-
-// Ajuste de hora para Tijuana (UTC-7)
-const TIME_OFFSET = '-7 hours';
-
-// Excluye al mesero tester de todos los queries
-const EXCLUDE_TEST_WAITER = `AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
-const EXCLUDE_TEST_W = `AND w.is_test = 0`;
+import { TIME_OFFSET, EXCLUDE_TEST, EXCLUDE_TEST_W, safeDate, getMonthRange } from '../utils/queryHelpers.js';
 
 /**
- * Obtiene el ranking de meseros basado en un sistema de puntuación acumulada.
- * Premia la cantidad de interacciones positivas sobre promedios de muestras pequeñas.
+ * Ranking de meseros por puntuación acumulada.
+ * Sistema: Excelente +4, Bueno +2, Regular 0, Malo -5.
+ * Premia volumen de interacciones positivas sobre promedios de muestras pequeñas.
  */
 export const getWaitersTableRanking = async (req, res) => {
     const { date, shift } = req.query;
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     try {
         let sql = `
@@ -58,7 +52,7 @@ export const getWaitersTableRanking = async (req, res) => {
             ${EXCLUDE_TEST_W}
         `;
 
-        const args = [TIME_OFFSET, safeDate, TIME_OFFSET, safeDate];
+        const args = [TIME_OFFSET, fechaSegura, TIME_OFFSET, fechaSegura];
 
         if (shift && shift !== 'Todos') {
             sql += ` AND r.shift = ? `;
@@ -88,13 +82,12 @@ export const getWaitersTableRanking = async (req, res) => {
 };
 
 /**
- * Obtiene la lista completa de meseros para el selector del frontend.
+ * Lista de meseros que tuvieron encuestas en la fecha indicada.
+ * Se usa para poblar el selector del panel de meseros.
  */
 export const getAllWaiters = async (req, res) => {
     const { date } = req.query;
-
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     try {
         const result = await db.execute({
@@ -106,7 +99,7 @@ export const getAllWaiters = async (req, res) => {
                 AND w.is_test = 0
                 ORDER BY w.name ASC
             `,
-            args: [TIME_OFFSET, safeDate]
+            args: [TIME_OFFSET, fechaSegura]
         });
 
         const waiters = result.rows.map(row => ({
@@ -122,18 +115,18 @@ export const getAllWaiters = async (req, res) => {
 };
 
 /**
- * Obtiene el detalle de respuestas por pregunta para un mesero específico.
+ * Detalle de respuestas por pregunta para un mesero específico.
+ * Soporta filtros por turno y número de mesa.
+ * Si no hay datos, regresa estructura vacía para las 4 preguntas.
  */
 export const getWaiterRadiography = async (req, res) => {
-
     const { waiterId, date, shift, tableNumber } = req.query;
 
     if (!waiterId) {
         throw new BadRequestError('El ID del mesero es requerido');
     }
 
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     const QUESTION_LABELS = {
         1: '¿Qué le pareció el servicio de su mesero?',
@@ -157,7 +150,7 @@ export const getWaiterRadiography = async (req, res) => {
               AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         `;
 
-        const args = [waiterId, TIME_OFFSET, safeDate];
+        const args = [waiterId, TIME_OFFSET, fechaSegura];
 
         if (shift && shift !== 'Todos') {
             sql += ` AND shift = ? `;
@@ -173,7 +166,7 @@ export const getWaiterRadiography = async (req, res) => {
 
         const result = await db.execute({ sql, args });
 
-        // Si no hay datos, inicializar estructura vacía para las 4 preguntas
+        // Sin datos — regresa estructura vacía para las 4 preguntas
         if (result.rows.length === 0) {
             const emptyData = [1, 2, 3, 4].map(id => ({
                 id,
@@ -204,38 +197,38 @@ export const getWaiterRadiography = async (req, res) => {
     }
 };
 
+// Mesas atendidas por un mesero en la fecha indicada
 export const getWaiterTables = async (req, res) => {
-  const { waiterId, date } = req.query;
+    const { waiterId, date } = req.query;
 
-  if (!waiterId) throw new BadRequestError('El ID del mesero es requerido');
+    if (!waiterId) throw new BadRequestError('El ID del mesero es requerido');
 
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
-  try {
-    const result = await db.execute({
-      sql: `
-        SELECT DISTINCT table_number
-        FROM reactions
-        WHERE waiter_id = ?
-          AND date(datetime(created_at, ?)) = date(?)
-          AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
-        ORDER BY table_number ASC
-      `,
-      args: [waiterId, TIME_OFFSET, safeDate]
-    });
+    try {
+        const result = await db.execute({
+            sql: `
+                SELECT DISTINCT table_number
+                FROM reactions
+                WHERE waiter_id = ?
+                  AND date(datetime(created_at, ?)) = date(?)
+                  AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+                ORDER BY table_number ASC
+            `,
+            args: [waiterId, TIME_OFFSET, fechaSegura]
+        });
 
-    res.status(StatusCodes.OK).json(result.rows.map(r => r.table_number));
-  } catch (error) {
-    console.error('Error al obtener mesas:', error);
-    throw new InternalServerError('Error al obtener las mesas');
-  }
+        res.status(StatusCodes.OK).json(result.rows.map(r => r.table_number));
+    } catch (error) {
+        console.error('Error al obtener mesas:', error);
+        throw new InternalServerError('Error al obtener las mesas');
+    }
 };
 
+// Rechazos de encuesta del día, filtrable por turno
 export const getWaiterDeclines = async (req, res) => {
     const { date, shift } = req.query;
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     try {
         let sql = `
@@ -250,7 +243,7 @@ export const getWaiterDeclines = async (req, res) => {
             AND d.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
         `;
 
-        const args = [TIME_OFFSET, TIME_OFFSET, safeDate];
+        const args = [TIME_OFFSET, TIME_OFFSET, fechaSegura];
 
         if (shift && shift !== 'Todos') {
             sql += ` AND LOWER(d.shift) = LOWER(?) `;
@@ -273,11 +266,10 @@ export const getWaiterDeclines = async (req, res) => {
     }
 };
 
-// Encuestas realizadas — primera reacción por survey_id
+// Bitácora de encuestas realizadas — agrupa por survey_id e incluye las 4 respuestas
 export const getSurveysLog = async (req, res) => {
     const { date } = req.query;
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     try {
         const result = await db.execute({
@@ -299,7 +291,7 @@ export const getSurveysLog = async (req, res) => {
                 GROUP BY r.survey_id
                 ORDER BY MIN(r.created_at) ASC
             `,
-            args: [TIME_OFFSET, TIME_OFFSET, safeDate]
+            args: [TIME_OFFSET, TIME_OFFSET, fechaSegura]
         });
 
         const LABELS = {
@@ -337,11 +329,10 @@ export const getSurveysLog = async (req, res) => {
     }
 };
 
-// Encuestas rechazadas
+// Bitácora de encuestas rechazadas del día
 export const getDeclinesLog = async (req, res) => {
     const { date } = req.query;
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const safeDate = date && dateRegex.test(date) ? date : new Date().toISOString().split('T')[0];
+    const fechaSegura = safeDate(date);
 
     try {
         const result = await db.execute({
@@ -358,7 +349,7 @@ export const getDeclinesLog = async (req, res) => {
                 AND d.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
                 ORDER BY d.created_at ASC
             `,
-            args: [TIME_OFFSET, TIME_OFFSET, safeDate]
+            args: [TIME_OFFSET, TIME_OFFSET, fechaSegura]
         });
 
         const log = result.rows.map(row => ({
@@ -377,85 +368,83 @@ export const getDeclinesLog = async (req, res) => {
     }
 };
 
-// Reporte de rendimiento mensual por mesero
+/**
+ * Reporte de rendimiento mensual por mesero.
+ * Fórmula: Resultado Final = (Satisfacción × 50%) + (Cumplimiento × 50%)
+ * Satisfacción = suma_p1 / (captadas × 4) × 100
+ * Cumplimiento = captadas / mesas_reales × 100
+ */
 export const getWaiterPerformanceReport = async (req, res) => {
-  const { month, year } = req.query;
+    const { month, year } = req.query;
+    const { startDate, endDate } = getMonthRange(month, year);
 
-  const now = new Date();
-  const targetMonth = parseInt(month) || (now.getMonth() + 1);
-  const targetYear = parseInt(year) || now.getFullYear();
+    try {
+        const [surveysResult, realTablesResult] = await Promise.all([
+            // Encuestas captadas por kiosko + suma de calificaciones de P1
+            db.execute({
+                sql: `
+                    SELECT
+                        w.id,
+                        w.name AS mesero,
+                        COUNT(DISTINCT r.survey_id) AS captadas,
+                        COALESCE(SUM(CASE WHEN r.question_id = 1 THEN r.value ELSE 0 END), 0) AS suma_p1
+                    FROM waiters w
+                    LEFT JOIN reactions r ON w.id = r.waiter_id
+                        AND date(datetime(r.created_at, ?)) BETWEEN date(?) AND date(?)
+                    WHERE w.active = 1
+                    AND w.is_test = 0
+                    GROUP BY w.id, w.name
+                    ORDER BY w.name ASC
+                `,
+                args: [TIME_OFFSET, startDate, endDate]
+            }),
+            // Mesas reales capturadas por el gerente día a día
+            db.execute({
+                sql: `
+                    SELECT waiter_id, SUM(table_count) AS mesas_reales
+                    FROM realtables
+                    WHERE date BETWEEN ? AND ?
+                    GROUP BY waiter_id
+                `,
+                args: [startDate, endDate]
+            })
+        ]);
 
-  const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
-  const lastDay = new Date(targetYear, targetMonth, 0).getDate();
-  const endDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${lastDay}`;
+        const realTablesMap = {};
+        realTablesResult.rows.forEach(r => {
+            realTablesMap[r.waiter_id] = r.mesas_reales;
+        });
 
-  try {
-    const [surveysResult, realTablesResult] = await Promise.all([
-      // Captadas (kiosko) + suma de P1 — excluye tester
-      db.execute({
-        sql: `
-          SELECT
-            w.id,
-            w.name AS mesero,
-            COUNT(DISTINCT r.survey_id) AS captadas,
-            COALESCE(SUM(CASE WHEN r.question_id = 1 THEN r.value ELSE 0 END), 0) AS suma_p1
-          FROM waiters w
-          LEFT JOIN reactions r ON w.id = r.waiter_id
-            AND date(datetime(r.created_at, ?)) BETWEEN date(?) AND date(?)
-          WHERE w.active = 1
-          AND w.is_test = 0
-          GROUP BY w.id, w.name
-          ORDER BY w.name ASC
-        `,
-        args: [TIME_OFFSET, startDate, endDate]
-      }),
-      // Mesas reales capturadas día a día (sistema del gerente)
-      db.execute({
-        sql: `
-          SELECT waiter_id, SUM(table_count) AS mesas_reales
-          FROM realtables
-          WHERE date BETWEEN ? AND ?
-          GROUP BY waiter_id
-        `,
-        args: [startDate, endDate]
-      })
-    ]);
+        const report = surveysResult.rows.map(row => {
+            const captadas = row.captadas || 0;
+            const sumaP1 = row.suma_p1 || 0;
+            const mesasReales = realTablesMap[row.id] || 0;
 
-    const realTablesMap = {};
-    realTablesResult.rows.forEach(r => {
-      realTablesMap[r.waiter_id] = r.mesas_reales;
-    });
+            // Factor Servicio: calidad de atención según P1
+            const satisfaccion = captadas > 0 ? (sumaP1 / (captadas * 4)) * 100 : 0;
+            const factorServicio = satisfaccion * 0.5;
 
-    const report = surveysResult.rows.map(row => {
-      const captadas = row.captadas || 0;
-      const sumaP1 = row.suma_p1 || 0;
-      const mesasReales = realTablesMap[row.id] || 0;
+            // Factor Cumplimiento: qué tan bien cubrió las mesas del gerente
+            const cumplimiento = mesasReales > 0 ? (captadas / mesasReales) * 100 : 0;
+            const factorCumplimiento = cumplimiento * 0.5;
 
-      // Factor Servicio: satisfacción de P1 sobre lo captado
-      const satisfaccion = captadas > 0 ? (sumaP1 / (captadas * 4)) * 100 : 0;
-      const factorServicio = satisfaccion * 0.5;
+            const resultadoFinal = factorServicio + factorCumplimiento;
 
-      // Factor Cumplimiento: captadas vs mesas reales del gerente
-      const cumplimiento = mesasReales > 0 ? (captadas / mesasReales) * 100 : 0;
-      const factorCumplimiento = cumplimiento * 0.5;
+            return {
+                id: row.id,
+                mesero: row.mesero,
+                captadas,
+                suma_p1: sumaP1,
+                mesas_reales: mesasReales,
+                satisfaccion: satisfaccion.toFixed(2),
+                cumplimiento: cumplimiento.toFixed(2),
+                resultado_final: mesasReales > 0 ? resultadoFinal.toFixed(2) : null
+            };
+        });
 
-      const resultadoFinal = factorServicio + factorCumplimiento;
-
-      return {
-        id: row.id,
-        mesero: row.mesero,
-        captadas,
-        suma_p1: sumaP1,
-        mesas_reales: mesasReales,
-        satisfaccion: satisfaccion.toFixed(2),
-        cumplimiento: cumplimiento.toFixed(2),
-        resultado_final: mesasReales > 0 ? resultadoFinal.toFixed(2) : null
-      };
-    });
-
-    res.status(StatusCodes.OK).json(report);
-  } catch (error) {
-    console.error("Error en getWaiterPerformanceReport:", error);
-    throw new InternalServerError("Error al obtener reporte de rendimiento");
-  }
+        res.status(StatusCodes.OK).json(report);
+    } catch (error) {
+        console.error("Error en getWaiterPerformanceReport:", error);
+        throw new InternalServerError("Error al obtener reporte de rendimiento");
+    }
 };

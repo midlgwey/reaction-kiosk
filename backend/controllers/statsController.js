@@ -1,32 +1,8 @@
 import { db } from '../db.js';
 import { NotFoundError, InternalServerError } from '../errors/customErrors.js';
+import { TIME_OFFSET, EXCLUDE_TEST_JOIN, getDateFilters } from '../utils/queryHelpers.js';
 
-const TIME_OFFSET = '-7 hours';
-
-// Subquery reutilizable para excluir al tester
-const EXCLUDE_TEST = `AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)`;
-
-const getDateFilters = (req) => {
-  const { startDate, endDate, days } = req.query;
-
-  if (startDate && endDate) {
-    return {
-      condition: `DATE(r.created_at, '${TIME_OFFSET}') BETWEEN DATE(?) AND DATE(?)`,
-      args: [startDate, endDate],
-      isRadar: false
-    };
-  }
-
-  const dias = parseInt(days) || 7;
-  const timeModifier = `-${dias - 1} days`;
-  
-  return {
-    condition: `DATE(r.created_at, '${TIME_OFFSET}') >= DATE('now', '${TIME_OFFSET}', ?)`,
-    args: [timeModifier],
-    isRadar: false
-  };
-};
-
+// Pregunta con mejor calificación promedio de la semana (mínimo 5 votos)
 export const getBestQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -41,7 +17,7 @@ export const getBestQuestionWeek = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
-        ${EXCLUDE_TEST}
+        ${EXCLUDE_TEST_JOIN}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score DESC, total_votes DESC
@@ -57,6 +33,7 @@ export const getBestQuestionWeek = async (req, res) => {
   }
 };
 
+// Pregunta con peor calificación promedio de la semana (mínimo 5 votos)
 export const getWorstQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -71,7 +48,7 @@ export const getWorstQuestionWeek = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
-        ${EXCLUDE_TEST}
+        ${EXCLUDE_TEST_JOIN}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
         ORDER BY avg_score ASC, total_votes DESC
@@ -87,6 +64,7 @@ export const getWorstQuestionWeek = async (req, res) => {
   }
 };
 
+// Distribución de respuestas por pregunta — alimenta la gráfica de barras semanal
 export const getWeeklySurveyChart = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -102,7 +80,7 @@ export const getWeeklySurveyChart = async (req, res) => {
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
-        ${EXCLUDE_TEST}
+        ${EXCLUDE_TEST_JOIN}
         GROUP BY q.id
         ORDER BY q.id;
       `,
@@ -116,6 +94,8 @@ export const getWeeklySurveyChart = async (req, res) => {
   }
 };
 
+// Radar comparativo — semana seleccionada vs semana anterior
+// Soporta rango de fechas exacto o los últimos 7/13 días por defecto
 export const getWeeklyComparisonRadar = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -174,6 +154,7 @@ export const getWeeklyComparisonRadar = async (req, res) => {
   }
 };
 
+// Satisfacción por turno y día — alimenta la gráfica de barras agrupadas
 export const getOverallDistributionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -188,7 +169,7 @@ export const getOverallDistributionWeek = async (req, res) => {
         FROM reactions r
         WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
           AND r.shift IS NOT NULL
-          ${EXCLUDE_TEST}
+          ${EXCLUDE_TEST_JOIN}
         GROUP BY day, r.shift, r.value
         ORDER BY day ASC;
       `,
@@ -202,11 +183,13 @@ export const getOverallDistributionWeek = async (req, res) => {
   }
 };
 
+// Día de la semana con mejor promedio de satisfacción (mínimo 5 respuestas)
 export const getWeeklyDayStrong = async (req, res) => {
   try {
     const filter = getDateFilters(req);
     const MIN_RESPONSES = 5;
 
+    // Esta query no usa alias r, se reemplaza para que funcione sin JOIN
     const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
     const result = await db.execute({
@@ -249,6 +232,7 @@ export const getWeeklyDayStrong = async (req, res) => {
   }
 };
 
+// Día de la semana con peor promedio de satisfacción (mínimo 5 respuestas)
 export const getWeeklyDayWeak = async (req, res) => {
   try {
     const filter = getDateFilters(req);
