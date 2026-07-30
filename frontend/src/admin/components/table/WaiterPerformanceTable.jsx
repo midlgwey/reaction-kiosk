@@ -4,7 +4,7 @@ import { useWaiterPerformance } from '../../hooks/waiters/useWaiterPerformance';
 import { usePeriodFilter } from '../../hooks/shared/usePeriodFilter';
 import PeriodSelector from '../shared/PeriodSelector';
 
-const MINIMO_APROBATORIO = 60;
+const MINIMO_APROBATORIO = 90;
 
 export default function WaiterPerformanceTable() {
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
