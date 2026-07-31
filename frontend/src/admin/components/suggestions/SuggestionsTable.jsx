@@ -31,7 +31,7 @@ export default function SuggestionsTable({ data, loading }) {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-500 text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-purple-100">
+            <tr className="border-b border-slate-500 text-[11px] uppercase tracking-widest text-slate-200 font-black bg-purple-100">
               <th className="px-6 py-5 whitespace-nowrap">Fecha / Turno</th>
               <th className="px-6 py-5 whitespace-nowrap">Mesero</th>
               <th className="px-6 py-5 text-center whitespace-nowrap">Mesa</th>
