@@ -42,7 +42,7 @@ export default function WaiterLogbook() {
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full overflow-hidden">
       
       {/* Cabecera */}
-      <div className="p-4 md:p-6 border-b border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-indigo-100">
+      <div className="p-4 md:p-6 border-b border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4 ">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Bitacora de Encuestas Realizadas y No Realizadas 
@@ -88,7 +88,7 @@ export default function WaiterLogbook() {
         ) : (
           <div className="min-w-max lg:min-w-full">
             {/* Headers */}
-           <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs text-rose-600 font-semibold uppercase tracking-wider border-b border-slate-300 lg:w-auto w-[600px] shrink-0">
+           <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs text-indigo-600 font-semibold uppercase tracking-wider border-b border-slate-300 lg:w-auto w-[600px] shrink-0">
               <div className="col-span-2 text-center">Hora</div>
               <div className="col-span-3">Mesero</div>
               <div className="col-span-2 text-center">Mesa</div>
