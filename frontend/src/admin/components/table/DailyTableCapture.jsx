@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { useActiveWaitersAdmin } from '../../hooks/waiters/useActiveWaitersAdmin';
 import { useDailyTableCapture } from '../../hooks/waiters/useDailyTableCapture';
 import { usePeriodFilter } from '../../hooks/shared/usePeriodFilter';
 import PeriodSelector from '../shared/PeriodSelector';
+import DashboardFilter from '../shared/DashboardFilter';
+
+// Opciones del selector de fecha — hoy por defecto, historial para capturas atrasadas
+const DATE_OPTIONS = [
+  { value: 'hoy', label: 'Hoy' },
+  { value: 'custom', label: '📅 Historial...' },
+];
 
 export default function DailyTableCapture() {
   const [selectedWaiterId, setSelectedWaiterId] = useState('');
   const [tableCount, setTableCount] = useState('');
-  // Por defecto la fecha de hoy, pero se puede cambiar para capturas atrasadas
-  const [captureDate, setCaptureDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [dateOption, setDateOption] = useState(DATE_OPTIONS[0]);
+  const [selectedDay, setSelectedDay] = useState(new Date());
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
 
@@ -18,19 +25,24 @@ export default function DailyTableCapture() {
   const { waiters } = useActiveWaitersAdmin();
   const { history, loading, error, captureToday, updateEntry, deleteEntry, refetch } = useDailyTableCapture(selectedMonth.value, selectedYear);
 
-  // Mesero actualmente seleccionado (para mostrar nombre e inicial)
+  // Mesero actualmente seleccionado
   const selectedWaiter = waiters.find(w => w.id === selectedWaiterId);
 
-  // Solo muestra entradas del mesero seleccionado
+  // Fecha de captura — hoy por defecto, o la fecha elegida en el historial
+  const captureDate = useMemo(() => {
+    if (dateOption.value === 'custom' && selectedDay) return format(selectedDay, 'yyyy-MM-dd');
+    return format(new Date(), 'yyyy-MM-dd');
+  }, [dateOption, selectedDay]);
+
+  // Solo muestra registros del mesero seleccionado
   const filteredHistory = selectedWaiterId
     ? history.filter(entry => entry.waiter_id === selectedWaiterId)
     : [];
 
   const handleSave = async () => {
-    if (!selectedWaiterId || !tableCount || !captureDate) return;
+    if (!selectedWaiterId || !tableCount) return;
     await captureToday(selectedWaiterId, parseInt(tableCount), captureDate);
     setTableCount('');
-    setCaptureDate(format(new Date(), 'yyyy-MM-dd'));
   };
 
   const startEdit = (entry) => {
@@ -74,7 +86,7 @@ export default function DailyTableCapture() {
         </div>
       </div>
 
-      {/* Selector de mesero — al cambiar, resetea el modo edición */}
+      {/* Selector de mesero — al cambiar resetea el modo edición */}
       <div className="px-6 py-4 border-b border-slate-100 bg-indigo-50/20">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
           Mesero
@@ -94,15 +106,17 @@ export default function DailyTableCapture() {
         </select>
       </div>
 
-      {/* Si no hay mesero elegido, muestra un estado vacío */}
+      {/* Estado vacío cuando no hay mesero seleccionado */}
       {!selectedWaiterId ? (
         <div className="flex items-center justify-center min-h-[200px]">
           <p className="text-slate-400 text-sm italic">Selecciona un mesero para continuar</p>
         </div>
       ) : (
         <>
-          {/* Formulario de captura — fecha editable para meses atrasados */}
+          {/* Formulario de captura */}
           <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100">
+
+            {/* Avatar y nombre del mesero seleccionado */}
             <div className="flex items-center gap-2 flex-1">
               <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
                 {selectedWaiter?.name?.charAt(0)}
@@ -110,19 +124,21 @@ export default function DailyTableCapture() {
               <span className="font-bold text-slate-700 text-sm">{selectedWaiter?.name}</span>
             </div>
 
-            <div className="w-full sm:w-44">
+            {/* Selector de fecha — hoy por defecto, historial para capturas atrasadas */}
+            <div className="w-full sm:w-auto">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
                 Fecha
               </label>
-              <input
-                type="date"
-                value={captureDate}
-                max={format(new Date(), 'yyyy-MM-dd')}
-                onChange={(e) => setCaptureDate(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+              <DashboardFilter
+                options={DATE_OPTIONS}
+                selectedOption={dateOption}
+                setSelectedOption={setDateOption}
+                selectedDay={selectedDay}
+                setSelectedDay={setSelectedDay}
               />
             </div>
 
+            {/* Número de mesas */}
             <div className="w-full sm:w-36">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
                 Mesas
@@ -139,14 +155,14 @@ export default function DailyTableCapture() {
 
             <button
               onClick={handleSave}
-              disabled={!tableCount || !captureDate}
+              disabled={!tableCount}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2.5 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
             >
               Guardar
             </button>
           </div>
 
-          {/* Historial de capturas del mesero seleccionado en el mes */}
+          {/* Historial de capturas del mesero en el mes seleccionado */}
           <div className="overflow-x-auto">
             {loading ? (
               <div className="flex justify-center items-center min-h-[120px]">
@@ -174,7 +190,7 @@ export default function DailyTableCapture() {
                     filteredHistory.map((entry) => (
                       <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
 
-                        {/* +T12:00:00 evita el desfase de zona horaria al mostrar la fecha */}
+                        {/* +T12:00:00 evita el desfase de zona horaria */}
                         <td className="px-5 py-3 text-sm text-slate-600 font-medium whitespace-nowrap">
                           {format(new Date(entry.date + 'T12:00:00'), 'dd MMM yyyy')}
                         </td>
