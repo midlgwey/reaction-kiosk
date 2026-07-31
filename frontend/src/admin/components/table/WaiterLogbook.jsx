@@ -42,7 +42,7 @@ export default function WaiterLogbook() {
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col w-full overflow-hidden">
       
       {/* Cabecera */}
-      <div className="p-4 md:p-6 border-b border-indigo-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-indigo-100">
+      <div className="p-4 md:p-6 border-b border-border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-indigo-100">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Bitacora de Encuestas Realizadas y No Realizadas 
@@ -58,7 +58,7 @@ export default function WaiterLogbook() {
                   activeTab === 'realizadas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'
                 }`}
               >
-                <FontAwesomeIcon icon={faSquareCheck} className="w-6 h-6 text-emerald-500" />
+                <FontAwesomeIcon icon={faSquareCheck} className="w-8 h-8 text-emerald-500" />
                 Realizadas
               </button>
               <button
@@ -67,7 +67,7 @@ export default function WaiterLogbook() {
                   activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'
                 }`}
               >
-                <FontAwesomeIcon icon={faCircleXmark} className="w-6 h-6 text-rose-500" />
+                <FontAwesomeIcon icon={faCircleXmark} className="w-8 h-8 text-rose-500" />
                 No Realizadas
               </button>
             </div>
