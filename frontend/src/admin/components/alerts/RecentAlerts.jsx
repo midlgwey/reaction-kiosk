@@ -67,7 +67,7 @@ export default function RecentAlerts() {
           </div>
         ) : alerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 text-slate-400 min-h-[200px]">
-            <FontAwesomeIcon icon={faCheckToSlot} className="w-10 h-10 text-emerald-400" />
+            <FontAwesomeIcon icon={faCheckToSlot} className="text-3xl text-emerald-400" />
             <p className="font-medium text-sm">Todo en orden.</p>
             <p className="text-xs">No hay alertas críticas hoy.</p>
           </div>
