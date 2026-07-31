@@ -56,7 +56,7 @@ export default function DailyTableCapture() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm">
 
       {/* Encabezado con selector de mes y botón de refresh */}
       <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -114,7 +114,7 @@ export default function DailyTableCapture() {
       ) : (
         <>
           {/* Formulario de captura */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100">
+          <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 overflow-visible">
 
             {/* Avatar y nombre del mesero seleccionado */}
             <div className="flex items-center gap-2 flex-1">
