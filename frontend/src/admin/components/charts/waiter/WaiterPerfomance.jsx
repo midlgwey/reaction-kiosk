@@ -5,7 +5,7 @@ import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { useWaiterRadiography } from '../../../hooks/waiters/useWaiterRadiography';
 import { useWaiterPerformanceFilters, dateOptions} from './useWaiterPerformanceFilters';
-import QuestionBar from '../QuestionBar';
+import QuestionBar from '../dashboard/QuestionBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUtensils } from '@fortawesome/free-solid-svg-icons';
 // Estilos base de react-day-picker

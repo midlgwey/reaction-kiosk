@@ -6,8 +6,8 @@ import {
   HandThumbUpIcon,
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/solid'; 
-import StatCard from '../../components/metrics/dashboardcards/StatCard';
-import { useFeedbackStats } from '../../../admin/hooks/feedback/useSuggestionsStats';
+import StatCard from '../dashboardcards/StatCard';
+import { useFeedbackStats } from '../../../hooks/feedback/useSuggestionsStats';
 
 const Spinner = () => (
   <div className="flex justify-start py-1">

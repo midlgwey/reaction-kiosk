@@ -1,6 +1,6 @@
 import StatGrid from "../components/metrics/dashboardcards/StatGrid";
-import DailyQuestions from "../components/charts/DailyQuestions";
-import DailySatisfactionArea from "../components/charts/dailysatisfactionarea/DailySatisfactionArea";
+import DailyQuestions from "../components/charts/dashboard/DailyQuestions";
+import DailySatisfactionArea from "../components/charts/dashboard/DailySatisfactionArea";
 import RecentAlerts from "../components/alerts/RecentAlerts";
 import LatestSuggestionsWidget from "../components/suggestions/LatestSuggestionsWidget";
  

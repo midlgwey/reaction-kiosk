@@ -3,7 +3,7 @@ import Select from 'react-select';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
-import { useDailyQuestions } from '../../hooks/dashboard/useDashboardWeekly';
+import { useDailyQuestions } from '../../../hooks/dashboard/useDashboardWeekly'
 import QuestionBar from './QuestionBar';
 
 // Estilos base de react-day-picker

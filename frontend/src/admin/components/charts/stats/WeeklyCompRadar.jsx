@@ -10,7 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Radar } from "react-chartjs-2";
-import { useWeeklyRadar } from "../../hooks/stats/useStatChart";
+import { useWeeklyRadar } from "../../../hooks/stats/useStatChart";
 
 // Registro de componentes requeridos por Chart.js para gráficos tipo Radar
 ChartJS.register(

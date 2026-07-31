@@ -7,7 +7,7 @@ export default function AppWrapper() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setNavigator(navigate); // 🔥 conecta interceptor con React Router
+    setNavigator(navigate);
   }, [navigate]);
 
   return <App />;

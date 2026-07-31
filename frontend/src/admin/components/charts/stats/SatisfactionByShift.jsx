@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { useShiftWeekChart } from "../../hooks/stats/useStatChart"; 
-import DashboardFilter from "../shared/DashboardFilter"; 
+import { useShiftWeekChart } from "../../../hooks/stats/useStatChart"; 
+import DashboardFilter from "../../shared/DashboardFilter"; 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

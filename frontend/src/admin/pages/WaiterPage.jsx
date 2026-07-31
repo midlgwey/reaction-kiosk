@@ -1,8 +1,8 @@
 import React from 'react'
-import WaiterPerformance from '../components/charts/waiterradiography/WaiterPerfomance'
+import WaiterPerformance from '../components/charts/waiter/WaiterPerfomance'
 import LatestSuggestionsWidget from '../components/suggestions/LatestSuggestionsWidget';
-import WaiterRanking from '../components/table/WaiterRanking';
-import WaiterLogbook from '../components/table/WaiterLogbook';
+import WaiterRanking from '../components/tables/WaiterRanking';
+import WaiterLogbook from '../components/tables/WaiterLogbook';
 
 const WaiterPage = () => {
   return (

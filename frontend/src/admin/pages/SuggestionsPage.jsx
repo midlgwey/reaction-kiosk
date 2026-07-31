@@ -6,7 +6,7 @@ import { useSuggestionsPagination } from '../hooks/feedback/useSuggestionsPagina
 import SuggestionsHeader from '../components/suggestions/SuggestionsHeader';
 import SuggestionsTable from '../components/suggestions/SuggestionsTable';
 import Pagination from '../components/suggestions/Pagination';
-import FeedbackStats from '../components/metrics/StatCardSuggestions';
+import FeedbackStats from '../components/metrics/suggestionscards/StatCardSuggestions';
 
 /**
  * Componente de Página: Gestión de Sugerencias (Feedback).

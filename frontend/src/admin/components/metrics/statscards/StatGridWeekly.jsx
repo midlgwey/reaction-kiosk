@@ -7,14 +7,14 @@ import {
 } from "@heroicons/react/24/solid";
 
 import StatCardWeekly from "./StatCardWeekly";
-import StatCard from "./dashboardcards/StatCard";
+import StatCard from "../dashboardcards/StatCard";
 
 import {
   useBestQuestionWeek,
   useWorstQuestionWeek,
   useStrongDayWeek,
   useWeakDayWeek,
-} from "../../hooks/stats/useStatCard";
+} from "../../../hooks/stats/useStatCard"
 
 // Helpers
 const Spinner = () => (
