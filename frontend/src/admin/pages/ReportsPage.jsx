@@ -3,8 +3,6 @@ import SuggestionsReportCard from "../components/reports/SuggestionsReportCard";
 import TrendReportCard from '../components/reports/TrendReportCard';
 import ShiftReportCard from '../components/reports/ShiftReportCard';
 
-
-
 export default function ReportsPage() {
   return (
     <div className="space-y-6">
@@ -24,9 +22,6 @@ export default function ReportsPage() {
 
         <ShiftReportCard/>
 
-   
-
-  
       </div>
     </div>
   );

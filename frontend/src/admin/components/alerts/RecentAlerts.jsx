@@ -26,7 +26,7 @@ export default function RecentAlerts() {
         titulo: 'Encuesta rechazada'
       };
     }
-    // critica (comentario negativo)
+
     return {
       wrapper: 'bg-amber-50 border-amber-200 hover:shadow-md',
       iconBg: 'bg-amber-100 text-amber-600',

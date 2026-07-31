@@ -220,10 +220,10 @@ export const getFeedbackStats = async (req, res) => {
     // Retorno de valores por defecto si no hay registros en el día actual
     if (total === 0) {
       return res.json({
-        total: 0,
+        total: "0",
         criticalShift: "Sin datos",
         mainComplaint: "Todo tranquilo",
-        strongPoint: "Esperando..."
+        strongPoint: "Sin datos"
       });
     }
 

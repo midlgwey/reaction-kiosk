@@ -43,8 +43,8 @@ function buildQuestionCard(dataState) {
   // alcanzó el umbral mínimo de 5 votos definido en el controlador SQL.
   if (!dataState.ready || !dataState.question || dataState.question === "Sin datos aún") {
     return { 
-      question: "Pendiente", 
-      subtitle: "Mínimo 5 respuestas requeridas" 
+      question: "Pendiente ", 
+      subtitle: "Mínimo 5 encuestas requeridas" 
     };
   }
 
@@ -75,8 +75,8 @@ function buildDayCard(dataState) {
   // alcanzó el umbral mínimo de 5 votos definido en el controlador SQL.
   if (!dataState.ready || !dataState.day) {
     return { 
-      value: "Pendiente", 
-      subtitle: "Mínimo 5 votos requeridos" 
+      value: " Pendiente", 
+      subtitle: "Mínimo 5 encuestas requeridas" 
     };
   }
   return {

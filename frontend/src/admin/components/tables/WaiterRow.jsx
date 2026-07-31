@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMedal } from '@fortawesome/free-solid-svg-icons';
 
 // WaiterRow.jsx
 const getScoreStyles = (pts) => {
@@ -13,7 +15,15 @@ export default function WaiterRow({ waiter, index }) {
       
       {/* Ranking / Medalla */}
       <div className="col-span-1 text-center font-bold text-slate-800 text-sm lg:text-base">
-        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+        {index === 0 ? (
+          <FontAwesomeIcon icon={faMedal} className="text-yellow-500 text-lg" />
+        ) : index === 1 ? (
+          <FontAwesomeIcon icon={faMedal} className="text-gray-400 text-lg" />
+        ) : index === 2 ? (
+          <FontAwesomeIcon icon={faMedal} className="text-amber-700 text-lg" />
+        ) : (
+          index + 1
+        )}
       </div>
  
       {/* Avatar y Nombre */}
