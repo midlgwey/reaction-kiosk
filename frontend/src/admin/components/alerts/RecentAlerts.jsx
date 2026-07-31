@@ -1,5 +1,7 @@
 import React from 'react';
 import { ChatBubbleLeftRightIcon, StarIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckToSlot } from '@fortawesome/free-solid-svg-icons';
 import { useRecentAlerts } from '../../hooks/alerts/useRecentAlerts';
 
 export default function RecentAlerts() {
@@ -65,7 +67,7 @@ export default function RecentAlerts() {
           </div>
         ) : alerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 text-slate-400 min-h-[200px]">
-            <span className="text-4xl mb-3">✅</span>
+            <FontAwesomeIcon icon={faCheckToSlot} className="w-5 h-5 text-emerald-400" />
             <p className="font-medium text-sm">Todo en orden.</p>
             <p className="text-xs">No hay alertas críticas hoy.</p>
           </div>
