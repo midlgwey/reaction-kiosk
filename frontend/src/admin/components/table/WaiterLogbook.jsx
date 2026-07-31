@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import LogbookRow from './LogbookRow'; 
 import DashboardFilter from '../shared/DashboardFilter';
 import { useWaiterLogbook } from '../../../admin/hooks/waiters/useWaiterLogbook'; 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSquareCheck, faCircleXmark } from '@fortawesome/free-regular-svg-icons';
 
 const ChartLoading = () => (
   <div className="h-full w-full flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200 p-10">
@@ -56,7 +58,8 @@ export default function WaiterLogbook() {
                   activeTab === 'realizadas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'
                 }`}
               >
-                ✅ Realizadas
+                <FontAwesomeIcon icon={faSquareCheck} className="w-6 h-6 text-emerald-500" />
+                Realizadas
               </button>
               <button
                 onClick={() => setActiveTab('rechazadas')}
@@ -64,7 +67,8 @@ export default function WaiterLogbook() {
                   activeTab === 'rechazadas' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'
                 }`}
               >
-                ❌ No Realizadas
+                <FontAwesomeIcon icon={faCircleXmark} className="w-6 h-6 text-rose-500" />
+                No Realizadas
               </button>
             </div>
           <DashboardFilter options={dateOptions} selectedOption={selectedOption} setSelectedOption={setSelectedOption} selectedDay={selectedDay} setSelectedDay={setSelectedDay} />
