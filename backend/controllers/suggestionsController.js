@@ -3,9 +3,7 @@ import { getShiftByTime } from '../utils/shiftUtils.js';
 import { InternalServerError } from '../errors/customErrors.js'
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { sendAlertTelegram } from '../utils/alertsUtils.js';
-
-// Ajuste de hora para Tijuana (Invierno: -8, Verano: -7)
-const TIME_OFFSET = '-7 hours';
+import { TIME_OFFSET } from '../utils/queryHelpers.js';
 
 // Inicializar Gemini 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -190,6 +188,7 @@ export const getSuggestions = async (req, res) => {
           datetime(created_at, '${TIME_OFFSET}') as date
         FROM suggestions s
         LEFT JOIN waiters w ON s.waiter_id = w.id
+        WHERE (w.id IS NULL OR w.is_test = 0)
         ORDER BY s.created_at DESC
         LIMIT 200
       `
@@ -208,8 +207,10 @@ export const getFeedbackStats = async (req, res) => {
     const result = await db.execute({
       sql: `
         SELECT shift, sentiment, comment
-        FROM suggestions
-        WHERE date(datetime(created_at, ?)) = date('now', ?)
+        FROM suggestions s
+        LEFT JOIN waiters w ON s.waiter_id = w.id 
+        WHERE date(datetime(s.created_at, ?)) = date('now', ?)
+        AND (w.id IS NULL OR w.is_test = 0) 
       `,
       args: [TIME_OFFSET, TIME_OFFSET] 
     });
@@ -344,8 +345,9 @@ export const getLatestSuggestions = async (req, res) => {
           s.shift, 
           s.sentiment,
           datetime(s.created_at, '${TIME_OFFSET}') as date
-        FROM suggestions s
+       FROM suggestions s
         LEFT JOIN waiters w ON s.waiter_id = w.id
+        WHERE (w.id IS NULL OR w.is_test = 0)  
         ORDER BY s.created_at DESC
         LIMIT 5
       `

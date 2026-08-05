@@ -1,7 +1,5 @@
 import { db } from '../db.js';
-
-// Tijuana Invierno: '-8 hours' | Tijuana Verano: '-7 hours' (Ajustar según temporada)
-const TIME_OFFSET = '-7 hours'; 
+import { TIME_OFFSET } from '../utils/queryHelpers.js';
 
 export const getRecentAlerts = async (req, res) => {
   try {
@@ -21,6 +19,7 @@ export const getRecentAlerts = async (req, res) => {
         LEFT JOIN waiters w ON r.waiter_id = w.id
 
         WHERE DATE(a.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
+        AND (w.id IS NULL OR w.is_test = 0)
 
         ORDER BY a.created_at DESC
         LIMIT 5
