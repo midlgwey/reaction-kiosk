@@ -1,5 +1,7 @@
 import { db } from '../db.js';
 import { InternalServerError } from '../errors/customErrors.js';
+import { getShiftByTime } from '../utils/shiftUtils.js';
+import { sendAlertTelegram } from '../utils/alertsUtils.js';
 import { TIME_OFFSET, EXCLUDE_TEST, getDateFilters } from '../utils/queryHelpers.js';
 
 // Total de reacciones del día
@@ -257,5 +259,39 @@ export const getDailyQuestions = async (req, res) => {
   } catch (error) {
     console.error("Error en getDailyQuestions:", error);
     throw new InternalServerError("Error obteniendo la radiografía de preguntas");
+  }
+};
+
+export const checkInactivity = async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: `
+        SELECT COUNT(DISTINCT survey_id) AS total
+        FROM reactions
+        WHERE created_at >= datetime('now', '-1 hours')
+        AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+      `
+    });
+
+    const total = result.rows[0]?.total || 0;
+
+    if (total === 0) {
+      const shift = getShiftByTime();
+
+      // No manda alerta si el restaurante está cerrado
+      if (shift === 'Cerrado' || shift === 'Fuera de horario') {
+        return res.status(200).json({ message: "Restaurante cerrado, sin alerta" });
+      }
+
+      const alertMessage = `⚠️ ALERTA DE INACTIVIDAD\nTurno: ${shift}\n\nNo se han registrado encuestas en la última hora.\nVerifica que el kiosco esté funcionando correctamente.`;
+
+      await sendAlertTelegram(alertMessage);
+    }
+
+    res.status(200).json({ total, alerta: total === 0 });
+
+  } catch (error) {
+    console.error("Error en checkInactivity:", error);
+    throw new InternalServerError("Error verificando inactividad");
   }
 };
