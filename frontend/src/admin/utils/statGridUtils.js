@@ -38,7 +38,7 @@ export function buildLowInteractionCard({ loading, error, data }) {
 
   const parts = Object.entries(byShift).map(([turno, meseros]) => {
     if (meseros.length === 1) {
-      return { value: meseros[0].mesero, subtitle: `Único en ${turno}` };
+      return { value: meseros[0].mesero, subtitle: `Único con enc. en ${turno}` };
     }
     return {
       value: meseros.map(w => w.mesero).join(' y '),
