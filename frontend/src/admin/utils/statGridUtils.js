@@ -26,16 +26,33 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
  
 export function buildLowInteractionCard({ loading, error, data }) {
   if (loading) return { value: null, subtitle: null };
-  if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (data.length === 0) return { value: "Sin datos", subtitle: "No hay encuestas hoy" };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos" };
+  if (data.length === 0) return { value: "Sin datos", subtitle: "No hay registros hoy" };
+
+  // Agrupa por turno para detectar si hay más de uno por turno
+  const byShift = {};
+  data.forEach(w => {
+    if (!byShift[w.turno]) byShift[w.turno] = [];
+    byShift[w.turno].push(w);
+  });
+
+  const parts = Object.entries(byShift).map(([turno, meseros]) => {
+    if (meseros.length === 1) {
+      return { value: meseros[0].mesero, subtitle: `Único en ${turno}` };
+    }
+    return {
+      value: meseros.map(w => w.mesero).join(' y '),
+      subtitle: `${turno}: ${meseros[0].encuestas} enc. cada uno`
+    };
+  });
 
   return {
-    value: data.map(w => w.mesero).join(' · '),
-    subtitle: data.map(w => `${w.turno}: ${w.encuestas} enc.`).join(' | ')
+    value: parts.map(p => p.value).join(' · '),
+    subtitle: parts.map(p => p.subtitle).join(' · ')
   };
 }
-
  
+
 export function buildSurveyCountCard({ loading, error, data }) {
   if (loading) return { value: null, subtitle: null };
   if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
