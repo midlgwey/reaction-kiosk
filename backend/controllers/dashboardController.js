@@ -84,13 +84,6 @@ export const getLowInteractionWaiters = async (req, res) => {
             AND r.shift = 'Comida/Cena'
           WHERE w.active = 1
           AND w.is_test = 0
-          AND w.id NOT IN (
-            SELECT DISTINCT waiter_id 
-            FROM reactions
-            WHERE DATE(created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
-            AND shift = 'Desayuno'
-            AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
-          )
           GROUP BY w.id, w.name
           HAVING encuestas >= 1
           ORDER BY encuestas ASC
@@ -99,8 +92,8 @@ export const getLowInteractionWaiters = async (req, res) => {
     ]);
 
     const result = [
-      ...(breakfastResult.rows[0] ? [breakfastResult.rows[0]] : []),
-      ...(lunchResult.rows[0] ? [lunchResult.rows[0]] : [])
+      ...breakfastResult.rows,
+      ...lunchResult.rows
     ];
 
     res.status(200).json(result.map(row => ({
