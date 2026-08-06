@@ -39,28 +39,28 @@ export function buildLowInteractionCard({ loading, error, data }) {
     const minEncuestas = meseros[0].encuestas;
     const meserosConMinimo = meseros.filter(w => w.encuestas === minEncuestas);
 
-    let mainText = "";
-    
-    // Regla 1: Si nadie tiene encuestas o el mínimo es 0 con muchos
-    if (minEncuestas === 0 && meseros.length > 1) {
-      mainText = "Sin interacciones";
+    let nombreMesero = "";
+    let subtituloTurno = "";
+
+    // Si solo hay un mesero o es el único con el mínimo en su turno
+    if (meseros.length === 1 && minEncuestas > 0) {
+      nombreMesero = meseros[0].mesero;
+      subtituloTurno = `${turno}: Único con ${minEncuestas} enc.`;
     } 
-    // Regla 2: Si solo un mesero tuvo encuestas en el turno (fue el único)
-    else if (meseros.length === 1 && minEncuestas > 0) {
-      mainText = "Único con enc. en su turno";
-    } 
-    // Regla 3: Si hay 2 o más meseros con las encuestas mínimas (ej. 2 encuestas)
+    // Si hay varios empatados con las mismas encuestas mínimas
     else if (meserosConMinimo.length >= 2) {
-      mainText = `Varios meseros tienen ${minEncuestas} enc.`;
+      nombreMesero = meserosConMinimo.map(w => w.mesero).join(' y ');
+      subtituloTurno = `${turno}: Varios con ${minEncuestas} enc.`;
     } 
-    // Regla 4: Caso estándar, muestra el nombre del mesero con menos encuestas
+    // Caso estándar
     else {
-      mainText = meserosConMinimo.map(w => w.mesero).join(' y ');
+      nombreMesero = meserosConMinimo.map(w => w.mesero).join(' y ');
+      subtituloTurno = `${turno}: ${minEncuestas} enc.`;
     }
 
     return {
-      value: mainText,
-      subtitle: `${turno}: ${minEncuestas} enc.`
+      value: nombreMesero,      // <-- Arriba va el NOMBRE del mesero
+      subtitle: subtituloTurno  // <-- Abajo va el texto descriptivo por turno
     };
   });
 
