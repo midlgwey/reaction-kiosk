@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { authenticateAdmin } from "../middlewares/authMiddleware.js"
-import { getDailyReactions, getDailyServerScore, getLowInteractionWaiters, getDailySurveyCount, getDailySatisfactionTrend, getDailyQuestions, g } from '../controllers/dashboardController.js'
+import { getDailyReactions, getDailyServerScore, getLowInteractionWaiters, getDailySurveyCount, getDailySatisfactionTrend, getDailyQuestions, checkInactivity } from '../controllers/dashboardController.js'
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.get('/daily-satisfaction', authenticateAdmin, getDailySatisfactionTrend)
 //Ruta para la radiografia de preguntas respondidas por dia
 router.get('/daily-questions', authenticateAdmin, getDailyQuestions)
 
-rou
+router.get('/check-inactivity', checkInactivity)
 
 
 export default router;
