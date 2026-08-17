@@ -63,11 +63,11 @@ export function getShiftByTime() {
   /* -------------------------------------------------
      Domingo
      Desayuno: 8:00 AM - 1:45 PM (480 - 825 min)
-     Comida/Cena: 1:46 PM - 6:00 PM (826 - 1080 min)
+     Comida/Cena: 1:46 PM - 7:00 PM (826 - 1140 min)
   ------------------------------------------------- */
   if (day === 0) {
     if (currentTime >= 480 && currentTime <= 825) return "Desayuno";
-    if (currentTime > 825 && currentTime <= 1350) return "Comida/Cena";
+    if (currentTime > 825 && currentTime <= 1140) return "Comida/Cena";
   }
 
   return "Fuera de horario";
