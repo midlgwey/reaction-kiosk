@@ -67,7 +67,7 @@ export function getShiftByTime() {
   ------------------------------------------------- */
   if (day === 0) {
     if (currentTime >= 480 && currentTime <= 825) return "Desayuno";
-    if (currentTime > 825 && currentTime <= 1080) return "Comida/Cena";
+    if (currentTime > 825 && currentTime <= 1350) return "Comida/Cena";
   }
 
   return "Fuera de horario";
