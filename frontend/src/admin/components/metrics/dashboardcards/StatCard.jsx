@@ -45,7 +45,7 @@ const variants = {
   }
 };
 
-export default function StatCard({ title, value, subtitle, icon, color = 'indigo' }) {
+export default function StatCard({ title, value, subtitle, icon, color = 'indigo', tooltip }) {
   
   // Seleccionamos el tema. Si el color no existe, usamos 'indigo'
   const theme = variants[color] || variants.indigo;
@@ -76,7 +76,7 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
       {/* Valor y Subtítulo */}
       <div className="mt-3">
         <h3 className="text-xl lg:text-2xl font-black text-slate-800 leading-tight line-clamp-2 min-h-[3rem]" 
-        title={value}>
+        title={tooltip || (typeof value === 'string' ? value : '')}>
           {value}
         </h3>
 

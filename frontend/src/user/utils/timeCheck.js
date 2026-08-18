@@ -71,4 +71,4 @@ export function getShiftByTime() {
   }
 
   return "Fuera de horario";
-}
+} 

@@ -35,6 +35,7 @@ export default function StatGrid() {
         title="MESEROS CON MENOS INTERACCIONES"
         value={lowInteractionCard.value ?? <Spinner />}
         subtitle={lowInteractionCard.subtitle}
+        tooltip={lowInteractionCard.tooltip}
         icon={<ArrowTrendingDownIcon className={ICON_CLASS} />}
         color="orange"
       />
