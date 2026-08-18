@@ -75,8 +75,10 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
 
       {/* Valor y Subtítulo */}
       <div className="mt-3">
-        <h3 className="text-xl lg:text-2xl font-black text-slate-800 leading-tight line-clamp-2 min-h-[3rem]" 
-        title={tooltip || (typeof value === 'string' ? value : '')}>
+       <h3 
+          className="text-lg md:text-xl lg:text-2xl font-black text-slate-800 leading-tight line-clamp-1 md:line-clamp-2 min-h-[1.75rem] md:min-h-[3rem]" 
+          title={tooltip || (typeof value === 'string' ? value : '')}
+        >
           {value}
         </h3>
 
