@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const variants = {
   indigo: { //color original 
@@ -50,8 +50,20 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
   // Seleccionamos el tema. Si el color no existe, usamos 'indigo'
   const theme = variants[color] || variants.indigo;
 
+  // Estado para controlar si el tooltip móvil está abierto
+  const [showMobileTooltip, setShowMobileTooltip] = useState(false);
+
+  const handleClick = () => {
+   
+    if (tooltip) {
+      alert(tooltip); 
+    }
+  };
+
   return (
-    <div className={`
+    <div 
+      onClick={handleClick}
+      className={`
       ${theme.bg} ${theme.border} 
       p-4 lg:p-5              
       rounded-2xl border flex flex-col justify-between 
