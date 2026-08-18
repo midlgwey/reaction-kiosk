@@ -65,14 +65,23 @@ export function buildLowInteractionCard({ loading, error, data }) {
     };
   });
 
-  // Construimos el string final separando claramente los turnos
-  const finalValue = parts.map(p => p.nombres).join(' | ');
+ // Unimos los textos separando los turnos con ' | '
+  let finalValue = parts.map(p => p.nombres).join(' | ');
   const finalSubtitle = parts.map(p => `${p.turnoAbreviado}: ${p.subtituloTurno}`).join(' | ');
 
+  // Límite de caracteres para no romper el diseño de la tarjeta
+  const LIMITE_LETRAS = 11; 
+  
+  // Si el texto se pasa del límite, lo cortamos y agregamos '...'
+  if (finalValue.length > LIMITE_LETRAS) {
+    finalValue = finalValue.substring(0, LIMITE_LETRAS) + '...'; 
+  }
+
+  // Devolvemos la info lista para mostrarse en la UI
   return {
     value: finalValue,
     subtitle: finalSubtitle,
-    // El tooltip sigue mostrando toda la información detallada al pasar el mouse
+    // Guardamos la info completa aquí para mostrarla al pasar el cursor
     tooltip: data.map(w => `${w.mesero} (${w.turno}): ${w.encuestas} encuestas`).join('\n')
   };
 }
