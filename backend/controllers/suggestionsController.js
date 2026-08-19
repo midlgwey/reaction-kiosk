@@ -285,8 +285,9 @@ export const getFeedbackStats = async (req, res) => {
           if (text.includes('todo bien') || text.includes('perfecto') || text.includes('excelente') || text.includes('muy bien')) counts['general']++;
 
           const goodWords = {
-            'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 
-            'amable': 'Amable', 'rapido': 'Rápido', 'perfecto': 'Perfecto', 'limpio': 'Limpio'
+            'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 'agradable': 'Agradable', 'exquisito': 'Exquisito', 'muy bien': 'Muy Bien', 'atencion': 'Buena Atención',
+            'amable': 'Amable', 'rapido': 'Rápido', 'perfecto': 'Perfecto', 'limpio': 'Limpio' , 'exquisito': 'Exquisito', 'deliciosa': 'Deliciosa', 'delicioso': 'Delicioso', 'deli': 'Deli', 
+            'buen sazon': 'Buen Sazón', 'sabroso': 'Sabroso', 'sabrosa': 'Sabrosa', 
           };
 
           Object.keys(goodWords).forEach(key => {
