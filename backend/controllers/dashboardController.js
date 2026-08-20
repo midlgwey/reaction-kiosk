@@ -52,12 +52,13 @@ export const getDailyServerScore = async (req, res) => {
 // Mesero con menos encuestas por turno del día
 // Desayuno: mínimo 2 encuestas | Comida/Cena: mínimo 1
 // Excluye de Comida/Cena a los meseros que ya aparecen en Desayuno
+// Obtiene a los 2 meseros con menos encuestas por cada turno (mínimo 1 encuesta)
 export const getLowInteractionWaiters = async (req, res) => {
   try {
     // Ejecutamos ambas consultas al mismo tiempo para que sea más rápido
     const [breakfastResult, lunchResult] = await Promise.all([
       
-      // 1. Buscamos a los 2 peores del turno Desayuno
+      // 1. Buscamos a los 2 con menos encuestas del turno Desayuno
       db.execute({
         sql: `
           SELECT
@@ -65,18 +66,18 @@ export const getLowInteractionWaiters = async (req, res) => {
             'Desayuno' AS turno,
             COUNT(DISTINCT r.survey_id) AS encuestas
           FROM waiters w
-          LEFT JOIN reactions r ON w.id = r.waiter_id
+          JOIN reactions r ON w.id = r.waiter_id -- Cambiado de LEFT JOIN a JOIN
             AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
             AND r.shift = 'Desayuno'
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
           ORDER BY encuestas ASC
-          LIMIT 2 -- Aquí está la clave: solo traemos a los 2 con menos encuestas
+          LIMIT 2 
         `
       }),
       
-      // 2. Buscamos a los 2 peores del turno Comida/Cena
+      // 2. Buscamos a los 2 con menos encuestas del turno Comida/Cena
       db.execute({
         sql: `
           SELECT
@@ -84,14 +85,14 @@ export const getLowInteractionWaiters = async (req, res) => {
             'Comida/Cena' AS turno,
             COUNT(DISTINCT r.survey_id) AS encuestas
           FROM waiters w
-          LEFT JOIN reactions r ON w.id = r.waiter_id
+          JOIN reactions r ON w.id = r.waiter_id -- Cambiado de LEFT JOIN a JOIN
             AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
             AND r.shift = 'Comida/Cena'
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
           ORDER BY encuestas ASC
-          LIMIT 2 -- Solo los 2 con menos encuestas de este turno
+          LIMIT 2 
         `
       })
     ]);
