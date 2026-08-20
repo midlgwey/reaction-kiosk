@@ -52,11 +52,17 @@ export function buildLowInteractionCard({ loading, error, data }) {
     };
   });
 
+  const tooltipText = data.map(w => `${w.mesero} (${w.turno}): ${w.encuestas} encuestas`).join('\n');
+
   return {
     value: parts.map(p => p.value).join(' · '),
-    subtitle: parts.map(p => p.subtitle).join(' · ')
+    subtitle: parts.map(p => p.subtitle).join(' · '),
+    tooltip: tooltipText
   };
 }
+
+
+
 
 export function buildSurveyCountCard({ loading, error, data }) {
   if (loading) return { value: null, subtitle: null };
