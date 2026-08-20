@@ -24,40 +24,52 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
   };
 }
  
+// Da formato a los datos para mostrarlos bonitos en la tarjeta del dashboard
 export function buildLowInteractionCard({ loading, error, data }) {
+  // Manejo de estados básicos (cargando, error o sin datos)
   if (loading) return { value: null, subtitle: null, tooltip: null };
   if (error) return { value: "error", subtitle: "Fallo al cargar", tooltip: null };
   if (!data || data.length === 0) return { value: "Sin datos", subtitle: "No hay registros", tooltip: null };
 
+  // Separamos a los meseros según su turno
   const byShift = {};
   data.forEach(w => {
     if (!byShift[w.turno]) byShift[w.turno] = [];
     byShift[w.turno].push(w);
   });
 
+  // Armamos el texto por cada turno (Mañana y Tarde)
   const parts = Object.entries(byShift).map(([turno, meseros]) => {
+    // Acomodamos de menor a mayor cantidad de encuestas por si acaso
+    meseros.sort((a, b) => a.encuestas - b.encuestas);
+    
+    // Identificamos cuál fue el número más bajo de encuestas y quiénes lo sacaron
     const minEncuestas = meseros[0].encuestas;
     const meserosConMinimo = meseros.filter(w => w.encuestas === minEncuestas);
 
     let nombres = "";
-    // Manejo inteligente de empates para no saturar la tarjeta
-    if (meserosConMinimo.length > 2) {
+    
+    // Decidimos cómo mostrar los nombres dependiendo de cuántos meseros hay
+    if (meseros.length === 1) {
+      nombres = `${meseros[0].mesero}`;
+    } else if (meserosConMinimo.length > 2) {
       nombres = `${meserosConMinimo[0].mesero}, ${meserosConMinimo[1].mesero} y +${meserosConMinimo.length - 2}`;
     } else {
       nombres = meserosConMinimo.map(w => w.mesero).join(' y ');
     }
 
-    // Subtítulos más limpios
     let subtituloTurno = "";
-    if (meseros.length === 1 && minEncuestas > 0) {
-      subtituloTurno = `Único con ${minEncuestas} enc.`;
+    
+    // Ajustamos el texto del subtítulo si hay empates o es un mesero único
+    if (meseros.length === 1) {
+      nombres = `Único: ${meseros[0].mesero}`;
+      subtituloTurno = `${minEncuestas} encuestas`;
     } else if (meserosConMinimo.length >= 2) {
       subtituloTurno = `Empate con ${minEncuestas} enc.`;
     } else {
       subtituloTurno = `${minEncuestas} encuestas`;
     }
 
-    // Retornamos un objeto estructurado en lugar de un string largo
     return {
       turnoAbreviado: turno === 'Desayuno' ? 'Mañana' : 'Tarde',
       nombres,
@@ -65,11 +77,11 @@ export function buildLowInteractionCard({ loading, error, data }) {
     };
   });
 
-  
+  // Unimos los textos finales separando los turnos con un " | "
   const finalValue = parts.map(p => p.nombres).join(' | ');
   const finalSubtitle = parts.map(p => `${p.turnoAbreviado}: ${p.subtituloTurno}`).join(' | ');
 
-  
+  // Retornamos el objeto listo para inyectarlo en la UI
   return {
     value: finalValue,
     subtitle: finalSubtitle,

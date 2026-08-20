@@ -54,7 +54,10 @@ export const getDailyServerScore = async (req, res) => {
 // Excluye de Comida/Cena a los meseros que ya aparecen en Desayuno
 export const getLowInteractionWaiters = async (req, res) => {
   try {
+    // Ejecutamos ambas consultas al mismo tiempo para que sea más rápido
     const [breakfastResult, lunchResult] = await Promise.all([
+      
+      // 1. Buscamos a los 2 peores del turno Desayuno
       db.execute({
         sql: `
           SELECT
@@ -68,10 +71,12 @@ export const getLowInteractionWaiters = async (req, res) => {
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
-          HAVING encuestas >= 2
           ORDER BY encuestas ASC
+          LIMIT 2 -- Aquí está la clave: solo traemos a los 2 con menos encuestas
         `
       }),
+      
+      // 2. Buscamos a los 2 peores del turno Comida/Cena
       db.execute({
         sql: `
           SELECT
@@ -85,17 +90,19 @@ export const getLowInteractionWaiters = async (req, res) => {
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
-          HAVING encuestas >= 1
           ORDER BY encuestas ASC
+          LIMIT 2 -- Solo los 2 con menos encuestas de este turno
         `
       })
     ]);
 
+    // Unimos los resultados de ambos turnos en una sola lista
     const result = [
       ...breakfastResult.rows,
       ...lunchResult.rows
     ];
 
+    // Enviamos la respuesta limpia al frontend
     res.status(200).json(result.map(row => ({
       mesero: row.mesero,
       turno: row.turno,
