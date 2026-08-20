@@ -26,66 +26,35 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
  
 // Da formato a los datos para mostrarlos bonitos en la tarjeta del dashboard
 export function buildLowInteractionCard({ loading, error, data }) {
-  // Manejo de estados básicos (cargando, error o sin datos)
-  if (loading) return { value: null, subtitle: null, tooltip: null };
-  if (error) return { value: "error", subtitle: "Fallo al cargar", tooltip: null };
-  if (!data || data.length === 0) return { value: "Sin datos", subtitle: "No hay registros", tooltip: null };
+  if (loading) return { value: null, subtitle: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos" };
+  if (data.length === 0) return { value: "Sin actividad", subtitle: "Sin encuestas registradas hoy" };
 
-  // Separamos a los meseros según su turno
+  // Agrupa por turno
   const byShift = {};
   data.forEach(w => {
     if (!byShift[w.turno]) byShift[w.turno] = [];
     byShift[w.turno].push(w);
   });
 
-  // Armamos el texto por cada turno (Mañana y Tarde)
   const parts = Object.entries(byShift).map(([turno, meseros]) => {
-    // Acomodamos de menor a mayor cantidad de encuestas por si acaso
-    meseros.sort((a, b) => a.encuestas - b.encuestas);
-    
-    // Identificamos cuál fue el número más bajo de encuestas y quiénes lo sacaron
-    const minEncuestas = meseros[0].encuestas;
-    const meserosConMinimo = meseros.filter(w => w.encuestas === minEncuestas);
-
-    let nombres = "";
-    
-    // Decidimos cómo mostrar los nombres dependiendo de cuántos meseros hay
-    if (meseros.length === 1) {
-      nombres = `${meseros[0].mesero}`;
-    } else if (meserosConMinimo.length > 2) {
-      nombres = `${meserosConMinimo[0].mesero}, ${meserosConMinimo[1].mesero} y +${meserosConMinimo.length - 2}`;
-    } else {
-      nombres = meserosConMinimo.map(w => w.mesero).join(' y ');
+    if (meseros[0].unico) {
+      // Solo un mesero entregó la tablet en este turno
+      return {
+        value: meseros[0].mesero,
+        subtitle: `Único en ${turno}: ${meseros[0].encuestas} enc.`
+      };
     }
-
-    let subtituloTurno = "";
-    
-    // Ajustamos el texto del subtítulo si hay empates o es un mesero único
-    if (meseros.length === 1) {
-      nombres = `Único: ${meseros[0].mesero}`;
-      subtituloTurno = `${minEncuestas} encuestas`;
-    } else if (meserosConMinimo.length >= 2) {
-      subtituloTurno = `Empate con ${minEncuestas} enc.`;
-    } else {
-      subtituloTurno = `${minEncuestas} encuestas`;
-    }
-
+    // Dos meseros con menos encuestas del turno
     return {
-      turnoAbreviado: turno === 'Desayuno' ? 'Mañana' : 'Tarde',
-      nombres,
-      subtituloTurno
+      value: meseros.map(w => w.mesero).join(' y '),
+      subtitle: `${turno}: ${meseros.map(w => w.encuestas + ' enc.').join(' y ')}`
     };
   });
 
-  // Unimos los textos finales separando los turnos con un " | "
-  const finalValue = parts.map(p => p.nombres).join(' | ');
-  const finalSubtitle = parts.map(p => `${p.turnoAbreviado}: ${p.subtituloTurno}`).join(' | ');
-
-  // Retornamos el objeto listo para inyectarlo en la UI
   return {
-    value: finalValue,
-    subtitle: finalSubtitle,
-    tooltip: data.map(w => `${w.mesero} (${w.turno}): ${w.encuestas} encuestas`).join('\n')
+    value: parts.map(p => p.value).join(' · '),
+    subtitle: parts.map(p => p.subtitle).join(' · ')
   };
 }
 

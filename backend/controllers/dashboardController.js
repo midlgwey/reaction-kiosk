@@ -55,10 +55,9 @@ export const getDailyServerScore = async (req, res) => {
 // Obtiene a los 2 meseros con menos encuestas por cada turno (mínimo 1 encuesta)
 export const getLowInteractionWaiters = async (req, res) => {
   try {
-    // Ejecutamos ambas consultas al mismo tiempo para que sea más rápido
     const [breakfastResult, lunchResult] = await Promise.all([
-      
-      // 1. Buscamos a los 2 con menos encuestas del turno Desayuno
+
+      // Desayuno — solo meseros que SÍ trabajaron (encuestas > 0), los 2 con menos
       db.execute({
         sql: `
           SELECT
@@ -66,18 +65,19 @@ export const getLowInteractionWaiters = async (req, res) => {
             'Desayuno' AS turno,
             COUNT(DISTINCT r.survey_id) AS encuestas
           FROM waiters w
-          JOIN reactions r ON w.id = r.waiter_id -- Cambiado de LEFT JOIN a JOIN
+          JOIN reactions r ON w.id = r.waiter_id
             AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
             AND r.shift = 'Desayuno'
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
+          HAVING encuestas > 0
           ORDER BY encuestas ASC
-          LIMIT 2 
+          LIMIT 2
         `
       }),
-      
-      // 2. Buscamos a los 2 con menos encuestas del turno Comida/Cena
+
+      // Comida/Cena — mismo criterio
       db.execute({
         sql: `
           SELECT
@@ -85,30 +85,43 @@ export const getLowInteractionWaiters = async (req, res) => {
             'Comida/Cena' AS turno,
             COUNT(DISTINCT r.survey_id) AS encuestas
           FROM waiters w
-          JOIN reactions r ON w.id = r.waiter_id -- Cambiado de LEFT JOIN a JOIN
+          JOIN reactions r ON w.id = r.waiter_id
             AND DATE(r.created_at, '${TIME_OFFSET}') = DATE('now', '${TIME_OFFSET}')
             AND r.shift = 'Comida/Cena'
           WHERE w.active = 1
           AND w.is_test = 0
           GROUP BY w.id, w.name
+          HAVING encuestas > 0
           ORDER BY encuestas ASC
-          LIMIT 2 
+          LIMIT 2
         `
       })
     ]);
 
-    // Unimos los resultados de ambos turnos en una sola lista
+    const breakfast = breakfastResult.rows;
+    const lunch = lunchResult.rows;
+
+    // Sin datos en ningún turno
+    if (breakfast.length === 0 && lunch.length === 0) {
+      return res.status(200).json([]);
+    }
+
     const result = [
-      ...breakfastResult.rows,
-      ...lunchResult.rows
+      ...breakfast.map(row => ({
+        mesero: row.mesero,
+        turno: row.turno,
+        encuestas: row.encuestas || 0,
+        unico: breakfast.length === 1 
+      })),
+      ...lunch.map(row => ({
+        mesero: row.mesero,
+        turno: row.turno,
+        encuestas: row.encuestas || 0,
+        unico: lunch.length === 1  
+      }))
     ];
 
-    // Enviamos la respuesta limpia al frontend
-    res.status(200).json(result.map(row => ({
-      mesero: row.mesero,
-      turno: row.turno,
-      encuestas: row.encuestas || 0
-    })));
+    res.status(200).json(result);
 
   } catch (error) {
     throw new InternalServerError("Error meseros con poca interacción");
