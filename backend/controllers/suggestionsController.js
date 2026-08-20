@@ -120,7 +120,8 @@ async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, t
       'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
       'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
       'olor a muerto','olor a basura','inodoro','bano publico',"bano apestoso","bano sucio","bano asqueroso",
-      'no habia papel','falta papel', 'pape','falta servilletas'
+      'no habia papel','falta papel', 'pape','falta servilletas' , 'dificl de cortar' , 'dificil de masticar' , 'dificil de tragar' , 'dificil de comer' , 'dificil de beber' ,   
+      'esta duro' ,'esta dura' , 'esta crudo' , 'esta cruda' , 'esta frio' , 'esta fria' , 'esta quemado' , 'esta quemada' , 'esta incomible' , 'esta incomida' , 'esta incomible' , 'esta incomida'
     ];
 
     const textToAnalyze = complaintSegment ? normalizeText(complaintSegment) : lowerCaseText;
@@ -279,15 +280,15 @@ export const getFeedbackStats = async (req, res) => {
         } else if (mode === 'good') {
           // Análisis de puntos fuertes
           if (text.includes('amable') || text.includes('atencion') || text.includes('rapido') || text.includes('mesero')) counts['servicio']++;
-          if (text.includes('rico') || text.includes('rica') || text.includes('delicioso') || text.includes('sabor')) counts['comida']++;
+          if (text.includes('rico') || text.includes('rica') || text.includes('delicioso') || text.includes('sabor') || text.includes("sazon") || text.includes("deli")) counts['comida']++;
           if (text.includes('refresco') || text.includes('cerveza')) counts['bebida']++;
           if (text.includes('limpio') || text.includes('limpieza') || text.includes('agradable')) counts['instalacion']++;
-          if (text.includes('todo bien') || text.includes('perfecto') || text.includes('excelente') || text.includes('muy bien')) counts['general']++;
+          if (text.includes('todo bien') || text.includes('perfecto') || text.includes('excelente') || text.includes('muy bien') || text.includes('buen servicio')) counts['general']++;
 
           const goodWords = {
             'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 'agradable': 'Agradable', 'exquisito': 'Exquisito', 'muy bien': 'Muy Bien', 'atencion': 'Buena Atención',
             'amable': 'Amable', 'rapido': 'Rápido', 'perfecto': 'Perfecto', 'limpio': 'Limpio' , 'exquisito': 'Exquisito', 'deliciosa': 'Deliciosa', 'delicioso': 'Delicioso', 'deli': 'Deli', 
-            'buen sazon': 'Buen Sazón', 'sabroso': 'Sabroso', 'sabrosa': 'Sabrosa', 
+            'buen sazon': 'Buen Sazón', 'sabroso': 'Sabroso', 'sabrosa': 'Sabrosa', 'muy cordial': 'Muy Cordial', 'muy amable': 'Muy Amable', 'estuvo deli': 'Estuvo Deli' , 'recomendable': 'Recomendable', 
           };
 
           Object.keys(goodWords).forEach(key => {
