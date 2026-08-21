@@ -104,6 +104,56 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               <DocumentCheckIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Reportes</span>
             </NavLink>
+
+            <div className="my-5 bg-white h-px"></div>
+
+              <NavLink
+              to="/admin/employees"
+              onClick={() => setOpen(false)}
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+            >
+              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Empleados</span>
+            </NavLink>
+
+             <NavLink
+              to="/admin/attendance"
+              onClick={() => setOpen(false)}
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+            >
+              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Asistencia</span>
+
+            
+            </NavLink>
+
+                   <NavLink
+              to="/admin/weekly-schedule"
+              onClick={() => setOpen(false)}
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+            >
+              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Horarios</span>
+
+
+            
+            </NavLink>
+
+                      <NavLink
+              to="/admin/sales"
+              onClick={() => setOpen(false)}
+              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
+            >
+              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <span className="text-[16px] ml-4 font-bold">Ventas</span>
+
+
+            
+            </NavLink>
+
+
+
+
         </nav>
 
         <div className="my-5 bg-white h-px"></div>

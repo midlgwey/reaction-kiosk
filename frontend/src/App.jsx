@@ -9,6 +9,10 @@ import SuggestionsPage from "./admin/pages/SuggestionsPage";
 import ReportsPage from "./admin/pages/ReportsPage";
 import QuestionScreen from "./user/pages/QuestionScreen";
 import WaiterPage from "./admin/pages/WaiterPage";
+import EmployeesPage from "./superadmin/page/EmployeesPage";
+import AttendancePage from "./superadmin/page/AttendancePage";
+import WeeklySchedulePage from "./superadmin/page/WeeklySchedulePage";
+import SalesPage from "./superadmin/page/SalesPage";
 // layout admin
 import AdminLayout from "./admin/layouts/AdminLayout";
 
@@ -46,6 +50,10 @@ function App() {
         <Route path="stats" element={<StatsPage />} />
         <Route path="feedback" element={<SuggestionsPage />} />
         <Route path="recovery" element={<ReportsPage />} />
+        <Route path="employees" element={<EmployeesPage />} />
+        <Route path="attendance" element={<AttendancePage />} />
+        <Route path="weekly-schedule" element={<WeeklySchedulePage/>} />
+        <Route path="sales" element={<SalesPage/>} />
 
         {/* Mantiene el Sidebar del Admin */}
         <Route path="*" element={<NotFound />} />
