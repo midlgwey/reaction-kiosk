@@ -67,6 +67,13 @@ export default function EmployeesTable() {
     setIsModalOpen(true);
   };
 
+  // Función para eliminar empleado
+  const handleDeleteEmployee = (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este empleado?')) {
+      setUsers(users.filter((user) => user.id !== id));
+    }
+  };
+
   const handleSaveEmployee = (formData) => {
     if (modalMode === 'create') {
       const newUser = {
@@ -112,8 +119,10 @@ export default function EmployeesTable() {
       {/* Cabecera con Título y Botón Agregar Empleado */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Empleados</h1>
-          <p className="text-sm text-gray-500">Gestión y registro del personal</p>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4 w-full md:w-auto">
+           Panel de Personal
+          </h1>
+          <p className="text-sm mt-2 text-gray-500">Gestión y registro del personal para el restaurante</p>
         </div>
         <button
           onClick={handleOpenCreate}
@@ -189,12 +198,20 @@ export default function EmployeesTable() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleOpenEdit(user)}
-                      className="text-indigo-600 hover:text-indigo-900 font-medium text-sm transition-colors"
-                    >
-                      Editar
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleOpenEdit(user)}
+                        className="text-indigo-600 hover:text-indigo-900 font-medium text-sm transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEmployee(user.id)}
+                        className="text-red-600 hover:text-red-900 font-medium text-sm transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

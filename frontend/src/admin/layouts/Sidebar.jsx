@@ -4,7 +4,12 @@ import {
   ChatBubbleBottomCenterTextIcon,
   ArrowRightOnRectangleIcon,
   DocumentCheckIcon,
-  UserIcon
+  UserIcon,
+  UserPlusIcon,
+  CalendarDaysIcon,
+  PresentationChartLineIcon,
+  IdentificationIcon
+
 } from "@heroicons/react/24/solid";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logoutAdminService } from "../services/authService";
@@ -112,7 +117,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               onClick={() => setOpen(false)}
               className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <IdentificationIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Empleados</span>
             </NavLink>
 
@@ -121,7 +126,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               onClick={() => setOpen(false)}
               className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <UserPlusIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Asistencia</span>
 
             
@@ -132,7 +137,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               onClick={() => setOpen(false)}
               className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <CalendarDaysIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Horarios</span>
 
 
@@ -144,7 +149,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
               onClick={() => setOpen(false)}
               className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
             >
-              <DocumentCheckIcon className="w-7 h-7 text-white" />
+              <PresentationChartLineIcon className="w-7 h-7 text-white" />
               <span className="text-[16px] ml-4 font-bold">Ventas</span>
 
 

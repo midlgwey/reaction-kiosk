@@ -184,16 +184,17 @@ export default function RegisterEmployees({ isOpen, onClose, onSave, employee, m
               <label htmlFor="startDate" className="mb-2 block text-base font-medium text-[#07074D]">
                 Fecha de ingreso <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="startDate"
-                id="startDate"
-                required
-                value={formData.startDate}
-                onChange={handleChange}
-                placeholder="Jan 21, 2020"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
-              />
+              <div className="relative">
+                <input
+                  type="date"
+                  name="startDate"
+                  id="startDate"
+                  required
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md cursor-pointer"
+                />
+              </div>
             </div>
             <div className="w-full px-3 sm:w-1/2">
               <label htmlFor="status" className="mb-2 block text-base font-medium text-[#07074D]">
