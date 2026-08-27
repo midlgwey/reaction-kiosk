@@ -1,37 +1,36 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from './Sidebar';
+import Sidebar from "./Sidebar";
+import { Bars3Icon } from "@heroicons/react/24/solid";
 
-const AdminLayout = ({ setAdmin }) => {
-  const [open, setOpen] = useState(false); // controla si la sidebar está abierta
+const AdminLayout = () => {
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar open={open} setOpen={setOpen} setAdmin={setAdmin} />
+      {/* Sidebar pasa las props de control */}
+      <Sidebar open={open} setOpen={setOpen} />
 
-      {/* Contenedor principal con encabezado para dispositivos móviles */}
+      {/* Contenedor principal */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Encabezado móvil */}
-        <header className="lg:hidden bg-indigo-500 text-white p-4 flex items-center shadow-md z-20">
+        {/* Barra Superior en Móvil (Botón Hamburguesa) */}
+        <header className="lg:hidden bg-indigo-600 text-white p-4 flex items-center justify-between shadow-md">
           <button 
             onClick={() => setOpen(true)}
-            className="text-4xl focus:outline-none flex items-center"
+            className="p-1 rounded-md hover:bg-indigo-700 transition"
+            aria-label="Abrir menú"
           >
-            <i className="bi bi-filter-left"></i>
+            <Bars3Icon className="w-7 h-7" />
           </button>
-          <h1 className="ml-4 font-bold text-lg">Menú Admin</h1>
+          <span className="font-bold text-lg">Kioskly Admin</span>
         </header>
 
-        {/* Contenido principal */}
+        {/* Contenido principal de la página */}
         <main className="flex-1 overflow-y-auto transition-all duration-300">
-          
-          {/* Se elimina la restricción de ancho para ocupar toda la pantalla */}
           <div className="p-6 md:p-8 w-full space-y-6">
-             <Outlet />
+            <Outlet />
           </div>
-          
         </main>
       </div>
     </div>

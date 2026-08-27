@@ -1,36 +1,35 @@
+// frontend/src/superadmin/components/RegisterEmployees.jsx
 import React, { useState, useEffect } from 'react';
 
-export default function RegisterEmployees({ isOpen, onClose, onSave, employee, mode }) {
+export default function RegisterEmployees({ isOpen, onClose, onSave, employee, mode, isSubmitting }) {
   const initialState = {
-    name: '',
-    lastname: '',
-    phone: '',
-    email: '',
+    first_name: '',
+    last_name: '',
+    phone_number: '',
     position: '',
-    area: '',
-    startDate: '',
-    status: 'Activo',
+    work_area: '',
+    hire_date: '',
+    status: 'Active',
   };
 
   const [formData, setFormData] = useState(initialState);
+  const [errors, setErrors] = useState({});
 
-  // Precarga los datos si estamos en modo edición
   useEffect(() => {
     if (mode === 'edit' && employee) {
-      const nameParts = employee.name ? employee.name.split(' ') : ['', ''];
       setFormData({
-        name: nameParts[0] || '',
-        lastname: nameParts.slice(1).join(' ') || '',
-        phone: employee.phone || '',
-        email: employee.email || '',
-        position: employee.role || '',
-        area: employee.area || '',
-        startDate: employee.createdAt || '',
-        status: employee.status || 'Activo',
+        first_name: employee.first_name || '',
+        last_name: employee.last_name || '',
+        phone_number: employee.phone_number || '',
+        position: employee.position || '',
+        work_area: employee.work_area || '',
+        hire_date: employee.hire_date ? employee.hire_date.substring(0, 10) : '',
+        status: employee.status || 'Active',
       });
     } else {
       setFormData(initialState);
     }
+    setErrors({}); // Limpiar errores al abrir/cambiar modo
   }, [mode, employee, isOpen]);
 
   if (!isOpen) return null;
@@ -41,19 +40,68 @@ export default function RegisterEmployees({ isOpen, onClose, onSave, employee, m
       ...prev,
       [name]: value,
     }));
+    // Limpiar el error del campo cuando el usuario empiece a escribir o seleccionar
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: false }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  // Auto-formato para el número de teléfono (10 dígitos)
+  const handlePhoneChange = (e) => {
+    const onlyNumbers = e.target.value.replace(/\D/g, '');
+    const truncated = onlyNumbers.slice(0, 10);
+    
+    let formattedNumber = truncated;
+    if (truncated.length > 3) {
+      formattedNumber = `${truncated.slice(0, 3)} ${truncated.slice(3)}`;
+    }
+    
+    setFormData((prev) => ({
+      ...prev,
+      phone_number: formattedNumber
+    }));
+
+    if (errors.phone_number) {
+      setErrors((prev) => ({ ...prev, phone_number: false }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
-    onClose();
+
+    // Validar campos obligatorios
+    const newErrors = {};
+    if (!formData.first_name.trim()) newErrors.first_name = true;
+    if (!formData.last_name.trim()) newErrors.last_name = true;
+    if (!formData.phone_number.trim()) newErrors.phone_number = true;
+    if (!formData.work_area) newErrors.work_area = true;
+    if (!formData.position) newErrors.position = true;
+    if (!formData.hire_date) newErrors.hire_date = true;
+    if (!formData.status) newErrors.status = true;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // Detiene el envío si hay campos vacíos
+    }
+
+    const success = await onSave(formData);
+    if (success) {
+      onClose();
+    }
+  };
+
+  // Función auxiliar para obtener las clases dinámicas del borde
+  const getInputClass = (fieldName) => {
+    return `w-full rounded-md border ${
+      errors[fieldName]
+        ? 'border-red-500 focus:border-red-500 ring-1 ring-red-500'
+        : 'border-[#e0e0e0] focus:border-[#6A64F1]'
+    } bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:shadow-md`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-md p-6 transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-6 transition-all">
       <div className="relative mx-auto w-full max-w-[700px] rounded-xl bg-white p-8 shadow-2xl sm:p-10 border border-gray-100">
-        
-        {/* Botón "X" para cerrar */}
         <button 
           type="button"
           onClick={onClose}
@@ -80,154 +128,149 @@ export default function RegisterEmployees({ isOpen, onClose, onSave, employee, m
           {/* Nombre y Apellido */}
           <div className="-mx-3 flex flex-wrap mb-5">
             <div className="w-full px-3 sm:w-1/2 mb-5 sm:mb-0">
-              <label htmlFor="name" className="mb-2 block text-base font-medium text-[#07074D]">
+              <label htmlFor="first_name" className="mb-2 block text-base font-medium text-[#07074D]">
                 Nombre <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="name"
-                id="name"
-                required
-                value={formData.name}
+                name="first_name"
+                id="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
                 placeholder="Ej. Juan"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
+                className={getInputClass('first_name')}
               />
+              {errors.first_name && <p className="mt-1 text-xs text-red-500">El nombre es obligatorio.</p>}
             </div>
             <div className="w-full px-3 sm:w-1/2">
-              <label htmlFor="lastname" className="mb-2 block text-base font-medium text-[#07074D]">
+              <label htmlFor="last_name" className="mb-2 block text-base font-medium text-[#07074D]">
                 Apellido <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                name="lastname"
-                id="lastname"
-                required
-                value={formData.lastname}
+                name="last_name"
+                id="last_name"
+                value={formData.last_name}
                 onChange={handleChange}
                 placeholder="Ej. Pérez"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
+                className={getInputClass('last_name')}
               />
+              {errors.last_name && <p className="mt-1 text-xs text-red-500">El apellido es obligatorio.</p>}
             </div>
           </div>
 
-          {/* Teléfono y Correo */}
+          {/* Teléfono y Área de Trabajo */}
           <div className="-mx-3 flex flex-wrap mb-5">
             <div className="w-full px-3 sm:w-1/2 mb-5 sm:mb-0">
-              <label htmlFor="phone" className="mb-2 block text-base font-medium text-[#07074D]">
-                Número de teléfono
+              <label htmlFor="phone_number" className="mb-2 block text-base font-medium text-[#07074D]">
+                Número de teléfono <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
-                name="phone"
-                id="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Ingresa su teléfono"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
+                name="phone_number"
+                id="phone_number"
+                value={formData.phone_number}
+                onChange={handlePhoneChange}
+                maxLength={11}
+                placeholder="Ej. 664 1234-567"
+                className={getInputClass('phone_number')}
               />
+              {errors.phone_number && <p className="mt-1 text-xs text-red-500">El teléfono es obligatorio.</p>}
             </div>
             <div className="w-full px-3 sm:w-1/2">
-              <label htmlFor="email" className="mb-2 block text-base font-medium text-[#07074D]">
-                Correo electrónico <span className="text-red-500">*</span>
+              <label htmlFor="work_area" className="mb-2 block text-base font-medium text-[#07074D]">
+                Área de trabajo <span className="text-red-500">*</span>
               </label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                required
-                value={formData.email}
+              <select
+                name="work_area"
+                id="work_area"
+                value={formData.work_area}
                 onChange={handleChange}
-                placeholder="ejemplo@correo.com"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
-              />
+                className={getInputClass('work_area')}
+              >
+                <option value="">Selecciona un área</option>
+                <option value="Comedor">Comedor</option>
+                <option value="Barra">Barra</option>
+                <option value="Caja">Caja</option>
+              </select>
+              {errors.work_area && <p className="mt-1 text-xs text-red-500">Selecciona un área de trabajo.</p>}
             </div>
           </div>
 
-          {/* Puesto y Área */}
-          <div className="-mx-3 flex flex-wrap mb-5">
-            <div className="w-full px-3 sm:w-1/2 mb-5 sm:mb-0">
-              <label htmlFor="position" className="mb-2 block text-base font-medium text-[#07074D]">
-                Puesto de trabajo <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="position"
-                id="position"
-                required
-                value={formData.position}
-                onChange={handleChange}
-                placeholder="Ej. Mesero, Administrador"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
-              />
-            </div>
-            <div className="w-full px-3 sm:w-1/2">
-              <label htmlFor="area" className="mb-2 block text-base font-medium text-[#07074D]">
-                Área de trabajo <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="area"
-                id="area"
-                required
-                value={formData.area}
-                onChange={handleChange}
-                placeholder="Ej. Servicio, Cocina"
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
-              />
-            </div>
+          {/* Puesto de trabajo */}
+          <div className="mb-5">
+            <label htmlFor="position" className="mb-2 block text-base font-medium text-[#07074D]">
+              Puesto de trabajo <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="position"
+              id="position"
+              value={formData.position}
+              onChange={handleChange}
+              className={getInputClass('position')}
+            >
+              <option value="">Selecciona un puesto</option>
+              <option value="Ayudante de Mesero">Ayudante de Mesero</option>
+              <option value="Mesero">Mesero</option>
+              <option value="Capitan">Capitan</option>
+              <option value="Bartender">Bartender</option>
+              <option value="Limpieza">Limpieza</option>
+              <option value="Capturista">Capturista</option>
+              <option value="Hostess">Hostess</option>
+            </select>
+            {errors.position && <p className="mt-1 text-xs text-red-500">Selecciona un puesto de trabajo.</p>}
           </div>
 
           {/* Fecha de ingreso y Estado */}
           <div className="-mx-3 flex flex-wrap mb-8">
             <div className="w-full px-3 sm:w-1/2 mb-5 sm:mb-0">
-              <label htmlFor="startDate" className="mb-2 block text-base font-medium text-[#07074D]">
+              <label htmlFor="hire_date" className="mb-2 block text-base font-medium text-[#07074D]">
                 Fecha de ingreso <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  name="startDate"
-                  id="startDate"
-                  required
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md cursor-pointer"
-                />
-              </div>
+              <input
+                type="date"
+                name="hire_date"
+                id="hire_date"
+                value={formData.hire_date}
+                onChange={handleChange}
+                className={`${getInputClass('hire_date')} cursor-pointer`}
+              />
+              {errors.hire_date && <p className="mt-1 text-xs text-red-500">Selecciona la fecha de ingreso.</p>}
             </div>
             <div className="w-full px-3 sm:w-1/2">
               <label htmlFor="status" className="mb-2 block text-base font-medium text-[#07074D]">
-                Estado de empleado
+                Estado de empleado <span className="text-red-500">*</span>
               </label>
               <select
                 name="status"
                 id="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none transition-all focus:border-[#6A64F1] focus:shadow-md"
+                className={getInputClass('status')}
               >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-                <option value="Suspendido">Suspendido</option>
+                <option value="Active">Activo</option>
+                <option value="Inactive">Inactivo</option>
+                <option value="Suspended">Suspendido</option>
               </select>
+              {errors.status && <p className="mt-1 text-xs text-red-500">Selecciona el estado.</p>}
             </div>
           </div>
 
-          {/* Botones de Cancelar y Guardar */}
+          {/* Botones */}
           <div className="flex flex-col-reverse justify-end gap-4 sm:flex-row">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto rounded-md border border-[#e0e0e0] bg-white px-8 py-3 text-center text-base font-semibold text-[#07074D] outline-none transition-colors hover:bg-gray-50 focus:ring-4 focus:ring-gray-100"
+              className="w-full sm:w-auto rounded-md border border-[#e0e0e0] bg-white px-8 py-3 text-center text-base font-semibold text-[#07074D] outline-none transition-colors hover:bg-gray-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto rounded-md bg-[#6A64F1] py-3 px-8 text-center text-base font-semibold text-white outline-none transition-colors hover:bg-[#5a54e0] hover:shadow-lg focus:ring-4 focus:ring-[#6A64F1]/30"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto rounded-md bg-[#6A64F1] py-3 px-8 text-center text-base font-semibold text-white outline-none transition-colors hover:bg-[#5a54e0] disabled:opacity-50"
             >
-              {mode === 'edit' ? 'Guardar Cambios' : 'Guardar Empleado'}
+              {isSubmitting ? 'Guardando...' : mode === 'edit' ? 'Guardar Cambios' : 'Guardar Empleado'}
             </button>
           </div>
         </form>

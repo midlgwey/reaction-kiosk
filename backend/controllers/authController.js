@@ -1,79 +1,86 @@
 import { StatusCodes } from "http-status-codes";
 import { createJWT } from '../utils/tokenUtils.js';
 import { createAdmin, findAdminByEmail } from "../repositories/admin.repo.js";
-import { encryptPassword, comparePassword  } from '../utils/passwordUtils.js'
-import { UnauthenticatedError, BadRequestError   } from "../errors/customErrors.js";
+import { encryptPassword, comparePassword } from '../utils/passwordUtils.js';
+import { UnauthenticatedError, BadRequestError } from "../errors/customErrors.js";
+import { ROLE_PERMISSIONS } from '../config/permissions.js';
 
-//Registro de admin
+// Registro de admin/supervisor
 export const registerAdmin = async (req, res) => {
+  const { name, lastname, email, password, role = 'supervisor' } = req.body;
 
-  const { name, lastname, email, password } = req.body;
-  //Verifcar si ya existe
-   const existingAdmin = await findAdminByEmail(email);
+  const existingAdmin = await findAdminByEmail(email);
   if (existingAdmin) {
-      throw new BadRequestError("Ya existe un administrador con ese correo");
+    throw new BadRequestError("Ya existe un administrador con ese correo");
   }
 
-  //encripta
   const hashedPassword = await encryptPassword(password);
 
-// Guardamos en la base de datos
   await createAdmin({
     name,
     lastname,
     email,
     password: hashedPassword,
+    role
   });
 
-res
-    .status(StatusCodes.CREATED)
-    .json({ message: "Administrador registrado exitosamente" });
+  res.status(StatusCodes.CREATED).json({ 
+    message: "Administrador registrado exitosamente" 
+  });
 };
 
+// Login de usuario
 export const loginAdmin = async (req, res) => {
-
   const { email, password, rememberMe } = req.body;
 
   const admin = await findAdminByEmail(email);
-
-  console.log("Admin Encontrado:", admin);
-
   if (!admin) {
     throw new UnauthenticatedError("Credenciales inválidas");
   }
 
-  //Comparar contraseña
   const isMatch = await comparePassword(password, admin.password);
   if (!isMatch) {
     throw new UnauthenticatedError("Credenciales inválidas");
   }
 
-    // Crear JWT
-    const token = createJWT({
-
+  // Crear JWT con datos necesarios
+  const token = createJWT({
     id: admin.id,
-    role: "admin",
+    role: admin.role,
     name: admin.name,
-
   });
 
-    const maxAge = rememberMe
-    ? 1000 * 60 * 60 * 24 * 30  // 30 días
-    : undefined; 
+  // Configurar cookie con el token, considerando "remember me"
+  const oneDay = 1000 * 60 * 60 * 24;
+  const thirtyDays = oneDay * 30;
+  const maxAge = rememberMe ? thirtyDays : oneDay;
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", 
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge, 
-      path: '/' // Recomendado asegurar que sea para todo el sitio
-});
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge,
+    path: '/'
+  });
 
-  res.status(StatusCodes.OK).json({ message: "Login exitoso" });
+  // Obtener permisos según el rol del admin
+  const userPermissions = ROLE_PERMISSIONS[admin.role] || {};
+
+  res.status(StatusCodes.OK).json({
+    message: "Login exitoso",
+    role: admin.role,
+    permissions: userPermissions,
+    admin: {
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role
+    }
+  });
 };
 
+// Logout
 export const logoutAdmin = (req, res) => {
- 
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -83,10 +90,15 @@ export const logoutAdmin = (req, res) => {
 
   res.status(StatusCodes.OK).json({ message: "Sesión cerrada" });
 };
+
+// Obtener datos del usuario autenticado actual (/me)
 export const getCurrentAdmin = async (req, res) => {
-  // si llegó aquí → authenticateAdmin ya validó token
-  res.status(200).json({
+  // authenticateAdmin ya validó token e inyectó req.user
+  const userPermissions = ROLE_PERMISSIONS[req.user.role] || {};
+
+  res.status(StatusCodes.OK).json({
     admin: req.user,
+    permissions: userPermissions,
     authenticated: true
   });
 };

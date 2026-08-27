@@ -26,11 +26,10 @@ export function buildServerScoreCard({ loading, error, totalResponses, avgScore 
  
 // Da formato a los datos para mostrarlos bonitos en la tarjeta del dashboard
 export function buildLowInteractionCard({ loading, error, data }) {
-  if (loading) return { value: null, subtitle: null };
-  if (error) return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (data.length === 0) return { value: "Sin actividad", subtitle: "Sin encuestas registradas hoy" };
+  if (loading) return { value: null, subtitle: null, tooltip: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", tooltip: null };
+  if (data.length === 0) return { value: "Sin actividad", subtitle: "Sin encuestas hoy", tooltip: null };
 
-  // Agrupa por turno
   const byShift = {};
   data.forEach(w => {
     if (!byShift[w.turno]) byShift[w.turno] = [];
@@ -39,25 +38,23 @@ export function buildLowInteractionCard({ loading, error, data }) {
 
   const parts = Object.entries(byShift).map(([turno, meseros]) => {
     if (meseros[0].unico) {
-      // Solo un mesero entregó la tablet en este turno
       return {
         value: meseros[0].mesero,
-        subtitle: `Único en ${turno}: ${meseros[0].encuestas} enc.`
+        subtitle: `Único en ${turno}`,
+        tooltip: `${turno}\n${meseros[0].mesero}: ${meseros[0].encuestas} enc.`
       };
     }
-    // Dos meseros con menos encuestas del turno
     return {
       value: meseros.map(w => w.mesero).join(' y '),
-      subtitle: `${turno}: ${meseros.map(w => w.encuestas + ' enc.').join(' y ')}`
+      subtitle: turno,
+      tooltip: `${turno}\n` + meseros.map(w => `${w.mesero}: ${w.encuestas} enc.`).join('\n')
     };
   });
 
-  const tooltipText = data.map(w => `${w.mesero} (${w.turno}): ${w.encuestas} encuestas`).join('\n');
-
   return {
-    value: parts.map(p => p.value).join(' · '),
+    value: parts[0].value, // solo muestra el primero en la card
     subtitle: parts.map(p => p.subtitle).join(' · '),
-    tooltip: tooltipText
+    tooltip: parts.map(p => p.tooltip).join('\n\n') // desglose completo en el modal
   };
 }
 

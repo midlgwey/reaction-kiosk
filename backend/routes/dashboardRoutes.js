@@ -1,22 +1,22 @@
 import express from 'express';
 
-import { authenticateAdmin } from "../middlewares/authMiddleware.js"
+import { authenticateAdmin, authorizePermissions } from "../middlewares/authMiddleware.js"
 import { getDailyReactions, getDailyServerScore, getLowInteractionWaiters, getDailySurveyCount, getDailySatisfactionTrend, getDailyQuestions, checkInactivity } from '../controllers/dashboardController.js'
 
 const router = express.Router();
 
 //Ruta para la card de reacciones totales del dia
-router.get('/daily-reactions', authenticateAdmin, getDailyReactions )
+router.get('/daily-reactions', authenticateAdmin,  authorizePermissions('admin') , getDailyReactions );
 //Ruta para la card de rating del servicio del dia
-router.get('/daily-serverscore', authenticateAdmin, getDailyServerScore)
+router.get('/daily-serverscore', authenticateAdmin,  authorizePermissions('admin') , getDailyServerScore)
 //Ruta para la card de indice de felicidad
-router.get('/daily-low-interaction', authenticateAdmin, getLowInteractionWaiters)
+router.get('/daily-low-interaction', authenticateAdmin,  authorizePermissions('admin') , getLowInteractionWaiters)
 //Ruta para la card de encuestas realizadas o no por dia
-router.get('/daily-survey-count', authenticateAdmin, getDailySurveyCount);
+router.get('/daily-survey-count', authenticateAdmin,  authorizePermissions('admin') , getDailySurveyCount);
 //Ruta para la grafica de area de satisfaccion por dia
-router.get('/daily-satisfaction', authenticateAdmin, getDailySatisfactionTrend)
+router.get('/daily-satisfaction', authenticateAdmin,  authorizePermissions('admin') , getDailySatisfactionTrend)
 //Ruta para la radiografia de preguntas respondidas por dia
-router.get('/daily-questions', authenticateAdmin, getDailyQuestions)
+router.get('/daily-questions', authenticateAdmin,  authorizePermissions('admin') , getDailyQuestions)
 
 router.get('/check-inactivity', checkInactivity)
 

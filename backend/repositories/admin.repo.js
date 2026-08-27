@@ -1,15 +1,15 @@
-import {db} from '../db.js'
+import { db } from '../db.js';
 import { v4 as uuidv4 } from 'uuid';
 
-
-export const createAdmin = async ({ name, lastname, email, password }) => {
+export const createAdmin = async ({ name, lastname, email, password, role }) => {
   const id = uuidv4();
+  
   await db.execute({
 
-    sql: `INSERT INTO admins (id, name, lastname, email, password)
-          VALUES (?, ?, ?, ?, ?)`,
-    args: [id, name, lastname, email, password],
-    
+    sql: `INSERT INTO admins (id, name, lastname, email, password, role)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+
+    args: [id, name, lastname, email, password, role], 
   });
 
   return id;
@@ -19,7 +19,7 @@ export const createAdmin = async ({ name, lastname, email, password }) => {
 export const findAdminByEmail = async (email) => {
   const result = await db.execute({
     sql: `
-      SELECT id, name, lastname, email, password
+      SELECT id, name, lastname, email, password, role
       FROM admins
       WHERE email = ?
       LIMIT 1
@@ -28,6 +28,4 @@ export const findAdminByEmail = async (email) => {
   });
 
   return result.rows[0] || null;
-
 };
-

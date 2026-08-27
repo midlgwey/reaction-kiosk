@@ -1,9 +1,9 @@
-import { UnauthenticatedError } from '../errors/customErrors.js';
+// backend/middlewares/authMiddleware.js
+import { UnauthenticatedError, UnauthorizedError } from '../errors/customErrors.js';
 import { verifyJWT } from '../utils/tokenUtils.js';
 
-//Autentica al administrador usando JWT desde cookies
+// Verifica si inició sesión y el token es válido 
 export const authenticateAdmin = (req, res, next) => {
-
     const { token } = req.cookies;
 
     if (!token) {
@@ -12,8 +12,6 @@ export const authenticateAdmin = (req, res, next) => {
 
     try {
         const { id, role, name } = verifyJWT(token);
-
-        // Datos disponibles para los siguientes middlewares / controllers
         req.user = { id, role, name };
         next();
     } catch (error) {
@@ -21,3 +19,12 @@ export const authenticateAdmin = (req, res, next) => {
     }
 };
 
+// Verifica si el rol tiene acceso a la ruta
+export const authorizePermissions = (...rolesPermitidos) => {
+    return (req, res, next) => {
+        if (!rolesPermitidos.includes(req.user.role)) {
+            throw new UnauthorizedError('Acceso denegado: No tienes permisos para esta acción');
+        }
+        next();
+    };
+};

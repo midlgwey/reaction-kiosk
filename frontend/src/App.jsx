@@ -11,18 +11,17 @@ import QuestionScreen from "./user/pages/QuestionScreen";
 import WaiterPage from "./admin/pages/WaiterPage";
 import EmployeesPage from "./superadmin/page/EmployeesPage";
 import AttendancePage from "./superadmin/page/AttendancePage";
-import WeeklySchedulePage from "./superadmin/page/WeeklySchedulePage";
+import SchedulewPage from "./superadmin/page/SchedulewPage";
 import SalesPage from "./superadmin/page/SalesPage";
+
 // layout admin
 import AdminLayout from "./admin/layouts/AdminLayout";
-
-// kiosko cliente
 import EncuestaContainer from "./user/layouts/EncuestaContainer";
-
-//Protecion de rutas
-import ProtectedRoutesAdmin from "./admin/routes/ProtectedRoutesAdmin";
-
 import NotFound from "./user/pages/NotFound";
+
+// Protecciones
+import ProtectedRoutesAdmin from "./admin/routes/ProtectedRoutesAdmin";
+import PermissionGuard from "./admin/routes/PermissionGuard";
 
 
 function App() {
@@ -36,38 +35,66 @@ function App() {
       {/* LOGIN */}
       <Route path="/" element={<LoginPage />} />
 
-      {/* ADMIN PROTEGIDO */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoutesAdmin>
-            <AdminLayout />
-          </ProtectedRoutesAdmin>
-        }
-      >
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="waiter" element={<WaiterPage />} />
-        <Route path="stats" element={<StatsPage />} />
-        <Route path="feedback" element={<SuggestionsPage />} />
-        <Route path="recovery" element={<ReportsPage />} />
-        <Route path="employees" element={<EmployeesPage />} />
-        <Route path="attendance" element={<AttendancePage />} />
-        <Route path="weekly-schedule" element={<WeeklySchedulePage/>} />
-        <Route path="sales" element={<SalesPage/>} />
+    {/* ADMIN PROTEGIDO  */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoutesAdmin>
+              <AdminLayout />
+            </ProtectedRoutesAdmin>
+          }
+        >
+          {/* --- RUTAS EXCLUSIVAS DE ADMIN --- */}
+          <Route element={<PermissionGuard permissionKey="dashboard" />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+          </Route>
 
-        {/* Mantiene el Sidebar del Admin */}
+          <Route element={<PermissionGuard permissionKey="meseros" />}>
+            <Route path="waiter" element={<WaiterPage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="estadisticas" />}>
+            <Route path="stats" element={<StatsPage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="comentarios" />}>
+            <Route path="feedback" element={<SuggestionsPage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="reportes" />}>
+            <Route path="recovery" element={<ReportsPage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="empleados" />}>
+            <Route path="employees" element={<EmployeesPage />} />
+          </Route>
+
+          {/* --- RUTAS COMPARTIDAS (SUPERVISOR Y ADMIN) --- */}
+          <Route element={<PermissionGuard permissionKey="asistencia" />}>
+            <Route path="attendance" element={<AttendancePage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="horarios" />}>
+            <Route path="weekly-schedule" element={<SchedulewPage />} />
+          </Route>
+
+          <Route element={<PermissionGuard permissionKey="ventas" />}>
+            <Route path="sales" element={<SalesPage />} />
+          </Route>
+
+          {/* 404 dentro del panel Admin */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
+
+        {/* KIOSKO */}
+        <Route path="/questions" element={<EncuestaContainer />}>
+          <Route index element={<QuestionScreen />} />
+        </Route>
+
+        {/* Atrapa cualquier otra ruta desconocida fuera del admin */}
         <Route path="*" element={<NotFound />} />
-      </Route>
 
-      {/* KIOSKO */}
-      <Route path="/questions" element={<EncuestaContainer />}>
-        <Route index element={<QuestionScreen />} />
-      </Route>
-
-      {/* Atrapa cualquier otra ruta desconocida fuera del admin */}
-      <Route path="*" element={<NotFound />} />
-
-    </Routes>
+      </Routes>
     </>
   );
 }

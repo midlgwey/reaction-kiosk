@@ -1,3 +1,9 @@
+import React, { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { logoutAdminService } from "../services/authService";
+import kioskly from "../../assets/logo/kioskly-sidebar.png";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
 import {
   ChartBarIcon,
   HomeIcon,
@@ -9,26 +15,47 @@ import {
   CalendarDaysIcon,
   PresentationChartLineIcon,
   IdentificationIcon
-
 } from "@heroicons/react/24/solid";
-import { NavLink, useNavigate } from "react-router-dom";
-import { logoutAdminService } from "../services/authService";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import kioskly from "../../assets/logo/kioskly-sidebar.png"
 
 const Sidebar = ({ open, setOpen, setAdmin }) => {
   const navigate = useNavigate();
+  const [permissions, setPermissions] = useState({});
+
+  useEffect(() => {
+    const stored = localStorage.getItem("permissions");
+    if (stored && stored !== "undefined") {
+      try {
+        setPermissions(JSON.parse(stored));
+      } catch (e) {
+        setPermissions({});
+      }
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
-      await logoutAdminService();  
-      if (setAdmin) setAdmin(null);
-      navigate("/");
+      await logoutAdminService();
     } catch (error) {
       console.error("Error al cerrar sesión", error);
-      navigate("/"); 
+    } finally {
+      localStorage.removeItem("permissions");
+      localStorage.removeItem("userRole");
+      if (setAdmin) setAdmin(null);
+      navigate("/");
     }
   };
+
+  const menuItems = [
+    { name: "Dashboard", path: "/admin/dashboard", icon: HomeIcon, key: "dashboard" },
+    { name: "Meseros", path: "/admin/waiter", icon: UserIcon, key: "meseros" },
+    { name: "Estadísticas", path: "/admin/stats", icon: ChartBarIcon, key: "estadisticas" },
+    { name: "Comentarios", path: "/admin/feedback", icon: ChatBubbleBottomCenterTextIcon, key: "comentarios" },
+    { name: "Reportes", path: "/admin/recovery", icon: DocumentCheckIcon, key: "reportes" },
+    { name: "Empleados", path: "/admin/employees", icon: IdentificationIcon, key: "empleados" },
+    { name: "Asistencia", path: "/admin/attendance", icon: UserPlusIcon, key: "asistencia" },
+    { name: "Horarios", path: "/admin/weekly-schedule", icon: CalendarDaysIcon, key: "horarios" },
+    { name: "Ventas", path: "/admin/sales", icon: PresentationChartLineIcon, key: "ventas" },
+  ];
 
   return (
     <>
@@ -48,8 +75,8 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
             <div className="flex items-center">
               <img 
                 src={kioskly} 
-                alt="Logo ServiceReaction" 
-                className="w-12 h-12 object-contain rounded-md bg-white p-1" // Ajusta el w-8 y h-8 a tu gusto
+                alt="Logo Kioskly" 
+                className="w-12 h-12 object-contain rounded-md bg-white p-1" 
               />
               <h1 className="font-bold text-white text-[22px] ml-3">
                 Kioskly
@@ -65,100 +92,37 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
 
         {/* Navegación */}
         <nav className="space-y-2 mt-4">
-            <NavLink
-              to="/admin/dashboard"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <HomeIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Dashboard</span>
-            </NavLink>
+          {menuItems.map((item) => {
+            if (!permissions[item.key]) return null;
 
-             <NavLink
-              to="/admin/waiter"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <UserIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Meseros</span>
-            </NavLink>
+            const Icon = item.icon;
+            const showSigoDivider = item.key === "empleados";
 
-            <NavLink
-              to="/admin/stats"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <ChartBarIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Estadísticas</span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/feedback"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <ChatBubbleBottomCenterTextIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Comentarios</span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/recovery"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <DocumentCheckIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Reportes</span>
-            </NavLink>
-
-            <div className="my-5 bg-white h-px"></div>
-
-              <NavLink
-              to="/admin/employees"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <IdentificationIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Empleados</span>
-            </NavLink>
-
-             <NavLink
-              to="/admin/attendance"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <UserPlusIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Asistencia</span>
-
-            
-            </NavLink>
-
-                   <NavLink
-              to="/admin/weekly-schedule"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <CalendarDaysIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Horarios</span>
-
-
-            
-            </NavLink>
-
-                      <NavLink
-              to="/admin/sales"
-              onClick={() => setOpen(false)}
-              className="p-3 flex items-center rounded-md px-4 cursor-pointer transition hover:bg-slate-500/50"
-            >
-              <PresentationChartLineIcon className="w-7 h-7 text-white" />
-              <span className="text-[16px] ml-4 font-bold">Ventas</span>
-
-
-            
-            </NavLink>
-
-
-
-
+            return (
+              <React.Fragment key={item.key}>
+                {showSigoDivider && (
+                  <div className="pt-3 pb-1">
+                    <div className="my-2 bg-white h-px"></div>
+                    {/* pl-[82px] alinea exactamente con el texto "Kioskly" de arriba */}
+                    <span className="block pl-[82px]  text-[22px] font-bold text-white/90 tracking-wider uppercase">
+                      SIGO
+                    </span>
+                  </div>
+                )}
+                <NavLink
+                  to={item.path}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) => `
+                    p-3 flex items-center rounded-md px-4 cursor-pointer transition
+                    ${isActive ? "bg-slate-500/70" : "hover:bg-slate-500/50"}
+                  `}
+                >
+                  <Icon className="w-7 h-7 text-white" />
+                  <span className="text-[16px] ml-4 font-bold">{item.name}</span>
+                </NavLink>
+              </React.Fragment>
+            );
+          })}
         </nav>
 
         <div className="my-5 bg-white h-px"></div>
@@ -176,8 +140,8 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
       {/* Overlay Móvil */}
       {open && (
         <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setOpen(false)}
         />
       )}
     </>

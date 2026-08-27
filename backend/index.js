@@ -2,6 +2,9 @@ import express from 'express';
 import 'dotenv/config';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';       
+import { dirname, join } from 'path';
+
 //importando rutas
 import adminRoutes from './routes/adminRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
@@ -13,16 +16,21 @@ import waiterRoutes from './routes/waiterRoutes.js';
 import alertsRoutes from './routes/alertsRoutes.js';
 import declineRoutes from './routes/declineRoutes.js';
 import realTablesRoutes from './routes/realTablesRoutes.js';
+import employeesRoutes from './routes/employeesRoutes.js'; 
+import attendanceRoutes from './routes/attendanceRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js'; 
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 
-const app = express();
+const __filename = fileURLToPath(import.meta.url);  
+const __dirname = dirname(__filename);   
 
+const app = express();
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173", 
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"] 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"] 
 }));
 
 app.use(cookieParser());
@@ -34,6 +42,8 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.status(200).send('Servidor Kiosco Activo');
 });
+
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 app.use('/admin', adminRoutes);
 
@@ -54,6 +64,13 @@ app.use('/alerts', alertsRoutes)
 app.use('/declines', declineRoutes)
 
 app.use('/real-tables', realTablesRoutes);
+
+app.use('/employees', employeesRoutes); 
+
+app.use('/attendance', attendanceRoutes);
+
+app.use('/schedules', scheduleRoutes);
+
 
 app.use(errorHandlerMiddleware);
 
