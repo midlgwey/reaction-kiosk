@@ -25,13 +25,13 @@ router.get('/range', authenticateAdmin, getRangeAttendance);
 router.get('/summary/month', authenticateAdmin, getMonthSummary);
 
 // Admin puede actualizar registros de asistencia
-router.put('/update-record', authenticateAdmin, authorizePermissions('admin'), updateAttendanceRecord);
+router.put('/update-record', authenticateAdmin, updateAttendanceRecord);
 
 // Admin puede registrar asistencia
-router.post('/check-in', authenticateAdmin, authorizePermissions('admin'), registerCheckIn);
-router.post('/check-out', authenticateAdmin, authorizePermissions('admin'), registerCheckOut);
-router.post('/absence', authenticateAdmin, authorizePermissions('admin'), registerAbsence);
-router.post('/incapacity', authenticateAdmin, authorizePermissions('admin'), registerIncapacity);
-router.put('/:attendanceId/justification', authenticateAdmin, authorizePermissions('admin'), updateAttendanceJustification);
+router.post('/check-in', authenticateAdmin,  registerCheckIn);
+router.post('/check-out', authenticateAdmin,  registerCheckOut);
+router.post('/absence', authenticateAdmin,  registerAbsence);
+router.post('/incapacity', authenticateAdmin,  registerIncapacity);
+router.put('/:attendanceId/justification', authenticateAdmin,  updateAttendanceJustification);
 
 export default router;
