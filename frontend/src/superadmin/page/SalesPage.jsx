@@ -76,6 +76,7 @@ export const SalesPage = () => {
   };
 
   const handleOpenRegister = (sale = null) => {
+    setSelectedEmployee(null);
     setEditingSale(sale);
     setIsRegisterModalOpen(true);
   };

@@ -148,17 +148,6 @@ export const RegisterSaleModal = ({
                 />
               </div>
 
-              {/* Notas */}
-              <div>
-                <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Notas (opcional)</label>
-                <input
-                  type="text"
-                  placeholder="Ej: turno doble, evento especial..."
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  className="w-full border border-[#e0e0e0] rounded-md p-2.5 text-sm text-[#6B7280] focus:border-[#6A64F1] focus:outline-none"
-                />
-              </div>
             </>
           )}
         </div>
