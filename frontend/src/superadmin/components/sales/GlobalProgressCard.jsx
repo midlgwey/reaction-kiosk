@@ -36,7 +36,7 @@ export const GlobalProgressCard = ({
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
               Meta Global de Temporada
             </h2>
-            <p className="text-lg text-gray-700 mt-0.5">
+            <p className="text-xs text-gray-700 mt-0.5">
               Solo meseros y capitanes 
             </p>
           </div>
@@ -56,11 +56,11 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {globalSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-500 text-lg">
+          <span className="text-gray-700 text-lg">
             Meta:  <span className='text-indigo-700 font-bold text-xl'> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
-        <div className="mt-2 text-lg text-gray-400">
+        <div className="mt-2 text-gray-700 text-lg">
           Faltan <span className="text-indigo-700 font-bold text-xl">{remainingGlobal.toLocaleString()}</span> chiles para completar la meta global
         </div>
       </div>
