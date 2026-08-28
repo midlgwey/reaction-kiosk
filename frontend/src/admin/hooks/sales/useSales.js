@@ -4,19 +4,21 @@ import {
   fetchActiveSeason,
   fetchSalesDashboard,
   fetchEmployeeSales,
+  fetchMonthlyGoals,
   createSeason,
+  saveMonthlyGoals,
   postDailySale,
   patchDailySale
 } from '../../services/salesService';
 
 export const useSales = () => {
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState(null);
-  const [seasonData, setSeasonData]     = useState(null);
-  const [dashboard, setDashboard]       = useState(null);
+  const [loading, setLoading]             = useState(false);
+  const [error, setError]                 = useState(null);
+  const [seasonData, setSeasonData]       = useState(null);
+  const [dashboard, setDashboard]         = useState(null);
   const [employeeSales, setEmployeeSales] = useState([]);
+  const [monthlyGoals, setMonthlyGoals]   = useState(null);
 
-  // Obtener temporada activa + metas individuales
   const getActiveSeason = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -25,38 +27,46 @@ export const useSales = () => {
       setSeasonData(data);
       return data;
     } catch (err) {
-      if (err.response?.status === 404) {
-        setSeasonData(null);
-      } else {
-        setError(err.response?.data?.message || 'Error al cargar la temporada');
-      }
+      if (err.response?.status === 404) setSeasonData(null);
+      else setError(err.response?.data?.message || 'Error al cargar la temporada');
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Dashboard con semáforo
-  const getDashboard = useCallback(async () => {
+  const getDashboard = useCallback(async (month) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await fetchSalesDashboard();
+      const { data } = await fetchSalesDashboard(month);
       setDashboard(data);
       return data;
     } catch (err) {
-      if (err.response?.status === 404) {
-        setDashboard(null);
-      } else {
-        setError(err.response?.data?.message || 'Error al cargar el dashboard');
-      }
+      if (err.response?.status === 404) setDashboard(null);
+      else setError(err.response?.data?.message || 'Error al cargar el dashboard');
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Historial de ventas de un empleado
+  const getMonthlyGoals = useCallback(async (month) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await fetchMonthlyGoals(month);
+      setMonthlyGoals(data);
+      return data;
+    } catch (err) {
+      if (err.response?.status === 404) setMonthlyGoals(null);
+      else setError(err.response?.data?.message || 'Error al cargar metas del mes');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const getEmployeeSales = useCallback(async (employee_id, month) => {
     setLoading(true);
     setError(null);
@@ -72,7 +82,6 @@ export const useSales = () => {
     }
   }, []);
 
-  // Crear temporada + metas individuales
   const setupSeason = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
@@ -87,7 +96,20 @@ export const useSales = () => {
     }
   }, []);
 
-  // Registrar venta diaria
+  const saveMonthGoals = useCallback(async (payload) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await saveMonthlyGoals(payload);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al guardar metas del mes');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const registerSale = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
@@ -102,7 +124,6 @@ export const useSales = () => {
     }
   }, []);
 
-  // Modificar venta existente
   const updateSale = useCallback(async (sale_id, payload) => {
     setLoading(true);
     setError(null);
@@ -123,10 +144,13 @@ export const useSales = () => {
     seasonData,
     dashboard,
     employeeSales,
+    monthlyGoals,
     getActiveSeason,
     getDashboard,
+    getMonthlyGoals,
     getEmployeeSales,
     setupSeason,
+    saveMonthGoals,
     registerSale,
     updateSale
   };

@@ -5,64 +5,71 @@ import { GlobalProgressCard } from '../components/sales/GlobalProgressCard';
 import { SalesTable } from '../components/sales/SalesTable';
 import { RegisterSaleModal } from '../components/sales/RegisterSalesModal';
 import { EmployeeSalesModal } from '../components/sales/EmployeesSalesModal';
+import { MonthlyGoalsModal } from '../components/sales/MonthlyGoalsModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
 import { useSales } from '../../admin/hooks/sales/useSales';
 import toast from 'react-hot-toast';
 
-const CURRENT_MONTH = new Date().getMonth(); // 7=Ago, 8=Sep, 9=Oct
 const MONTH_OPTIONS = [
-  { label: 'Agosto', value: '08' },
+  { label: 'Agosto',     value: '08' },
   { label: 'Septiembre', value: '09' },
-  { label: 'Octubre', value: '10' },
+  { label: 'Octubre',    value: '10' },
 ];
+
+const getCurrentMonth = () => {
+  const m = new Date().getMonth() + 1;
+  if (m < 8) return '08';
+  if (m > 10) return '10';
+  return String(m).padStart(2, '0');
+};
 
 export const SalesPage = () => {
   const userRole = localStorage.getItem('userRole') || 'supervisor';
-  const year = new Date().getFullYear();
 
-  const [selectedMonth, setSelectedMonth] = useState(
-    MONTH_OPTIONS.find(m => parseInt(m.value) === CURRENT_MONTH + 1)?.value || '08'
-  );
+  const [selectedMonth, setSelectedMonth]             = useState(getCurrentMonth());
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [editingSale, setEditingSale] = useState(null);
+  const [isSetupModalOpen, setIsSetupModalOpen]       = useState(false);
+  const [isMonthlyGoalsOpen, setIsMonthlyGoalsOpen]   = useState(false);
+  const [selectedEmployee, setSelectedEmployee]       = useState(null);
+  const [editingSale, setEditingSale]                 = useState(null);
 
   const {
     loading,
     dashboard,
-    seasonData,
     employeeSales,
     getDashboard,
     getActiveSeason,
     getEmployeeSales,
     registerSale,
     updateSale,
-    setupSeason
+    setupSeason,
+    saveMonthGoals,
+    getMonthlyGoals,
+    monthlyGoals
   } = useSales();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadDashboard(selectedMonth);
+  }, [selectedMonth]);
 
-  const loadData = async () => {
+  const loadDashboard = async (month) => {
     try {
-      await getDashboard();
+      await getDashboard(month);
     } catch (err) {
       if (err.response?.status === 404) {
-        try {
-          await getActiveSeason();
-        } catch {
-          // No hay temporada activa
-        }
+        try { await getActiveSeason(); } catch {}
       }
     }
+  };
+
+  const handleMonthChange = (month) => {
+    setSelectedMonth(month);
   };
 
   const handleOpenEmployee = async (employee) => {
     setSelectedEmployee(employee);
     try {
-      await getEmployeeSales(employee.employee_id, `${year}-${selectedMonth}`);
+      await getEmployeeSales(employee.employee_id, selectedMonth);
     } catch {
       toast.error('Error al cargar el historial');
     }
@@ -75,7 +82,7 @@ export const SalesPage = () => {
 
   const handleSaveSale = async (payload) => {
     try {
-      if (editingSale) {
+      if (editingSale?.sale_id) {
         await updateSale(editingSale.sale_id, payload);
         toast.success('Venta actualizada correctamente');
       } else {
@@ -84,9 +91,9 @@ export const SalesPage = () => {
       }
       setIsRegisterModalOpen(false);
       setEditingSale(null);
-      await getDashboard();
+      await loadDashboard(selectedMonth);
       if (selectedEmployee) {
-        await getEmployeeSales(selectedEmployee.employee_id, `${year}-${selectedMonth}`);
+        await getEmployeeSales(selectedEmployee.employee_id, selectedMonth);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al guardar la venta');
@@ -98,20 +105,35 @@ export const SalesPage = () => {
       await setupSeason(payload);
       toast.success('Temporada configurada correctamente');
       setIsSetupModalOpen(false);
-      await loadData();
+      await loadDashboard(selectedMonth);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al configurar la temporada');
     }
   };
 
-  const handleMonthChange = async (month) => {
-    setSelectedMonth(month);
-    if (selectedEmployee) {
-      await getEmployeeSales(selectedEmployee.employee_id, `${year}-${month}`);
+  const handleOpenMonthlyGoals = async () => {
+    try {
+      await getMonthlyGoals(selectedMonth);
+      setIsMonthlyGoalsOpen(true);
+    } catch {
+      setIsMonthlyGoalsOpen(true);
+    }
+  };
+
+  const handleSaveMonthlyGoals = async (payload) => {
+    try {
+      await saveMonthGoals(payload);
+      toast.success('Metas del mes guardadas correctamente');
+      setIsMonthlyGoalsOpen(false);
+      await loadDashboard(selectedMonth);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al guardar las metas');
     }
   };
 
   const noActiveSeason = !dashboard && !loading;
+  const monthConfigured = dashboard?.month_configured || false;
+  const monthsConfigured = dashboard?.months_configured || [];
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -119,16 +141,35 @@ export const SalesPage = () => {
         season={dashboard?.season}
         selectedMonth={selectedMonth}
         monthOptions={MONTH_OPTIONS}
+        monthsConfigured={monthsConfigured}
         onMonthChange={handleMonthChange}
         userRole={userRole}
         onRegisterSale={() => handleOpenRegister(null)}
         onSetupSeason={() => setIsSetupModalOpen(true)}
+        onConfigMonthlyGoals={handleOpenMonthlyGoals}
         noActiveSeason={noActiveSeason}
+        monthConfigured={monthConfigured}
         loading={loading}
       />
 
       {dashboard ? (
         <>
+          {!monthConfigured && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between">
+              <p className="text-sm font-semibold text-amber-700">
+                ⚠️ No hay metas configuradas para este mes.
+              </p>
+              {userRole === 'admin' && (
+                <button
+                  onClick={handleOpenMonthlyGoals}
+                  className="text-sm font-semibold text-amber-700 underline hover:text-amber-900"
+                >
+                  Configurar ahora →
+                </button>
+              )}
+            </div>
+          )}
+
           <GlobalProgressCard
             globalGoal={dashboard.season.global_goal}
             globalSold={dashboard.global_sold}
@@ -141,7 +182,6 @@ export const SalesPage = () => {
           <SalesTable
             employees={dashboard.employees}
             userRole={userRole}
-            selectedMonth={selectedMonth}
             onViewEmployee={handleOpenEmployee}
             onEditSale={handleOpenRegister}
           />
@@ -177,7 +217,10 @@ export const SalesPage = () => {
         sales={employeeSales}
         selectedMonth={selectedMonth}
         monthOptions={MONTH_OPTIONS}
-        onMonthChange={handleMonthChange}
+        onMonthChange={async (m) => {
+          setSelectedMonth(m);
+          if (selectedEmployee) await getEmployeeSales(selectedEmployee.employee_id, m);
+        }}
         onEditSale={handleOpenRegister}
         userRole={userRole}
       />
@@ -186,6 +229,17 @@ export const SalesPage = () => {
         isOpen={isSetupModalOpen}
         onClose={() => setIsSetupModalOpen(false)}
         onSave={handleSetupSeason}
+        loading={loading}
+      />
+
+      <MonthlyGoalsModal
+        isOpen={isMonthlyGoalsOpen}
+        onClose={() => setIsMonthlyGoalsOpen(false)}
+        onSave={handleSaveMonthlyGoals}
+        selectedMonth={selectedMonth}
+        monthOptions={MONTH_OPTIONS}
+        existingGoals={monthlyGoals?.goals || []}
+        season={dashboard?.season}
         loading={loading}
       />
     </div>

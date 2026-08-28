@@ -5,6 +5,8 @@ import {
   getActiveSeason,
   createSeason,
   getSalesDashboard,
+  getMonthlyGoals,
+  saveMonthlyGoals,
   getEmployeeSales,
   registerDailySale,
   updateDailySale
@@ -12,22 +14,24 @@ import {
 
 const router = express.Router();
 
-// Ver temporada activa — admin y supervisor
+// Ver temporada activa
 router.get("/goals/active", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getActiveSeason);
 
 // Crear temporada — solo admin
 router.post("/goals", authenticateAdmin, authorizePermissions('admin'), createSeason);
 
-// Dashboard principal — admin y supervisor
+// Metas mensuales
+router.get("/monthly-goals/:month", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getMonthlyGoals);
+router.post("/monthly-goals", authenticateAdmin, authorizePermissions('admin'), saveMonthlyGoals);
+
+// Dashboard — acepta ?month=08
 router.get("/dashboard", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getSalesDashboard);
 
-// Historial de un empleado — admin y supervisor
+// Ventas por empleado — acepta ?month=08
 router.get("/daily/:employee_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getEmployeeSales);
 
-// Registrar venta — admin y supervisor
+// Registrar y modificar ventas
 router.post("/daily", authenticateAdmin, authorizePermissions('admin', 'supervisor'), registerDailySale);
-
-// Modificar venta — admin y supervisor
 router.patch("/daily/:sale_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), updateDailySale);
 
 export default router;

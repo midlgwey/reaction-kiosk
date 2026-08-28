@@ -71,7 +71,7 @@ export const EmployeeSalesModal = ({
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-lg font-bold text-[#07074D]">
-                    {sale.chiles_sold} 🌶️
+                    {sale.chiles_sold} 
                   </span>
                   <button
                     onClick={() => onEditSale(sale)}

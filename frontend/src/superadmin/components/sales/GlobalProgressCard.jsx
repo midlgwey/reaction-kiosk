@@ -9,24 +9,32 @@ export const GlobalProgressCard = ({
   elapsedWorkDays,
   totalWorkDays
 }) => {
-  const remaining = Math.max(globalGoal - globalSold, 0);
-  const barWidth = Math.min(globalPercentage, 100);
+  const remainingGlobal = Math.max(globalGoal - globalSold, 0);
+  const globalBarWidth = Math.min(globalPercentage, 100);
 
-  const barColor =
-    globalPercentage >= 100 ? 'bg-green-500' :
-    globalPercentage >= 90  ? 'bg-orange-400' :
-    globalPercentage >= 80  ? 'bg-blue-500' :
-    'bg-red-500';
+  // Calcular progreso del equipo meseros
+  // El team_sold es el mismo global_sold ya que los chiles los registran meseros y capitanes
+  const teamSold = globalSold;
+  const teamPercentage = Math.round((teamSold / teamGoal) * 100);
+  const teamBarWidth = Math.min(teamPercentage, 100);
+  const remainingTeam = Math.max(teamGoal - teamSold, 0);
+
+  const getBarColor = (pct) => {
+    if (pct >= 100) return 'bg-green-500';
+    if (pct >= 90)  return 'bg-orange-400';
+    if (pct >= 80)  return 'bg-blue-500';
+    return 'bg-red-500';
+  };
 
   return (
-    <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-      {/* Meta Global */}
-      <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-6">
+      {/* Meta Global de Temporada */}
+      <div className="bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
-              🎯 Meta Global de Temporada
+              Meta Global de Temporada
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Incluye meseros, capitanes, pedidos para llevar y eventos
@@ -37,11 +45,10 @@ export const GlobalProgressCard = ({
           </span>
         </div>
 
-        {/* Barra de progreso */}
         <div className="h-4 w-full rounded-full bg-gray-100 overflow-hidden mb-3">
           <div
-            className={`h-full rounded-full transition-all duration-700 ${barColor}`}
-            style={{ width: `${barWidth}%` }}
+            className={`h-full rounded-full transition-all duration-700 ${getBarColor(globalPercentage)}`}
+            style={{ width: `${globalBarWidth}%` }}
           />
         </div>
 
@@ -53,32 +60,78 @@ export const GlobalProgressCard = ({
             Meta: {globalGoal.toLocaleString()} chiles
           </span>
         </div>
-
         <div className="mt-2 text-xs text-gray-400">
-          Faltan <span className="font-semibold text-[#07074D]">{remaining.toLocaleString()}</span> chiles para completar la meta global
+          Faltan <span className="font-semibold text-[#07074D]">{remainingGlobal.toLocaleString()}</span> chiles para completar la meta global
         </div>
       </div>
 
-      {/* Stats rápidos */}
-      <div className="flex flex-col gap-4">
-        <div className="bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex flex-col justify-center">
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">
-            Meta del Equipo Meseros
-          </p>
-          <p className="text-2xl font-bold text-[#07074D]">
-            {teamGoal.toLocaleString()}
-            <span className="text-sm font-normal text-gray-400 ml-1">chiles</span>
-          </p>
+      {/* Meta del Equipo Meseros */}
+      <div className="bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
+               Meta del Equipo Meseros
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Solo meseros y capitanes — sin pedidos para llevar ni eventos
+            </p>
+          </div>
+          <span className={`text-lg font-bold ${teamPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
+            {teamPercentage}%
+          </span>
         </div>
 
-        <div className="bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex flex-col justify-center">
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">
-            Días Hábiles del Mes
+        <div className="h-4 w-full rounded-full bg-gray-100 overflow-hidden mb-3">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${getBarColor(teamPercentage)}`}
+            style={{ width: `${teamBarWidth}%` }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-semibold text-[#07074D]">
+            {teamSold.toLocaleString()} chiles vendidos
+          </span>
+          <span className="text-gray-500">
+            Meta: {teamGoal.toLocaleString()} chiles
+          </span>
+        </div>
+        <div className="mt-2 text-xs text-gray-400">
+          Faltan <span className="font-semibold text-[#07074D]">{remainingTeam.toLocaleString()}</span> chiles para completar la meta del equipo
+        </div>
+      </div>
+
+      {/* Días hábiles del mes */}
+      <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+            Días Hábiles del Mes (Mar — Dom)
           </p>
-          <p className="text-2xl font-bold text-[#07074D]">
-            {elapsedWorkDays}
-            <span className="text-sm font-normal text-gray-400 ml-1">/ {totalWorkDays} días</span>
+          <p className="text-sm text-gray-400 mt-0.5">
+            Los lunes no se cuentan — restaurante cerrado
           </p>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-[#07074D]">
+              {elapsedWorkDays}
+              <span className="text-sm font-normal text-gray-400 ml-1">transcurridos</span>
+            </p>
+          </div>
+          <div className="h-8 w-px bg-gray-200" />
+          <div className="text-center">
+            <p className="text-2xl font-bold text-[#07074D]">
+              {totalWorkDays}
+              <span className="text-sm font-normal text-gray-400 ml-1">totales del mes</span>
+            </p>
+          </div>
+          <div className="h-8 w-px bg-gray-200" />
+          <div className="text-center">
+            <p className="text-2xl font-bold text-[#07074D]">
+              {totalWorkDays - elapsedWorkDays}
+              <span className="text-sm font-normal text-gray-400 ml-1">restantes</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
