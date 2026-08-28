@@ -83,8 +83,8 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, onEditSale }) 
                     {/* Colaborador */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 text-[#6A64F1] flex items-center justify-center font-bold text-sm flex-shrink-0">
-                          {emp.first_name.charAt(0)}
+                        <div className="h-10 w-10 rounded-full bg-orange-100 text-indigo-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {emp.first_name.charAt(0)}, {emp.last_name.charAt(0)}
                         </div>
                         <div>
                           <p className="font-medium text-[#07074D]">{emp.first_name} {emp.last_name}</p>

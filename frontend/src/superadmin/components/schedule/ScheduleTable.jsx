@@ -37,8 +37,8 @@ export const ScheduleTable = ({ schedules, userRole, isPublished, onEditEmployee
                 <tr key={emp.id} className="border-b border-[#e0e0e0] transition-colors hover:bg-gray-50/50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-indigo-100 text-[#6A64F1] flex items-center justify-center font-bold text-sm flex-shrink-0">
-                        {emp.name.charAt(0)}
+                      <div className="h-10 w-10 rounded-full bg-orange-100 text-indigo-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        {emp.name.charAt(0)}, {emp.lastname.charAt(0)}
                       </div>
                       <div>
                         <p className="font-medium text-[#07074D]">{emp.name}</p>
