@@ -98,7 +98,7 @@ export const SalesHeader = ({
               disabled={loading}
               className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
             >
-              + Registrar Venta Diaria
+              Registrar Venta Diaria
             </button>
           )}
         </div>

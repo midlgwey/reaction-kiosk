@@ -24,7 +24,7 @@ export const ScheduleHeader = ({
           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
             isPublished ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
           }`}>
-            {isPublished ? '🔒 Publicado y Bloqueado' : '📝 Borrador Editable'}
+            {isPublished ? 'Publicado y Bloqueado' : 'Borrador Editable'}
           </span>
         </div>
           <p className="text-sm mt-2 text-gray-500">
@@ -47,7 +47,7 @@ export const ScheduleHeader = ({
           </button>
           <div className="flex flex-col items-center">
             <span className="text-[#07074D] font-bold text-sm uppercase tracking-wide">
-              📅 {startDate} al {endDate}
+              {startDate} al {endDate}
             </span>
             <span className="text-[#6B7280] text-xs font-medium">
               Semana Operativa (Mar - Dom)
