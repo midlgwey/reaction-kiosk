@@ -56,11 +56,11 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {globalSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-700 text-lg">
+          <span className="text-gray-700 text-md">
             Meta:  <span className='text-indigo-700 font-bold text-xl'> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
-        <div className="mt-2 text-gray-700 text-lg">
+        <div className="mt-2 text-gray-700 text-md">
           Faltan <span className="text-indigo-700 font-bold text-xl">{remainingGlobal.toLocaleString()}</span> chiles para completar la meta global
         </div>
       </div>
@@ -73,7 +73,7 @@ export const GlobalProgressCard = ({
                Meta del Equipo Meseros
             </h2>
             <p className="text-xs text-gray-700 mt-0.5">
-              Solo meseros y capitanes — sin pedidos para llevar ni eventos
+              Solo meseros y capitanes 
             </p>
           </div>
           <span className={`text-lg font-bold ${teamPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
@@ -92,11 +92,11 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {teamSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-700 text-lg">
+          <span className="text-gray-700 text-md">
             Meta: <span className='text-indigo-700 font-bold text-xl'> {teamGoal.toLocaleString()} </span>chiles
           </span>
         </div>
-        <div className="mt-2 text-gray-700 text-lg">
+        <div className="mt-2 text-gray-700 text-md">
           Faltan <span className="font-semibold text-indigo-700 text-xl">{remainingTeam.toLocaleString()}</span> chiles para completar la meta del equipo
         </div>
       </div>
@@ -104,10 +104,10 @@ export const GlobalProgressCard = ({
       {/* Días hábiles del mes */}
       <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+          <p className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
             Días Hábiles del Mes (Mar — Dom)
           </p>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             Lunes Cerrado, Martes a Domingo Abierto
           </p>
         </div>
@@ -115,14 +115,14 @@ export const GlobalProgressCard = ({
           <div className="text-center">
             <p className="text-2xl font-bold text-[#07074D]">
               {elapsedWorkDays}
-              <span className="text-sm font-normal text-gray-400 ml-1">transcurridos</span>
+              <span className="text-sm font-normal text-gray-600 ml-1">transcurridos</span>
             </p>
           </div>
           <div className="h-8 w-px bg-gray-200" />
           <div className="text-center">
             <p className="text-2xl font-bold text-[#07074D]">
               {totalWorkDays}
-              <span className="text-sm font-normal text-gray-400 ml-1">totales del mes</span>
+              <span className="text-sm font-normal text-gray-600 ml-1">totales del mes</span>
             </p>
           </div>
           <div className="h-8 w-px bg-gray-200" />
