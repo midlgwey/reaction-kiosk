@@ -21,29 +21,23 @@ export const MonthlyGoalsModal = ({
     if (isOpen) loadEmployees();
   }, [isOpen]);
 
-  useEffect(() => {
-    if (employees.length === 0) return;
+useEffect(() => {
+  if (employees.length === 0) return;
 
-    if (existingGoals && existingGoals.length > 0) {
-      // Cargar metas existentes
-      setGoals(existingGoals.map(g => ({
-        employee_id: g.employee_id,
-        name: `${g.first_name} ${g.last_name}`,
-        position: g.position,
-        base_prev_year: String(g.base_prev_year),
-        goal_amount: String(g.goal_amount)
-      })));
-    } else {
-      // Metas en blanco
-      setGoals(employees.map(e => ({
-        employee_id: e.employee_id,
-        name: `${e.first_name} ${e.last_name}`,
-        position: e.position,
-        base_prev_year: '',
-        goal_amount: ''
-      })));
-    }
-  }, [existingGoals, employees]);
+  // Combinar empleados con metas existentes
+  const merged = employees.map(e => {
+    const existing = existingGoals.find(g => g.employee_id === e.employee_id);
+    return {
+      employee_id: e.employee_id,
+      name: `${e.first_name} ${e.last_name}`,
+      position: e.position,
+      base_prev_year: existing ? String(existing.base_prev_year) : '',
+      goal_amount: existing ? String(existing.goal_amount) : ''
+    };
+  });
+
+  setGoals(merged);
+}, [existingGoals, employees]);
 
   const loadEmployees = async () => {
     try {
