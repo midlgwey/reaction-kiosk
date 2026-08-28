@@ -37,7 +37,7 @@ export const GlobalProgressCard = ({
               Meta Global de Temporada
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Incluye meseros, capitanes, pedidos para llevar y eventos
+              
             </p>
           </div>
           <span className={`text-lg font-bold ${globalPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
@@ -57,7 +57,7 @@ export const GlobalProgressCard = ({
             {globalSold.toLocaleString()} chiles vendidos
           </span>
           <span className="text-gray-500">
-            Meta: {globalGoal.toLocaleString()} chiles
+            Meta:  <span className='text-indigo-700 font-bold'> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
         <div className="mt-2 text-xs text-gray-400">
@@ -93,7 +93,7 @@ export const GlobalProgressCard = ({
             {teamSold.toLocaleString()} chiles vendidos
           </span>
           <span className="text-gray-500">
-            Meta: {teamGoal.toLocaleString()} chiles
+            Meta: <span className='text-indigo-700 font-bold'> {teamGoal.toLocaleString()} </span>chiles
           </span>
         </div>
         <div className="mt-2 text-xs text-gray-400">
@@ -108,7 +108,7 @@ export const GlobalProgressCard = ({
             Días Hábiles del Mes (Mar — Dom)
           </p>
           <p className="text-sm text-gray-400 mt-0.5">
-            Los lunes no se cuentan — restaurante cerrado
+            Lunes Cerrado, Martes a Domingo Abierto
           </p>
         </div>
         <div className="flex items-center gap-6">

@@ -29,7 +29,7 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, onEditSale }) 
       <div className="px-6 py-4 border-b border-[#e0e0e0] bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
-            👥 Rendimiento Individual
+            Rendimiento Individual
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">Meseros y capitanes — semáforo actualizado al día de hoy</p>
         </div>

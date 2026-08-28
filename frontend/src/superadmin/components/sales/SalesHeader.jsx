@@ -89,7 +89,7 @@ export const SalesHeader = ({
                   : 'bg-amber-500 hover:bg-amber-600 text-white'
               }`}
             >
-              {monthConfigured ? ` Editar Metas — ${MONTH_NAMES[selectedMonth]}` : `⚙️ Configurar Metas — ${MONTH_NAMES[selectedMonth]}`}
+              {monthConfigured ? ` Editar Metas — ${MONTH_NAMES[selectedMonth]}` : `Configurar Metas — ${MONTH_NAMES[selectedMonth]}`}
             </button>
           )}
           {season && monthConfigured && (
