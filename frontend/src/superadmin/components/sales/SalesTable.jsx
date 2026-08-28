@@ -135,12 +135,7 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, onEditSale }) 
                         >
                           Ver historial
                         </button>
-                        <button
-                          onClick={() => onEditSale({ employee_id: emp.employee_id, name: `${emp.first_name} ${emp.last_name}` })}
-                          className="text-xs font-semibold text-gray-500 hover:text-gray-800 hover:underline transition"
-                        >
-                          Registrar
-                        </button>
+                        
                       </div>
                     </td>
                   </tr>

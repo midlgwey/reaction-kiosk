@@ -73,7 +73,7 @@ export const RegisterSaleModal = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e0e0e0] flex justify-between items-center bg-gray-50">
           <h3 className="font-bold text-[#07074D] text-lg">
-            {isEditing ? '✏️ Modificar Venta' : '🌶️ Registrar Venta Diaria'}
+            {isEditing ? 'Modificar Venta' : 'Registrar Venta Diaria'}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
