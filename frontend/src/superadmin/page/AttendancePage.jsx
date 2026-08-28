@@ -119,7 +119,7 @@ export default function AttendancePage() {
         {/* Fecha formateada */}
         <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
           <p className="text-sm font-semibold text-indigo-900">
-            📅 {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: es })}
+            {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: es })}
           </p>
         </div>
 

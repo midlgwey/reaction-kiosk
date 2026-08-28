@@ -24,7 +24,7 @@ export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-[#e0e0e0] overflow-hidden">
         <div className="px-6 py-4 border-b border-[#e0e0e0] flex justify-between items-center bg-gray-50">
-          <h3 className="font-bold text-[#07074D] text-lg">Subir Evidencia de Permiso / Cambio</h3>
+          <h3 className="font-bold text-[#07074D] text-lg">Subir Evidencia de Permiso / Cambio de Turno</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
 
@@ -36,21 +36,10 @@ export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
               onChange={(e) => setUploadType(e.target.value)}
               className="w-full border border-[#e0e0e0] rounded-md p-2 text-sm text-[#6B7280] bg-white focus:border-[#6A64F1] focus:outline-none"
             >
-              <option value="Permiso">Permiso Especial</option>
+              <option value="Permiso">Permiso</option>
               <option value="Cambio de Turno">Cambio de Turno</option>
               <option value="Incapacidad">Incapacidad / Justificante</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Registrado por (Admin)</label>
-            <input 
-              type="text" 
-              placeholder="Nombre del Administrador" 
-              value={uploadedBy} 
-              onChange={(e) => setUploadedBy(e.target.value)}
-              className="w-full border border-[#e0e0e0] rounded-md p-2 text-sm text-[#6B7280] focus:border-[#6A64F1] focus:outline-none"
-            />
           </div>
 
           <div>

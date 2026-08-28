@@ -34,7 +34,7 @@ export const SalesHeader = ({
           )}
         </div>
          <p className="text-sm mt-2 text-gray-500">
-            Control de ventas, metas mensuales y semáforo de rendimiento por colaborador.
+            Control de ventas, metas mensuales y semáforo de rendimiento por empleado.
           </p>
       </div>
 

@@ -34,10 +34,10 @@ export const ScheduleUploads = ({ uploads = [], userRole, onOpenUploadModal }) =
       <div className="px-6 py-4 border-b border-[#e0e0e0] bg-gray-50 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
-            📄 Documentos Registrados
+            Documentos Registrados
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Permisos, cambios de turno e incapacidades de esta semana
+            Permisos, cambios de turno e incapacidades
           </p>
         </div>
         {userRole === 'admin' && (
