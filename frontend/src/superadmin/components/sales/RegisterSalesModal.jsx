@@ -87,11 +87,11 @@ export const RegisterSaleModal = ({
                 Ingresa el PIN de supervisor para continuar
               </p>
               <input
-                type="password"
-                placeholder="PIN de acceso"
+                type="password"   
                 value={pin}
                 onChange={e => setPin(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleVerifyPin()}
+                autoComplete="new-password"
                 className={`w-full border rounded-md p-3 text-center text-lg tracking-widest font-bold focus:outline-none ${pinError ? 'border-red-400 focus:border-red-400' : 'border-[#e0e0e0] focus:border-[#6A64F1]'}`}
               />
               {pinError && (
