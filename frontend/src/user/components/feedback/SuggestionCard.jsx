@@ -19,14 +19,11 @@ export default function SuggestionCard({ ratingActual, waiterId, tableNumber, on
     const t = text.trim();
     
     // Longitud mínima muy permisiva
-    if (t.length < 6) return false;
+    if (t.length < 8) return false;
 
     // Filtra repetición excesiva de cualquier carácter (ej. "aaaaaaa", "///////").
     // Aumentado a 5 para tolerar dedos lentos en la tablet
     if (/(.)\1{4,}/.test(t)) return false;
-
-    // Valida la presencia de al menos un espacio. Esto permite frases cortas pero reales, y bloquea palabras únicas sin sentido.
-    if (!t.includes(' ')) return false;
 
     // Exige al menos una letra del abecedario (bloquea "12345 6789" o "//// ////").
     const contieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(t);

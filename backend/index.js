@@ -19,6 +19,7 @@ import realTablesRoutes from './routes/realTablesRoutes.js';
 import employeesRoutes from './routes/employeesRoutes.js'; 
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js'; 
+import salesRoutes from './routes/salesRoutes.js';
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';
 
@@ -70,6 +71,8 @@ app.use('/employees', employeesRoutes);
 app.use('/attendance', attendanceRoutes);
 
 app.use('/schedules', scheduleRoutes);
+
+app.use('/sales', salesRoutes);
 
 
 app.use(errorHandlerMiddleware);
