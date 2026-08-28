@@ -105,7 +105,7 @@ export default function SuggestionCard({ ratingActual, waiterId, tableNumber, on
       <div className="mb-4 ml-2 h-6">
         {!esTextoValido() && text.length > 0 && (
           <p className="text-sm font-bold text-red-500">
-            {text.length < 6 ? "Escribe un poco más..." : "Por favor, escribe un comentario válido."}
+            {text.length < 8 ? "Escribe un poco más..." : "Por favor, escribe un comentario válido."}
           </p>
         )}
       </div>
