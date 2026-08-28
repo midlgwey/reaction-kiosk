@@ -20,16 +20,17 @@ export const ScheduleHeader = ({
       {/* Fila 1 — Título y badge */}
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#07074D]">Horarios Semanales</h1>
+           <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4"> Horarios Semanales</h1>
           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
             isPublished ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
           }`}>
             {isPublished ? '🔒 Publicado y Bloqueado' : '📝 Borrador Editable'}
           </span>
         </div>
-        <p className="text-[#6B7280] mt-0.5">
-          Planificación y control de turnos del personal operativo.
-        </p>
+          <p className="text-sm mt-2 text-gray-500">
+            Planificación y control de turnos del personal operativo.
+          </p>
+        
       </div>
 
       {/* Fila 2 — Navegador de semana + Botones */}

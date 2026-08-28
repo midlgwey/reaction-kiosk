@@ -56,7 +56,7 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {globalSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-700 text-md">
+          <span className="text-gray-700 text-md font-semibold">
             Meta:  <span className='text-indigo-700 font-bold text-xl'> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
@@ -92,8 +92,8 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {teamSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-700 text-md">
-            Meta: <span className='text-indigo-700 font-bold text-xl'> {teamGoal.toLocaleString()} </span>chiles
+          <span className="text-gray-700 text-md font-semibold">
+            Meta: <span className='text-indigo-700 font-bold text-xl '> {teamGoal.toLocaleString()} </span>chiles
           </span>
         </div>
         <div className="mt-2 text-gray-700 text-md">
@@ -104,10 +104,10 @@ export const GlobalProgressCard = ({
       {/* Días hábiles del mes */}
       <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
+          <p className="text-xs text-gray-600 uppercase tracking-wider font-bold">
             Días Hábiles del Mes (Mar — Dom)
           </p>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5 font-semibold">
             Lunes Cerrado, Martes a Domingo Abierto
           </p>
         </div>
@@ -129,7 +129,7 @@ export const GlobalProgressCard = ({
           <div className="text-center">
             <p className="text-2xl font-bold text-[#07074D]">
               {totalWorkDays - elapsedWorkDays}
-              <span className="text-sm font-normal text-gray-400 ml-1">restantes</span>
+              <span className="text-sm font-normal text-gray-600 ml-1">restantes</span>
             </p>
           </div>
         </div>

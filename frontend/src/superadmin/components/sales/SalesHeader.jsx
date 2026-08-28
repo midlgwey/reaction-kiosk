@@ -22,7 +22,7 @@ export const SalesHeader = ({
       {/* Fila 1 — Título */}
       <div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[#07074D]">Temporada Chiles en Nogada</h1>
+           <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4"> Control de Ventas | Chiles en Nogada</h1>
           {season ? (
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 text-green-700">
              Temporada Activa
@@ -33,9 +33,9 @@ export const SalesHeader = ({
             </span>
           )}
         </div>
-        <p className="text-[#6B7280] mt-0.5">
-          Control de ventas, metas mensuales y semáforo de rendimiento por colaborador.
-        </p>
+         <p className="text-sm mt-2 text-gray-500">
+            Control de ventas, metas mensuales y semáforo de rendimiento por colaborador.
+          </p>
       </div>
 
       {/* Fila 2 — Selector horizontal de meses + botones */}
