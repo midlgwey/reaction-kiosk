@@ -36,8 +36,8 @@ export const GlobalProgressCard = ({
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
               Meta Global de Temporada
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              
+            <p className="text-lg text-gray-700 mt-0.5">
+              Solo meseros y capitanes 
             </p>
           </div>
           <span className={`text-lg font-bold ${globalPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
@@ -56,12 +56,12 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {globalSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-500">
-            Meta:  <span className='text-indigo-700 font-bold'> {globalGoal.toLocaleString()} </span>chiles
+          <span className="text-gray-500 text-lg">
+            Meta:  <span className='text-indigo-700 font-bold text-xl'> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
-        <div className="mt-2 text-xs text-gray-400">
-          Faltan <span className="font-semibold text-[#07074D]">{remainingGlobal.toLocaleString()}</span> chiles para completar la meta global
+        <div className="mt-2 text-lg text-gray-400">
+          Faltan <span className="text-indigo-700 font-bold text-xl">{remainingGlobal.toLocaleString()}</span> chiles para completar la meta global
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export const GlobalProgressCard = ({
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
                Meta del Equipo Meseros
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-700 mt-0.5">
               Solo meseros y capitanes — sin pedidos para llevar ni eventos
             </p>
           </div>
@@ -92,12 +92,12 @@ export const GlobalProgressCard = ({
           <span className="font-semibold text-[#07074D]">
             {teamSold.toLocaleString()} chiles vendidos
           </span>
-          <span className="text-gray-500">
-            Meta: <span className='text-indigo-700 font-bold'> {teamGoal.toLocaleString()} </span>chiles
+          <span className="text-gray-700 text-lg">
+            Meta: <span className='text-indigo-700 font-bold text-xl'> {teamGoal.toLocaleString()} </span>chiles
           </span>
         </div>
-        <div className="mt-2 text-xs text-gray-400">
-          Faltan <span className="font-semibold text-[#07074D]">{remainingTeam.toLocaleString()}</span> chiles para completar la meta del equipo
+        <div className="mt-2 text-gray-700 text-lg">
+          Faltan <span className="font-semibold text-indigo-700 text-xl">{remainingTeam.toLocaleString()}</span> chiles para completar la meta del equipo
         </div>
       </div>
 
