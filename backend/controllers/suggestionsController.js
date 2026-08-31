@@ -9,12 +9,62 @@ import { TIME_OFFSET } from '../utils/queryHelpers.js';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
+//Lista de conectores comunes que indican contraste o queja
+const complaintConnectors = [
+  "pero", "solo que", "aunque", "excepto",
+  "nada mas que", "nada más que", "lo unico",
+  "lo único", "deberian", "les falta",
+  "ya que",
+  "sin embargo",
+  "no obstante",
+  "a pesar",
+  "eso si",
+  "eso sí"
+];
+
+// Diccionario de incidencias operativas críticas — se declara una sola vez a nivel de módulo
+const criticalKeywords = [
+  // Servicio y trato
+  'mal','grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron',
+  'pesimo servicio','mala atención','desatención','mal servicio',
+  "tardo en atender","no me atendieron","me dejaron esperando","sin atender",
+  "desatendieron","distraido","no se pudo comer","no se pudo tomar",
+
+  // Comida
+  'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
+  'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor',
+  'rancio','desabrido','desabrida',
+  "echado a perder","incomible","asqueroso","repugnante","apestoso",
+  "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal",
+  "no sabe bien","no sabia bien","sabor raro","sabor mal","sabor a agua","sabor a nada",
+
+  // Instalaciones
+  'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
+  'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
+  'olor a muerto','olor a basura','inodoro','bano publico',
+  "bano apestoso","bano sucio","bano asqueroso",
+  'no habia papel','falta papel','pape','falta servilletas',
+  'dificl de cortar','dificil de masticar','dificil de tragar',
+  'dificil de comer','dificil de beber',
+  'esta duro','esta dura','esta crudo','esta cruda','esta frio','esta fria',
+  'esta quemado','esta quemada','esta incomible','esta incomida',
+
+  // Actitud y trato — detección de quejas educadas
+  // Nota: "mejor atención" y "mejor trato" se omiten aquí para evitar falsos positivos
+  // — Gemini los detecta con contexto completo gracias al prompt mejorado
+  'poco amable','no fue amable','no era amable',
+  'actitud seria','cara seria','mala cara',
+  'no muy agradable','no fue agradable','no era agradable',
+  'no sonrio','no sonrió','sin sonrisa',
+  'mas amable','más amable',
+  'mas atencion','más atención'
+];
+
 // Crear Sugerencia (Fire and Forget)
 export const createSuggestion = async (req, res) => {
 
   const { comment, rating_context, waiter_id, table_number } = req.body;
   const shift = getShiftByTime();
-
 
   // Validación: el comentario es obligatorio para evitar registros vacíos
   if (!comment || comment.trim() === "") {
@@ -53,14 +103,6 @@ export const createSuggestion = async (req, res) => {
   }
 };
 
-//Helpers
-//Lista de conectores comunes que indican contraste o queja
-const complaintConnectors = [
-  "pero", "solo que", "aunque", "excepto",
-  "nada mas que", "nada más que", "lo unico",
-  "lo único", "deberian", "les falta"
-];
-
 //Extrae la parte del comentario que sigue después de conectores de contraste
 function extractComplaintSegment(text) {
   const lower = text.toLowerCase();
@@ -83,14 +125,19 @@ function normalizeText(text) {
     .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
 }
 
-
 // Análisis de sentimiento en segundo plano, con enfoque en detección de quejas ocultas y generación de alertas
 async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, table_number) {
   try {
     //Prompt a Gemini
-    const prompt = `Analiza el sentimiento de este comentario para un restaurante de comida mexicana en Tijuana, Mexico. 
-      Responde ÚNICAMENTE con una de estas tres palabras: "Positive", "Negative" o "Neutral".
-      Considera que el cliente puede tener mala ortografía y ser una persona mayor (40-60+ años).
+    const prompt = `Analiza el sentimiento de este comentario de un cliente de restaurante mexicano en Tijuana.
+      Responde ÚNICAMENTE con: "Positive", "Negative" o "Neutral".
+
+      Contexto importante para el análisis:
+      - El cliente puede usar "mejor atención" como sugerencia de mejora, NO como elogio. Ejemplo: "mejor atención de la hostess" significa "que mejore su atención", no que fue buena.
+      - Frases como "su actitud no fue muy agradable", "poco amable", "cara seria", "actitud seria" son quejas aunque el tono sea educado.
+      - Un comentario que empieza positivo pero termina con queja debe clasificarse como "Negative".
+      - El cliente mexicano tiende a suavizar las quejas con frases educadas antes de expresarlas.
+
       Comentario: "${commentText}"`;
 
     //Envío del prompt a Gemini y obtención de la respuesta
@@ -108,21 +155,6 @@ async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, t
     // Detección de quejas ocultas en comentarios mixtos
     const lowerCaseText = normalizeText(commentText);
     const complaintSegment = extractComplaintSegment(commentText);
-    
-    // Diccionario de incidencias operativas críticas
-    const criticalKeywords = [
-      'mal','grosero','mal trato','de malas','sin ganas','actitud','prepotente','ignoraron', 'pesimo servicio','mala atención','desatención','mal servicio',
-      "tardo en atender","no me atendieron","me dejaron esperando","sin atender","desatendieron","distraido", "no se pudo comer", "no se pudo tomar",
-      'pelo','cabello','insecto','mosca','cucaracha','bicho','crudo','quemado',
-      'frio','fria','tardo','tardaron','basura','no fue lo que pedi','sin sabor','rancio','desabrido','desabrida',
-      "echado a perder","incomible","asqueroso","repugnante","apestoso",
-      "apestaba el vaso","sabe a agua","sabe a nada","sabe raro","sabe mal","no sabe bien" ,"no sabia bien","sabor raro","sabor mal","sabor a agua","sabor a nada",
-      'sucio','sucia','deplorable','sin papel','sin agua','apesta','hediondo',
-      'olor a bano','olor a pis','olor a orines','olor a humedad','olor a moho',
-      'olor a muerto','olor a basura','inodoro','bano publico',"bano apestoso","bano sucio","bano asqueroso",
-      'no habia papel','falta papel', 'pape','falta servilletas' , 'dificl de cortar' , 'dificil de masticar' , 'dificil de tragar' , 'dificil de comer' , 'dificil de beber' ,   
-      'esta duro' ,'esta dura' , 'esta crudo' , 'esta cruda' , 'esta frio' , 'esta fria' , 'esta quemado' , 'esta quemada' , 'esta incomible' , 'esta incomida' , 'esta incomible' , 'esta incomida'
-    ];
 
     const textToAnalyze = complaintSegment ? normalizeText(complaintSegment) : lowerCaseText;
 
@@ -139,15 +171,15 @@ async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, t
         sql: `UPDATE suggestions SET sentiment = ? WHERE id = ?`,
         args: [finalSentiment, BigInt(id)]
       });
-        console.log(`[ID: ${id}] BD actualizada: ${finalSentiment}`);
+      console.log(`[ID: ${id}] BD actualizada: ${finalSentiment}`);
     }
 
     // Formateo y envío de la alerta vía Telegram
     if (finalSentiment === "Negative" || finalSentiment === "Review") {
 
-         // Buscar nombre del mesero
-        let waiterName = "Sin asignar";
-        if (waiter_id) {
+      // Buscar nombre del mesero
+      let waiterName = "Sin asignar";
+      if (waiter_id) {
         const waiterResult = await db.execute({
           sql: `SELECT name FROM waiters WHERE id = ?`,
           args: [waiter_id]
@@ -158,14 +190,14 @@ async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, t
       const alertReason = finalSentiment === "Review" ? "Queja mixta detectada" : "Comentario Negativo";
       const alertMessage = `🔴 ALERTA DE CRITICA\nTurno: ${shift}\nMotivo: ${alertReason}\n👤 Mesero: ${waiterName}\n📍 Mesa: ${table_number || "N/A"}\n\nComentario:\n"${commentText}"`;
        
-       // Se envía la alerta a Telegram para notificar al gerente sobre la crítica recibida, incluyendo el comentario original para contexto.
-       await sendAlertTelegram(alertMessage);
+      // Se envía la alerta a Telegram para notificar al gerente sobre la crítica recibida, incluyendo el comentario original para contexto.
+      await sendAlertTelegram(alertMessage);
 
-       // Guardar en la tabla alerts para el Dashboard
-       await db.execute({
-         sql: `INSERT INTO alerts (type, message, suggestion_id) VALUES (?, ?, ?)`,
-         args: ['critica', alertMessage, Number(id)] 
-       });
+      // Guardar en la tabla alerts para el Dashboard
+      await db.execute({
+        sql: `INSERT INTO alerts (type, message, suggestion_id) VALUES (?, ?, ?)`,
+        args: ['critica', alertMessage, Number(id)] 
+      });
     }
 
   } catch (dbError) {
@@ -251,7 +283,7 @@ export const getFeedbackStats = async (req, res) => {
       commentsList.forEach(item => {
         const text = normalizeText(item.comment || "");
         
-       if (mode === 'bad') {
+        if (mode === 'bad') {
           // Análisis de áreas de mejora
           if (text.includes('lento') || text.includes('mal trato') || text.includes('grosero') || text.includes('actitud')) counts['servicio']++;
           if (text.includes('fria') || text.includes('frio') || text.includes('sin sabor') || text.includes('pelo') || text.includes('mosca') || text.includes('crudo')) counts['comida']++;
@@ -287,8 +319,8 @@ export const getFeedbackStats = async (req, res) => {
 
           const goodWords = {
             'rico': 'Rico', 'delicioso': 'Delicioso', 'excelente': 'Excelente', 'agradable': 'Agradable', 'exquisito': 'Exquisito', 'muy bien': 'Muy Bien', 'atencion': 'Buena Atención',
-            'amable': 'Amable', 'rapido': 'Rápido', 'perfecto': 'Perfecto', 'limpio': 'Limpio' , 'exquisito': 'Exquisito', 'deliciosa': 'Deliciosa', 'delicioso': 'Delicioso', 'deli': 'Deli', 
-            'buen sazon': 'Buen Sazón', 'sabroso': 'Sabroso', 'sabrosa': 'Sabrosa', 'muy cordial': 'Muy Cordial', 'muy amable': 'Muy Amable', 'estuvo deli': 'Estuvo Deli' , 'recomendable': 'Recomendable', 
+            'amable': 'Amable', 'rapido': 'Rápido', 'perfecto': 'Perfecto', 'limpio': 'Limpio', 'exquisito': 'Exquisito', 'deliciosa': 'Deliciosa', 'delicioso': 'Delicioso', 'deli': 'Deli', 
+            'buen sazon': 'Buen Sazón', 'sabroso': 'Sabroso', 'sabrosa': 'Sabrosa', 'muy cordial': 'Muy Cordial', 'muy amable': 'Muy Amable', 'estuvo deli': 'Estuvo Deli', 'recomendable': 'Recomendable', 
           };
 
           Object.keys(goodWords).forEach(key => {
