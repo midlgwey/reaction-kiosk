@@ -4,20 +4,24 @@ import React, { useState } from 'react';
 export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
   const [file, setFile] = useState(null);
   const [uploadType, setUploadType] = useState('Permiso');
-  const [uploadedBy, setUploadedBy] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || submitting) return; // bloquea doble clic
 
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_type', uploadType);
-    formData.append('uploaded_by', uploadedBy || 'Admin');
 
-    onUpload(formData);
+    setSubmitting(true); 
+    try {
+      await onUpload(formData); 
+    } finally {
+      setSubmitting(false); 
+    }
   };
 
   return (
@@ -31,8 +35,8 @@ export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Tipo de Solicitud</label>
-            <select 
-              value={uploadType} 
+            <select
+              value={uploadType}
               onChange={(e) => setUploadType(e.target.value)}
               className="w-full border border-[#e0e0e0] rounded-md p-2 text-sm text-[#6B7280] bg-white focus:border-[#6A64F1] focus:outline-none"
             >
@@ -44,8 +48,8 @@ export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
 
           <div>
             <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Archivo PDF o Imagen</label>
-            <input 
-              type="file" 
+            <input
+              type="file"
               accept="application/pdf, image/jpeg, image/png"
               onChange={(e) => setFile(e.target.files[0])}
               className="w-full border border-[#e0e0e0] rounded-md p-2 text-xs text-[#6B7280] file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-[#6A64F1]"
@@ -54,11 +58,19 @@ export const UploadPdfModal = ({ isOpen, onClose, onUpload, loading }) => {
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[#e0e0e0]">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-gray-100"
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={loading} className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-[#6A64F1] hover:bg-[#5b55e0]">
-              {loading ? 'Subiendo...' : 'Subir Archivo'}
+            <button
+              type="submit"
+              disabled={loading || submitting} 
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-[#6A64F1] hover:bg-[#5b55e0] disabled:opacity-50"
+            >
+              {submitting ? 'Subiendo...' : 'Subir Archivo'}
             </button>
           </div>
         </form>
