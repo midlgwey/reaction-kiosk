@@ -13,9 +13,11 @@ export const saveSchedule = (payload) =>
 export const publishSchedule = (workScheduleId) =>
   api.patch(`/schedules/${workScheduleId}/publish`).then(r => r.data);
 
-// Subir archivo PDF o imagen
+// Subir archivo — sin Content-Type manual, multer lo detecta solo
 export const uploadSchedulePdf = (workScheduleId, formData) =>
-  api.post(`/schedules/${workScheduleId}/upload`, formData).then(r => r.data);
+  api.post(`/schedules/${workScheduleId}/upload`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(r => r.data);
 
 // Obtener lista de empleados activos
 export const fetchEmployees = () =>

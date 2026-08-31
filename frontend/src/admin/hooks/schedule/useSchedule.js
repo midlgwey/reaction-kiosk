@@ -64,15 +64,13 @@ export const useSchedule = () => {
     }
   }, []);
 
-  // Subir documento de permiso, cambio de turno o incapacidad
+  // Subir documento — solo relanza el error, el toast lo maneja SchedulePage
   const uploadPdf = useCallback(async (workScheduleId, formData) => {
     setLoading(true);
-    setError(null);
     try {
       const data = await uploadSchedulePdf(workScheduleId, formData);
       return data;
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al subir el archivo');
       throw err;
     } finally {
       setLoading(false);
