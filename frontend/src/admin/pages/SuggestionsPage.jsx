@@ -1,65 +1,71 @@
-import React from 'react'; 
-import { useSuggestionsList } from '../hooks/feedback/useSuggestionsList';
-import { useSuggestionsPagination } from '../hooks/feedback/useSuggestionsPagination';
+// SchedulePage.jsx
+import React from 'react';
+import { ScheduleHeader } from '../components/schedule/ScheduleHeader';
+import { ScheduleTable } from '../components/schedule/ScheduleTable';
+import { ScheduleModal } from '../components/schedule/ScheduleModal';
+import { UploadPdfModal } from '../components/schedule/UploadPdfModal';
+import { ScheduleUploads } from '../components/schedule/ScheduleUploads';
+import { useSchedulePage } from '../../admin/hooks/schedule/useSchedulePage';
 
-// Componentes de Presentación
-import SuggestionsHeader from '../components/suggestions/SuggestionsHeader';
-import SuggestionsTable from '../components/suggestions/SuggestionsTable';
-import Pagination from '../components/suggestions/Pagination';
-import FeedbackStats from '../components/metrics/suggestionscards/StatCardSuggestions';
+export const SchedulePage = () => {
+  const userRole = localStorage.getItem('userRole') || 'supervisor';
 
-/**
- * Componente de Página: Gestión de Sugerencias (Feedback).
- * * Responsabilidades:
- * 1. Orquestación de estado de datos (lista de comentarios).
- * 2. Gestión de estado de UI (paginación y búsqueda).
- * 3. Composición de vistas de métricas y tablas de datos.
- */
-export default function SuggestionsPage() {
-
-  // Hook de Datos: Obtención y recarga de comentarios desde el backend.
-  const { comments, loading, refresh } = useSuggestionsList();
-
-  // Hook de Lógica de UI: Gestión de paginación y filtrado local.
-  const { 
-    searchTerm, 
-    handleSearch, 
-    currentData, 
-    currentPage, 
-    totalPages, 
-    setCurrentPage 
-  } = useSuggestionsPagination(comments, 10); 
+  const {
+    shifts, uploads, loading, isPublished,
+    editableSchedules, selectedEmployee, isUploadModalOpen,
+    formattedStart, formattedEnd,
+    setSelectedEmployee, setIsUploadModalOpen,
+    handlePrevWeek, handleNextWeek,
+    handleSaveDraft, handlePublish,
+    handleUploadFile, handleExportExcel,
+    handleChangeShift, handleSaveModal
+  } = useSchedulePage();
 
   return (
-    // Contenedor Raíz:
-    // - Se elimina el padding (p-6) ya que es inyectado por el AdminLayout.
-    // - Se mantiene 'space-y-6' para el espaciado vertical uniforme entre componentes.
-    <div className="space-y-6 font-sans">
-      
-      {/* Sección de Métricas (KPIs): Resumen estadístico diario */}
-       <FeedbackStats />
-
-       {/* Barra de Herramientas: Controles de búsqueda y actualización */}
-      <SuggestionsHeader 
-        searchTerm={searchTerm} 
-        onSearch={handleSearch} 
-        onRefresh={refresh} 
-        loading={loading} 
+    <div className="p-6 max-w-7xl mx-auto">
+      <ScheduleHeader
+        startDate={formattedStart}
+        endDate={formattedEnd}
+        onPrevWeek={handlePrevWeek}
+        onNextWeek={handleNextWeek}
+        isPublished={isPublished}
+        userRole={userRole}
+        onPublish={handlePublish}
+        onSaveDraft={handleSaveDraft}
+        onOpenSwapModal={() => setIsUploadModalOpen(true)}
+        onExportExcel={handleExportExcel}
+        loading={loading}
       />
 
-      {/* Visualización de Datos: Tabla renderizada con el subset de datos actual */}
-      <SuggestionsTable 
-        data={currentData} 
-        loading={loading} 
+      <ScheduleTable
+        schedules={editableSchedules}
+        userRole={userRole}
+        isPublished={isPublished}
+        onEditEmployee={setSelectedEmployee}
       />
 
-      {/* Controles de Navegación: Paginación del dataset */}
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+      <ScheduleModal
+        employee={selectedEmployee}
+        shifts={shifts}
+        onClose={() => setSelectedEmployee(null)}
+        onChangeShift={handleChangeShift}
+        onSave={handleSaveModal}
       />
 
+      <UploadPdfModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleUploadFile}
+        loading={loading}
+      />
+
+      <ScheduleUploads
+        uploads={uploads}
+        userRole={userRole}
+        onOpenUploadModal={() => setIsUploadModalOpen(true)}
+      />
     </div>
   );
-}
+};
+
+export default SchedulePage;

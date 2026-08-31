@@ -22,3 +22,7 @@ export const uploadSchedulePdf = (workScheduleId, formData) =>
 // Obtener lista de empleados activos
 export const fetchEmployees = () =>
   api.get('/employees').then(r => r.data);
+
+// Obtener tipos de turno
+export const fetchShifts = () =>
+  api.get('/attendance/shifts').then(r => r.data);

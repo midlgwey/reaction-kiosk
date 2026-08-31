@@ -1,16 +1,10 @@
-// SchedulePage.jsx
-import React, { useState, useEffect } from 'react';
-import { ScheduleHeader } from '../components/schedule/ScheduleHeader';
-import { ScheduleTable } from '../components/schedule/ScheduleTable';
-import { ScheduleModal } from '../components/schedule/ScheduleModal';
-import { UploadPdfModal } from '../components/schedule/UploadPdfModal';
-import { ScheduleUploads } from '../components/schedule/ScheduleUploads';
-import { useSchedule } from '../../admin/hooks/schedule/useSchedule';
-import { useExportSchedule } from '../components/schedule/useExportSchedule';
+// frontend/src/admin/hooks/schedule/useSchedulePage.js
+import { useState, useEffect, useCallback } from 'react';
+import { useSchedule } from './useSchedule';
+import { useExportSchedule } from '../../../superadmin/components/schedule/useExportSchedule';
 import toast from 'react-hot-toast';
 import { format, addDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-
 
 // Orden de aparición en la tabla — coincide con position en la BD
 const ORDEN_PUESTOS = {
@@ -41,39 +35,40 @@ const buildBlankEmployee = (emp) => ({
 const sortByRole = (list) =>
   [...list].sort((a, b) => (ORDEN_PUESTOS[a.role] ?? 99) - (ORDEN_PUESTOS[b.role] ?? 99));
 
-export const SchedulePage = () => {
-  const userRole = localStorage.getItem('userRole') || 'supervisor';
-
-  const [weekStartDate, setWeekStartDate] = useState(() => getWeekStart(new Date()));
-  const weekEndDate = format(addDays(parseISO(weekStartDate), 5), 'yyyy-MM-dd');
-
+export const useSchedulePage = () => {
   const {
     scheduleData, loading,
     getSchedule, getEmployees, getShifts,
     saveWeeklySchedule, publishWeeklySchedule, uploadPdf
   } = useSchedule();
 
+  const { exportToExcel } = useExportSchedule();
+
+  const [weekStartDate, setWeekStartDate] = useState(() => getWeekStart(new Date()));
   const [shifts, setShifts] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editableSchedules, setEditableSchedules] = useState([]);
 
+  const weekEndDate = format(addDays(parseISO(weekStartDate), 5), 'yyyy-MM-dd');
   const uploads = scheduleData?.uploads || [];
   const isPublished = scheduleData?.schedule?.status === 'Published';
   const workScheduleId = scheduleData?.schedule?.work_schedule_id;
-  const { exportToExcel } = useExportSchedule();
 
-  // Cargar tipos de turno al montar el componente
+  const formattedStart = format(parseISO(weekStartDate), 'd MMM', { locale: es });
+  const formattedEnd = format(parseISO(weekEndDate), 'd MMM yyyy', { locale: es });
+
+  // Cargar tipos de turno al montar
   useEffect(() => {
     getShifts().then(setShifts).catch(console.error);
   }, []);
 
-  // Recargar horario cada vez que cambia la semana seleccionada
+  // Recargar horario cada vez que cambia la semana
   useEffect(() => {
     loadWeekData(weekStartDate);
   }, [weekStartDate]);
 
-  const loadWeekData = async (date) => {
+  const loadWeekData = useCallback(async (date) => {
     try {
       const [data, allEmployees] = await Promise.all([getSchedule(date), getEmployees()]);
       const blanks = sortByRole(allEmployees.map(buildBlankEmployee));
@@ -110,7 +105,7 @@ export const SchedulePage = () => {
         setEditableSchedules([]);
       }
     }
-  };
+  }, []);
 
   const handlePrevWeek = () =>
     setWeekStartDate(format(addDays(parseISO(weekStartDate), -7), 'yyyy-MM-dd'));
@@ -174,66 +169,42 @@ export const SchedulePage = () => {
   };
 
   const handleExportExcel = () => {
-    const result = exportToExcel(
-      editableSchedules,
-      format(parseISO(weekStartDate), 'd MMM', { locale: es }),
-      format(parseISO(weekEndDate), 'd MMM yyyy', { locale: es })
-    );
+    const result = exportToExcel(editableSchedules, formattedStart, formattedEnd);
     if (!result.success) toast.error(result.error || 'Error al exportar');
   };
 
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <ScheduleHeader
-        startDate={format(parseISO(weekStartDate), 'd MMM', { locale: es })}
-        endDate={format(parseISO(weekEndDate), 'd MMM yyyy', { locale: es })}
-        onPrevWeek={handlePrevWeek}
-        onNextWeek={handleNextWeek}
-        isPublished={isPublished}
-        userRole={userRole}
-        onPublish={handlePublish}
-        onSaveDraft={handleSaveDraft}
-        onOpenSwapModal={() => setIsUploadModalOpen(true)}
-        onExportExcel={handleExportExcel}
-        loading={loading}
-      />
+  const handleChangeShift = (day, newShift) =>
+    setSelectedEmployee(prev => ({ ...prev, shifts: { ...prev.shifts, [day]: newShift } }));
 
-      <ScheduleTable
-        schedules={editableSchedules}
-        userRole={userRole}
-        isPublished={isPublished}
-        onEditEmployee={setSelectedEmployee}
-      />
+  const handleSaveModal = () => {
+    setEditableSchedules(prev =>
+      prev.map(emp => emp.id === selectedEmployee.id ? selectedEmployee : emp)
+    );
+    setSelectedEmployee(null);
+  };
 
-      <ScheduleModal
-        employee={selectedEmployee}
-        shifts={shifts}
-        onClose={() => setSelectedEmployee(null)}
-        onChangeShift={(day, newShift) =>
-          setSelectedEmployee(prev => ({ ...prev, shifts: { ...prev.shifts, [day]: newShift } }))
-        }
-        onSave={() => {
-          setEditableSchedules(prev =>
-            prev.map(emp => emp.id === selectedEmployee.id ? selectedEmployee : emp)
-          );
-          setSelectedEmployee(null);
-        }}
-      />
-
-      <UploadPdfModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onUpload={handleUploadFile}
-        loading={loading}
-      />
-
-      <ScheduleUploads
-        uploads={uploads}
-        userRole={userRole}
-        onOpenUploadModal={() => setIsUploadModalOpen(true)}
-      />
-    </div>
-  );
+  return {
+    // Estado
+    shifts,
+    uploads,
+    loading,
+    isPublished,
+    editableSchedules,
+    selectedEmployee,
+    isUploadModalOpen,
+    formattedStart,
+    formattedEnd,
+    // Setters
+    setSelectedEmployee,
+    setIsUploadModalOpen,
+    // Handlers
+    handlePrevWeek,
+    handleNextWeek,
+    handleSaveDraft,
+    handlePublish,
+    handleUploadFile,
+    handleExportExcel,
+    handleChangeShift,
+    handleSaveModal
+  };
 };
-
-export default SchedulePage;

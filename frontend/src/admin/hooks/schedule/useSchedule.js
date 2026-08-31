@@ -87,6 +87,15 @@ export const useSchedule = () => {
     }
   }, []);
 
+  const getShifts = useCallback(async () => {
+  try {
+    const data = await fetchShifts();
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}, []);
+
   return {
     scheduleData,
     loading,
@@ -95,6 +104,7 @@ export const useSchedule = () => {
     saveWeeklySchedule,
     publishWeeklySchedule,
     uploadPdf,
-    getEmployees
+    getEmployees,
+    getShifts
   };
 };
