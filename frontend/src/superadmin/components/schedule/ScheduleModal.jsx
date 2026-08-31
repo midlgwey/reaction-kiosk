@@ -1,4 +1,4 @@
-// ScheduleModal.jsx (CORREGIDO)
+// ScheduleModal.jsx 
 import React from 'react';
 
 const WORK_DAYS = ['martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];

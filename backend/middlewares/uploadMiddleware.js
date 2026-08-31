@@ -1,12 +1,18 @@
 
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+
+// Crear la carpeta uploads si no existe — necesario en producción
+const uploadsDir = 'uploads/';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Configuración de dónde y cómo se guardarán los archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Asegúrate de tener una carpeta llamada 'uploads' en la raíz de tu backend
-    cb(null, 'uploads/'); 
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     // Generamos un nombre único para evitar que se sobrescriban archivos con el mismo nombre
@@ -15,7 +21,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtro opcional para aceptar solo imágenes o PDFs (puedes ajustarlo)
+// Filtro opcional para aceptar solo imágenes o PDFs
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -25,7 +31,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 } // Límite de 5MB por archivo
