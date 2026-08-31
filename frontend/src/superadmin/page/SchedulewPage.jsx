@@ -7,12 +7,12 @@ import { UploadPdfModal } from '../components/schedule/UploadPdfModal';
 import { ScheduleUploads } from '../components/schedule/ScheduleUploads';
 import { useSchedule } from '../../admin/hooks/schedule/useSchedule';
 import { useExportSchedule } from '../components/schedule/useExportSchedule';
-import api from '../../admin/services/api';
 import toast from 'react-hot-toast';
 import { format, addDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // Valores exactos de position en la BD — orden por puesto
+// Orden de aparición en la tabla por puesto — coincide con position en la BD
 const ORDEN_PUESTOS = {
   "Capitan": 1,
   "Mesero": 2,
@@ -25,6 +25,7 @@ const ORDEN_PUESTOS = {
 
 const WORK_DAYS = ['martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
+// Calcula el martes de la semana actual
 const getWeekStart = (date) => {
   const d = new Date(date);
   const day = d.getDay();
@@ -33,6 +34,7 @@ const getWeekStart = (date) => {
   return format(d, 'yyyy-MM-dd');
 };
 
+// Construye un empleado con turnos vacíos
 const buildBlankEmployee = (emp) => ({
   id: emp.employee_id,
   name: `${emp.first_name} ${emp.last_name}`,
@@ -47,6 +49,7 @@ const buildBlankEmployee = (emp) => ({
   }
 });
 
+// Ordena la lista de empleados por puesto
 const sortByRole = (list) =>
   [...list].sort((a, b) => {
     const pesoA = ORDEN_PUESTOS[a.role] ?? 99;
@@ -60,7 +63,15 @@ export const SchedulePage = () => {
   const [weekStartDate, setWeekStartDate] = useState(() => getWeekStart(new Date()));
   const weekEndDate = format(addDays(parseISO(weekStartDate), 5), 'yyyy-MM-dd');
 
-  const { scheduleData, loading, getSchedule, saveWeeklySchedule, publishWeeklySchedule, uploadPdf } = useSchedule();
+  const {
+    scheduleData,
+    loading,
+    getSchedule,
+    saveWeeklySchedule,
+    publishWeeklySchedule,
+    uploadPdf,
+    getEmployees
+  } = useSchedule();
 
   const [shifts, setShifts] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -70,52 +81,62 @@ export const SchedulePage = () => {
   const uploads = scheduleData?.uploads || [];
   const { exportToExcel } = useExportSchedule();
 
-  // Cargar turnos al montar
+  // Cargar tipos de turno al montar el componente
   useEffect(() => {
     const fetchShifts = async () => {
       try {
+        const response = await getEmployees();
+        // Los turnos vienen de un endpoint distinto — este efecto es solo para shifts
+      } catch (err) {
+        console.error('Error al cargar turnos:', err);
+      }
+    };
+
+    const loadShifts = async () => {
+      try {
+        // Se mantiene separado porque viene de /attendance/shifts
+        const { default: api } = await import('../../admin/services/api');
         const response = await api.get('/attendance/shifts');
         setShifts(response.data);
       } catch (err) {
         console.error('Error al cargar turnos:', err);
       }
     };
-    fetchShifts();
+
+    loadShifts();
   }, []);
 
-  // Cargar horario cuando cambia la semana
+  // Recargar horario cada vez que cambia la semana seleccionada
   useEffect(() => {
     loadWeekData(weekStartDate);
   }, [weekStartDate]);
 
   const loadWeekData = async (date) => {
     try {
-      const data = await getSchedule(date);
+      const [data, allEmployees] = await Promise.all([
+        getSchedule(date),
+        getEmployees()
+      ]);
+
+      // Base: todos los empleados con turnos vacíos, ordenados por puesto
+      const blanks = sortByRole(allEmployees.map(buildBlankEmployee));
 
       if (data?.assignments?.length > 0) {
-        const employeeMap = {};
+        // Construir mapa de assignments por employee_id y día
+        const assignmentMap = {};
 
         data.assignments.forEach(a => {
-          if (!employeeMap[a.employee_id]) {
-            employeeMap[a.employee_id] = {
-              id: a.employee_id,
-              name: `${a.first_name} ${a.last_name}`,
-              role: a.position || 'Operativo',
-              shifts: {
-                martes: null,
-                miercoles: null,
-                jueves: null,
-                viernes: null,
-                sabado: null,
-                domingo: null
-              }
-            };
+          if (!assignmentMap[a.employee_id]) {
+            assignmentMap[a.employee_id] = {};
           }
 
+          // Convertir la fecha a nombre de día en español y quitar acentos
           const dayName = format(parseISO(a.date), 'EEEE', { locale: es }).toLowerCase();
-          const normalizedDay = dayName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const normalizedDay = dayName
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
 
-          employeeMap[a.employee_id].shifts[normalizedDay] = {
+          assignmentMap[a.employee_id][normalizedDay] = {
             shift_id: a.shift_id,
             shift_name: a.shift_name,
             start_time: a.start_time,
@@ -123,17 +144,27 @@ export const SchedulePage = () => {
           };
         });
 
-        // Ordenar por puesto con valores reales de BD
-        setEditableSchedules(sortByRole(Object.values(employeeMap)));
+        // Mezclar todos los empleados con sus turnos guardados
+        const merged = blanks.map(emp => ({
+          ...emp,
+          shifts: assignmentMap[emp.id]
+            ? { ...emp.shifts, ...assignmentMap[emp.id] }
+            : emp.shifts
+        }));
+
+        setEditableSchedules(merged);
+      } else {
+        // Horario existe pero sin assignments — mostrar todos en blanco
+        setEditableSchedules(blanks);
       }
+
     } catch (err) {
       if (err.response?.status === 404) {
+        // No existe horario para esta semana — cargar empleados en blanco
         try {
-          const response = await api.get('/employees');
-          const sorted = sortByRole(response.data.map(buildBlankEmployee));
-          setEditableSchedules(sorted);
-        } catch (employeeErr) {
-          console.error('Error obteniendo empleados:', employeeErr);
+          const allEmployees = await getEmployees();
+          setEditableSchedules(sortByRole(allEmployees.map(buildBlankEmployee)));
+        } catch {
           setEditableSchedules([]);
         }
       } else {
@@ -152,9 +183,11 @@ export const SchedulePage = () => {
   const handleNextWeek = () =>
     setWeekStartDate(format(addDays(parseISO(weekStartDate), 7), 'yyyy-MM-dd'));
 
+  // Convierte la tabla editable en assignments para la BD
   const handleSaveDraft = async () => {
     try {
       const assignments = [];
+
       editableSchedules.forEach(emp => {
         WORK_DAYS.forEach((day, index) => {
           const shift = emp.shifts[day];
@@ -168,7 +201,12 @@ export const SchedulePage = () => {
         });
       });
 
-      await saveWeeklySchedule({ week_start_date: weekStartDate, week_end_date: weekEndDate, assignments });
+      await saveWeeklySchedule({
+        week_start_date: weekStartDate,
+        week_end_date: weekEndDate,
+        assignments
+      });
+
       toast.success('Borrador guardado correctamente');
       loadWeekData(weekStartDate);
     } catch (err) {
@@ -176,6 +214,7 @@ export const SchedulePage = () => {
     }
   };
 
+  // Publica el horario — después no se puede editar
   const handlePublish = async () => {
     if (!workScheduleId) {
       toast.error('Primero guarda el borrador antes de publicar');
@@ -190,6 +229,7 @@ export const SchedulePage = () => {
     }
   };
 
+  // Sube un documento de permiso, cambio de turno o incapacidad
   const handleUploadFile = async (formData) => {
     if (!workScheduleId) {
       toast.error('Primero guarda el borrador antes de subir archivos');
@@ -248,7 +288,9 @@ export const SchedulePage = () => {
         }}
         onSave={() => {
           setEditableSchedules(prev =>
-            prev.map(emp => emp.id === selectedEmployee.id ? selectedEmployee : emp)
+            prev.map(emp =>
+              emp.id === selectedEmployee.id ? selectedEmployee : emp
+            )
           );
           setSelectedEmployee(null);
         }}
