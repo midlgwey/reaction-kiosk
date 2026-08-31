@@ -112,12 +112,11 @@ export const ScheduleUploads = ({ uploads = [], userRole, onOpenUploadModal }) =
                   {/* Acción */}
                   <td className="px-6 py-4 text-center">
                     <a
-                      href={`http://localhost:3000/${doc.file_path.replace(/\\/g, '/')}`}
+                      href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/${doc.file_path.replace(/\\/g, '/')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs font-semibold text-[#6A64F1] hover:text-[#5b55e0] hover:underline transition"
                     >
-
                       Ver archivo
                     </a>
                   </td>
