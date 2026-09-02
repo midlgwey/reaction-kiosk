@@ -21,4 +21,16 @@ export const ROLE_PERMISSIONS = {
     estadisticas: false,
     empleados: false,
   },
+  operativo: {
+    dashboard: true,
+    meseros: false,
+    asistencia: true,
+    horarios: true,
+    ventas: true,
+    reportes: false,
+    comentarios: false,
+    estadisticas: false,
+    empleados: false,
+  },
 };
+
