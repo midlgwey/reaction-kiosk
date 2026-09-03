@@ -8,13 +8,6 @@ import SuggestionsTable from '../components/suggestions/SuggestionsTable';
 import Pagination from '../components/suggestions/Pagination';
 import FeedbackStats from '../components/metrics/suggestionscards/StatCardSuggestions';
 
-/**
- * Componente de Página: Gestión de Sugerencias (Feedback).
- * * Responsabilidades:
- * 1. Orquestación de estado de datos (lista de comentarios).
- * 2. Gestión de estado de UI (paginación y búsqueda).
- * 3. Composición de vistas de métricas y tablas de datos.
- */
 export default function SuggestionsPage() {
 
   // Hook de Datos: Obtención y recarga de comentarios desde el backend.

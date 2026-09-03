@@ -5,7 +5,7 @@ const WORK_DAYS = ['martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'doming
 
 export const ScheduleTable = ({ schedules, userRole, isPublished, onEditEmployee }) => {
   return (
-    <div className="overflow-hidden rounded-xl border border-[#e0e0e0] bg-white shadow-lg">
+    <div className="overflow-hidden rounded-xl border border-[#e0e0e0] bg-white shadow-lg ">
       <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
         <table className="min-w-full text-left leading-normal">
           <thead className="sticky top-0 z-10 bg-gray-50">

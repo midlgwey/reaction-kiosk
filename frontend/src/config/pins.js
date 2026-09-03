@@ -1,0 +1,2 @@
+Constante PIN_REGISTRO = '197006'
+Constante PIN_MODIFICACION = '990830'

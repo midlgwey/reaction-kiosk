@@ -8,6 +8,7 @@ import { EmployeeSalesModal } from '../components/sales/EmployeesSalesModal';
 import { MonthlyGoalsModal } from '../components/sales/MonthlyGoalsModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
 import { useSales } from '../../admin/hooks/sales/useSales';
+import { useSalesPins } from '../../admin/hooks/sales/useSalesPins';
 import toast from 'react-hot-toast';
 
 const MONTH_OPTIONS = [
@@ -23,8 +24,18 @@ const getCurrentMonth = () => {
   return String(m).padStart(2, '0');
 };
 
+
 export const SalesPage = () => {
   const userRole = localStorage.getItem('userRole') || 'supervisor';
+
+  const {
+    registroPinVerified,
+    registroPinExpireTime,
+    registroPinError,
+    verifyRegistroPin,
+    verifyModificacionPin,
+    canEditWithoutPin
+  } = useSalesPins();
 
   const [selectedMonth, setSelectedMonth]             = useState(getCurrentMonth());
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -158,7 +169,7 @@ export const SalesPage = () => {
           {!monthConfigured && (
             <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between">
               <p className="text-sm font-semibold text-amber-700">
-                ⚠️ No hay metas configuradas para este mes.
+                No hay metas configuradas para este mes.
               </p>
               {userRole === 'admin' && (
                 <button
@@ -201,7 +212,7 @@ export const SalesPage = () => {
         </div>
       )}
 
-      <RegisterSaleModal
+       <RegisterSaleModal
         isOpen={isRegisterModalOpen}
         onClose={() => { setIsRegisterModalOpen(false); setEditingSale(null); }}
         onSave={handleSaveSale}
@@ -209,6 +220,10 @@ export const SalesPage = () => {
         editingSale={editingSale}
         userRole={userRole}
         loading={loading}
+        registroPinVerified={registroPinVerified}
+        registroPinExpireTime={registroPinExpireTime}
+        onVerifyPin={verifyRegistroPin}
+        pinError={registroPinError}
       />
 
       <EmployeeSalesModal
@@ -218,13 +233,13 @@ export const SalesPage = () => {
         sales={employeeSales}
         selectedMonth={selectedMonth}
         monthOptions={MONTH_OPTIONS}
-        onMonthChange={async (m) => {
-          setSelectedMonth(m);
-          if (selectedEmployee) await getEmployeeSales(selectedEmployee.employee_id, m);
-        }}
+        onMonthChange={handleMonthChange}
         onEditSale={handleOpenRegister}
         userRole={userRole}
+        canEditWithoutPin={canEditWithoutPin}
+        onRequestModificacionPin={verifyModificacionPin}
       />
+
 
       <SetupSeasonModal
         isOpen={isSetupModalOpen}
