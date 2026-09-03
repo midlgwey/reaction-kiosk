@@ -11,8 +11,7 @@ export const EmployeeSalesModal = ({
   onEditSale,
   userRole,
   canEditWithoutPin,
-  onRequestModificacionPin,
-  registroPinVerified  // ← NUEVO: si supervisor ya verificó PIN, no pedir de nuevo
+  onRequestModificacionPin
 }) => {
   const [showPinInput, setShowPinInput] = useState(null);
   const [pinInput, setPinInput] = useState('');
@@ -24,25 +23,19 @@ export const EmployeeSalesModal = ({
   const totalMonth = sales.reduce((sum, s) => sum + Number(s.chiles_sold), 0);
 
   const handleEditClick = (sale) => {
-    // Admin siempre entra sin PIN
+    // Admin — acceso total, sin PIN
     if (userRole === 'admin') {
       onEditSale(sale);
       return;
     }
 
-    // Supervisor: si es venta reciente, entra directo
+    // Supervisor — si es venta reciente (hoy o últimos 2 días hábiles), entra directo
     if (canEditWithoutPin(sale.sale_date)) {
       onEditSale(sale);
       return;
     }
 
-    // Es venta antigua — si ya tiene PIN verificado, dejar editar
-    if (registroPinVerified) {
-      onEditSale(sale);
-      return;
-    }
-
-    // Es venta antigua Y sin PIN verificado — pedir PIN 990830
+    // Venta antigua — SIEMPRE pedir PIN 990830 (sin duración, se pide cada vez)
     setShowPinInput(sale.sale_id);
     setPinInput('');
     setPinError(false);
@@ -87,7 +80,7 @@ export const EmployeeSalesModal = ({
           </span>
         </div>
 
-        {/* PIN Modal */}
+        {/* PIN Modal — solo aparece si showPinInput !== null */}
         {showPinInput !== null ? (
           <div className="p-6 space-y-4">
             <div className="text-center">
@@ -164,7 +157,7 @@ export const EmployeeSalesModal = ({
                 </div>
               ) : (
                 sales.map(sale => {
-                  const canEdit = userRole === 'admin' || canEditWithoutPin(sale.sale_date) || registroPinVerified;
+                  const canEdit = userRole === 'admin' || canEditWithoutPin(sale.sale_date);
 
                   return (
                     <div key={sale.sale_id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
