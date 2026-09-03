@@ -11,8 +11,8 @@ import {
 
 const router = express.Router();
 
-// Admin y Supervisor pueden ver el horario
-router.get("/:week_start_date", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getWeeklySchedule);
+// ruta para obtener el horario semanal — admin, supervisor, operativo
+router.get("/:week_start_date", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getWeeklySchedule);
 
 // Solo el Admin puede crear, publicar y subir PDFs
 router.post("/", authenticateAdmin, authorizePermissions('admin'), saveWeeklySchedule);

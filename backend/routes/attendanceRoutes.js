@@ -17,17 +17,17 @@ import {
 
 const router = express.Router();
 
-// Admin y Supervisor pueden ver asistencia
+// Rutas para obtener registros de asistencia
 router.get('/shifts', authenticateAdmin, getShifts);
 router.get('/employee/:employeeId', authenticateAdmin, getEmployeeAttendance);
 router.get('/date/:attendanceDate', authenticateAdmin, getDateAttendance);
 router.get('/range', authenticateAdmin, getRangeAttendance);
 router.get('/summary/month', authenticateAdmin, getMonthSummary);
 
-// Admin puede actualizar registros de asistencia
+// Ruta para actualizar un registro de asistencia existente
 router.put('/update-record', authenticateAdmin, updateAttendanceRecord);
 
-// Admin puede registrar asistencia
+// Rutas para registrar asistencia, ausencias e incapacidades
 router.post('/check-in', authenticateAdmin,  registerCheckIn);
 router.post('/check-out', authenticateAdmin,  registerCheckOut);
 router.post('/absence', authenticateAdmin,  registerAbsence);

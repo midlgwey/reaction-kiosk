@@ -14,23 +14,23 @@ import {
 
 const router = express.Router();
 
-// Ver temporada activa
-router.get("/goals/active", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getActiveSeason);
+// Ver temporada activa — admin, supervisor, operativo
+router.get("/goals/active", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getActiveSeason);
 
 // Crear temporada — solo admin
 router.post("/goals", authenticateAdmin, authorizePermissions('admin'), createSeason);
 
-// Metas mensuales
-router.get("/monthly-goals/:month", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getMonthlyGoals);
+// Metas mensuales — admin, supervisor, operativo (solo lectura)
+router.get("/monthly-goals/:month", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getMonthlyGoals);
 router.post("/monthly-goals", authenticateAdmin, authorizePermissions('admin'), saveMonthlyGoals);
 
-// Dashboard — acepta ?month=08
-router.get("/dashboard", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getSalesDashboard);
+// Dashboard — admin, supervisor, operativo
+router.get("/dashboard", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getSalesDashboard);
 
-// Ventas por empleado — acepta ?month=08
-router.get("/daily/:employee_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), getEmployeeSales);
+// Ventas por empleado — admin, supervisor, operativo (solo lectura)
+router.get("/daily/:employee_id", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getEmployeeSales);
 
-// Registrar y modificar ventas
+// Registrar y modificar ventas — solo admin y supervisor
 router.post("/daily", authenticateAdmin, authorizePermissions('admin', 'supervisor'), registerDailySale);
 router.patch("/daily/:sale_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), updateDailySale);
 
