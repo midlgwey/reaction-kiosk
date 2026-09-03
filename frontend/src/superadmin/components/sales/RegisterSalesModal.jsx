@@ -1,7 +1,6 @@
 // frontend/src/admin/components/sales/RegisterSaleModal.jsx
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { toast } from 'react-toastify';
 
 export const RegisterSaleModal = ({
   isOpen,
