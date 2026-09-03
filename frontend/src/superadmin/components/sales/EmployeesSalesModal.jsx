@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import './EmployeeSalesModal.css'; 
 
 export const EmployeeSalesModal = ({
   isOpen,
@@ -23,19 +24,16 @@ export const EmployeeSalesModal = ({
   const totalMonth = sales.reduce((sum, s) => sum + Number(s.chiles_sold), 0);
 
   const handleEditClick = (sale) => {
-    // Admin — acceso total, sin PIN
     if (userRole === 'admin') {
       onEditSale(sale);
       return;
     }
 
-    // Supervisor — si es venta reciente (hoy o últimos 2 días hábiles), entra directo
     if (canEditWithoutPin(sale.sale_date)) {
       onEditSale(sale);
       return;
     }
 
-    // Venta antigua — SIEMPRE pedir PIN 990830 (sin duración, se pide cada vez)
     setShowPinInput(sale.sale_id);
     setPinInput('');
     setPinError(false);
@@ -80,7 +78,7 @@ export const EmployeeSalesModal = ({
           </span>
         </div>
 
-        {/* PIN Modal — solo aparece si showPinInput !== null */}
+        {/* PIN Modal */}
         {showPinInput !== null ? (
           <div className="p-6 space-y-4">
             <div className="text-center">
@@ -104,7 +102,7 @@ export const EmployeeSalesModal = ({
                 autoComplete="new-password"
                 data-lpignore="true"
                 data-form-type="other"
-                className={`w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${
+                className={`pin-input w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${
                   pinError ? 'border-red-400 focus:border-red-400' : 'border-[#e0e0e0] focus:border-[#6A64F1]'
                 }`}
               />

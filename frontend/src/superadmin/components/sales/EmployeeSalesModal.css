@@ -1,0 +1,24 @@
+/* frontend/src/superadmin/components/sales/EmployeeSalesModal.css */
+ 
+/* Ocultar icono nativo de password en navegadores Webkit (Chrome, Safari, Edge) */
+.pin-input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+ 
+/* Ocultar spinner en inputs numéricos (no aplica a password, pero buena práctica) */
+.pin-input::-webkit-outer-spin-button,
+.pin-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+ 
+/* Firefox */
+.pin-input[type="number"] {
+  -moz-appearance: textfield;
+}
+ 
+/* Garantizar que el input de password no tenga padding extra por el icono nativo */
+.pin-input[type="password"] {
+  font-variant-numeric: tabular-nums;
+}
+ 
