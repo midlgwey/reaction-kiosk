@@ -10,6 +10,6 @@ router.post('/register-suggestion', createSuggestion);
 // Las siguientes rutas son solo para admin
 router.get('/feedback-stats', authenticateAdmin, authorizePermissions('admin'), getFeedbackStats);
 router.get('/view-suggestion', authenticateAdmin, authorizePermissions('admin'), getSuggestions);
-router.get('/latest-suggestions', authenticateAdmin, authorizePermissions('admin'), getLatestSuggestions);
+router.get('/latest-suggestions', authenticateAdmin, authorizePermissions('admin' , 'supervisor'), getLatestSuggestions);
 
 export default router;
