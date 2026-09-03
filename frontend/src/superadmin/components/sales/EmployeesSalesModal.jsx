@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-
+ 
 export const EmployeeSalesModal = ({
   isOpen,
   onClose,
@@ -17,23 +17,23 @@ export const EmployeeSalesModal = ({
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [showPin, setShowPin] = useState(false);
-
+ 
   if (!isOpen || !employee) return null;
-
+ 
   const totalMonth = sales.reduce((sum, s) => sum + Number(s.chiles_sold), 0);
-
+ 
   const handleEditClick = (sale) => {
     if (userRole === 'admin' || canEditWithoutPin(sale.sale_date)) {
       onEditSale(sale);
       return;
     }
-
+ 
     setShowPinInput(sale.sale_id);
     setPinInput('');
     setPinError(false);
     setShowPin(false);
   };
-
+ 
   const handleVerifyModificacionPin = () => {
     const isValid = onRequestModificacionPin(pinInput);
     if (isValid) {
@@ -47,7 +47,7 @@ export const EmployeeSalesModal = ({
       setPinError(true);
     }
   };
-
+ 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-[#e0e0e0] overflow-hidden">
@@ -64,14 +64,14 @@ export const EmployeeSalesModal = ({
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
-
+ 
         {/* Selector de mes + resumen */}
         <div className="px-6 py-3 border-b border-[#e0e0e0] bg-indigo-50 flex items-center justify-between">
           <span className="text-sm font-bold text-[#07074D]">
             Total: {totalMonth} chiles
           </span>
         </div>
-
+ 
         {/* PIN Modal */}
         {showPinInput !== null ? (
           <div className="p-6 space-y-4">
@@ -99,7 +99,7 @@ export const EmployeeSalesModal = ({
                 className={`w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${
                   pinError ? 'border-red-400 focus:border-red-400' : 'border-[#e0e0e0] focus:border-[#6A64F1]'
                 }`}
-              /> {/* <--- ¡Aquí faltaba cerrar el input con /> ! */}
+              />
               
               <button
                 type="button"
@@ -120,7 +120,7 @@ export const EmployeeSalesModal = ({
                 )}
               </button>
             </div>
-
+ 
             {pinError && (
               <p className="text-xs text-red-500 text-center">PIN incorrecto. Intenta de nuevo.</p>
             )}
@@ -150,7 +150,7 @@ export const EmployeeSalesModal = ({
               ) : (
                 sales.map(sale => {
                   const canEdit = userRole === 'admin' || canEditWithoutPin(sale.sale_date);
-
+ 
                   return (
                     <div key={sale.sale_id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                       <div className="flex-1">
@@ -184,7 +184,7 @@ export const EmployeeSalesModal = ({
                 })
               )}
             </div>
-
+ 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-[#e0e0e0] bg-gray-50 flex justify-end">
               <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-gray-100">
