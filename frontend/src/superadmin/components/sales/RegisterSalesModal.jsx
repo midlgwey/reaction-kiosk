@@ -1,6 +1,7 @@
 // frontend/src/admin/components/sales/RegisterSaleModal.jsx
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { toast } from 'react-toastify';
 
 export const RegisterSaleModal = ({
   isOpen,
@@ -50,7 +51,15 @@ export const RegisterSaleModal = ({
   };
 
   const handleSubmit = () => {
-    if (!employeeId || !saleDate || chilesSold === '') return;
+    const today = format(new Date(), 'yyyy-MM-dd');
+  
+  // Validar: fecha no puede ser futura
+  if (saleDate > today) {
+    toast.error('No puedes registrar ventas de fechas futuras');
+    return;
+  }
+  
+  if (!employeeId || !saleDate || chilesSold === '') return;
     onSave({
       employee_id: Number(employeeId),
       sale_date: saleDate,
@@ -182,7 +191,7 @@ export const RegisterSaleModal = ({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading || !employeeId || !saleDate || chilesSold === ''}
+              disabled={loading || !employeeId || !saleDate || chilesSold === '' || saleDate > format(new Date(), 'yyyy-MM-dd')}
               className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-[#6A64F1] hover:bg-[#5b55e0] disabled:opacity-50 transition-colors"
             >
               {loading ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Registrar Venta'}

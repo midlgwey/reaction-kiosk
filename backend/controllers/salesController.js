@@ -378,17 +378,26 @@ export const registerDailySale = async (req, res) => {
   const { employee_id, sale_date, chiles_sold, notes } = req.body;
   const registered_by = req.user.id;
 
+  // Validar campos obligatorios PRIMERO
   if (!employee_id || !sale_date || chiles_sold === undefined) {
     throw new BadRequestError("employee_id, sale_date y chiles_sold son obligatorios");
   }
 
+  // Validar formato de fecha
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(sale_date)) {
+    throw new BadRequestError("La fecha debe tener formato yyyy-MM-dd");
+  }
+
+  // Validar número de chiles
   if (chiles_sold < 0) {
     throw new BadRequestError("El número de chiles no puede ser negativo");
   }
 
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(sale_date)) {
-    throw new BadRequestError("La fecha debe tener formato yyyy-MM-dd");
+  //  Validar que no sea fecha futura
+  const today = new Date().toISOString().split('T')[0];
+  if (sale_date > today) {
+    throw new BadRequestError("No puedes registrar ventas de fechas futuras");
   }
 
   const empCheck = await db.execute({
@@ -454,8 +463,9 @@ export const updateDailySale = async (req, res) => {
     throw new BadRequestError("El número de chiles no puede ser negativo");
   }
 
+  // Verificar que la venta existe
   const check = await db.execute({
-    sql: `SELECT sale_id FROM daily_sales WHERE sale_id = ?`,
+    sql: `SELECT sale_date FROM daily_sales WHERE sale_id = ?`,
     args: [sale_id]
   });
 
@@ -463,6 +473,13 @@ export const updateDailySale = async (req, res) => {
     throw new BadRequestError("El registro de venta no existe");
   }
 
+  // Validar que no sea fecha futura
+  const today = new Date().toISOString().split('T')[0];
+  if (check.rows[0].sale_date > today) {
+    throw new BadRequestError("No puedes modificar ventas de fechas futuras");
+  }
+
+  // Actualizar
   await db.execute({
     sql: `UPDATE daily_sales 
           SET chiles_sold = ?, 
