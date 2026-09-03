@@ -127,13 +127,17 @@ function parseGeminiJson(rawText) {
 async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, table_number) {
   try {
 
-    // Normalizamos el texto y extraemos la parte que podría contener una queja
+    // 1. Detección por keywords: corre SIEMPRE, primero, sin depender de si Gemini
+    //    responde o falla. Esta es la garantía mínima de que una queja no se pierda.
     const lowerCaseText = normalizeText(commentText);
     const complaintSegment = extractComplaintSegment(commentText);
     const textToAnalyze = complaintSegment ? normalizeText(complaintSegment) : lowerCaseText;
     const keywordHit = criticalKeywords.some(keyword => textToAnalyze.includes(keyword));
 
-    // Construimos el prompt para Gemini, incluyendo la parte del comentario que podría contener una queja
+    // 2. Gemini: ahora se le pide JSON con sentimiento Y detección de queja mixta,
+    //    para que capte casos que el diccionario no puede anticipar (negaciones,
+    //    errores de dedo, frases nuevas). Si falla, no se pierde nada: seguimos
+    //    con el resultado del diccionario.
     const prompt = `Analiza este comentario de un cliente de un restaurante de comida mexicana en Tijuana, México. El cliente puede tener mala ortografía y ser una persona mayor (40-60+ años).
 
 Responde ÚNICAMENTE con este JSON, sin texto adicional, sin markdown, sin explicación:
@@ -161,7 +165,7 @@ Comentario: "${commentText}"`;
       console.error(`[ID: ${id}] Gemini falló (usando solo diccionario):`, aiError.status || aiError.message);
     }
 
-    // Combinamos ambas señales. Cualquiera de las dos puede disparar "Review".
+    // 3. Combinamos ambas señales. Cualquiera de las dos puede disparar "Review".
     const isHiddenComplaint = keywordHit || aiHasComplaint;
 
     let finalSentiment = aiSentiment;
