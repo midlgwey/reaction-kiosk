@@ -52,13 +52,12 @@ export const RegisterSaleModal = ({
   const handleSubmit = () => {
     const today = format(new Date(), 'yyyy-MM-dd');
   
-  // Validar: fecha no puede ser futura
-  if (saleDate > today) {
-    toast.error('No puedes registrar ventas de fechas futuras');
-    return;
-  }
+    if (saleDate > today) {
+      toast.error('No puedes registrar ventas de fechas futuras');
+      return;
+    }
   
-  if (!employeeId || !saleDate || chilesSold === '') return;
+    if (!employeeId || !saleDate || chilesSold === '') return;
     onSave({
       employee_id: Number(employeeId),
       sale_date: saleDate,
@@ -87,11 +86,18 @@ export const RegisterSaleModal = ({
                 Ingresa el PIN de supervisor para registrar ventas
               </p>
               
-              <div className="relative">
+              {/* autoComplete="off" en el div contenedor ayuda a que Chrome no asocie el campo */}
+              <div className="relative" autoComplete="off">
                 <input
                   type={showPin ? "text" : "password"}
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  name="kioskly-acceso-turno"
+                  id="kioskly-acceso-turno"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-form-type="other"
+                  aria-label="Código de acceso de turno"
                   placeholder=""
                   value={pin}
                   onChange={e => setPin(e.target.value)}
@@ -133,7 +139,6 @@ export const RegisterSaleModal = ({
           {/* Formulario — solo si está verificado o es admin */}
           {showForm && (
             <>
-              {/* Empleado */}
               <div>
                 <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Colaborador</label>
                 <select
@@ -151,7 +156,6 @@ export const RegisterSaleModal = ({
                 </select>
               </div>
 
-              {/* Fecha */}
               <div>
                 <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Fecha de Venta</label>
                 <input
@@ -162,7 +166,6 @@ export const RegisterSaleModal = ({
                 />
               </div>
 
-              {/* Chiles */}
               <div>
                 <label className="block text-xs font-bold text-[#07074D] uppercase mb-1">Chiles Vendidos</label>
                 <input
@@ -174,12 +177,10 @@ export const RegisterSaleModal = ({
                   className="w-full border border-[#e0e0e0] rounded-md p-2.5 text-sm text-[#6B7280] focus:border-[#6A64F1] focus:outline-none"
                 />
               </div>
-
             </>
           )}
         </div>
 
-        {/* Footer — solo si está verificado o es admin */}
         {showForm && (
           <div className="px-6 py-4 border-t border-[#e0e0e0] flex justify-end gap-3 bg-gray-50">
             <button

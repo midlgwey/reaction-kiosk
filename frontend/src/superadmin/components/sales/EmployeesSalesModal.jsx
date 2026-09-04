@@ -71,7 +71,7 @@ export const EmployeeSalesModal = ({
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
 
-        {/* Selector de mes + resumen */}
+        {/* Resumen */}
         <div className="px-6 py-3 border-b border-[#e0e0e0] bg-indigo-50 flex items-center justify-between">
           <span className="text-sm font-bold text-[#07074D]">
             Total: {totalMonth} chiles
@@ -90,18 +90,19 @@ export const EmployeeSalesModal = ({
               </p>
             </div>
             
-            {/* Contenedor relativo para input y ojito */}
-            <div className="relative">
+            <div className="relative" autoComplete="off">
               <input
                 type={showPin ? 'text' : 'password'}
-                name="no-autofill-pin"
+                name="kioskly-modificacion-turno"
+                id="kioskly-modificacion-turno"
+                autoComplete="off"
+                data-lpignore="true"
+                data-form-type="other"
+                aria-label="Código de modificación de turno"
                 placeholder=""
                 value={pinInput}
                 onChange={e => setPinInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleVerifyModificacionPin()}
-                autoComplete="new-password"
-                data-lpignore="true"
-                data-form-type="other"
                 className={`pin-input w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${
                   pinError ? 'border-red-400 focus:border-red-400' : 'border-[#e0e0e0] focus:border-[#6A64F1]'
                 }`}

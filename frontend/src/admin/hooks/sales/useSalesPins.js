@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const PIN_REGISTRO = '197006';
-const PIN_MODIFICACION = '990830';
+const PIN_MODIFICACION = '900830';
 const PIN_DURACION_MS = 3 * 60 * 60 * 1000; // 3 horas en ms
 
 // Calcula los días laborales (sin lunes) anteriores a hoy
