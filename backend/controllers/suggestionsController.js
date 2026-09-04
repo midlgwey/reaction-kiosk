@@ -62,6 +62,16 @@ const complaintConnectors = [
   "lo único", "deberian", "les falta"
 ];
 
+// Diccionario de palabras positivas (detecta sin depender de Gemini)
+const positiveKeywords = [
+  'rico', 'delicioso', 'excelente', 'perfecto', 'muy bien', 
+  'amable', 'rápido', 'rapido', 'limpio', 'sabroso', 'agradable', 
+  'todo bien', 'muy cordial', 'recomendable', 'exquisito', 'sazon',
+  'buena atencion', 'buen servicio', 'muy amable', 'atencion excelente',
+  'comida deliciosa', 'comida rica', 'desayunos excelente', 'desayunos exquisito',
+  'siempre delicioso', 'todo exquisito', 'gracias', 'felicidades'
+];
+
 //Extrae la parte del comentario que sigue después de conectores de contraste
 function extractComplaintSegment(text) {
   const lower = text.toLowerCase();
@@ -100,7 +110,7 @@ const criticalKeywords = [
   'esta duro','esta dura','esta crudo','esta cruda','esta frio','esta fria','esta quemado','esta quemada','esta incomible','esta incomida',
   // agregados: cubren casos reales que se estaban colando
   'salado','salada','insipido','insipida','seco','seca','aguado','aguada','picoso','picosa',
-  'no volveria','no regresaria','no recomiendo','muy caro','muy cara','carisimo','carisima',
+  'no volviera','no regresaria','no recomiendo','muy caro','muy cara','carisimo','carisima',
   'lento','lenta','despacio','muy tardado','mucha espera','larga espera'
 ];
 
@@ -127,14 +137,16 @@ function parseGeminiJson(rawText) {
 async function analyzeSentimentInBackground(id, commentText, shift, waiter_id, table_number) {
   try {
 
-    // 1. Detección por keywords: corre SIEMPRE, primero, sin depender de si Gemini
-    //    responde o falla. Esta es la garantía mínima de que una queja no se pierda.
+    // 1. Detección por keywords NEGATIVAS: corre SIEMPRE, primero
     const lowerCaseText = normalizeText(commentText);
     const complaintSegment = extractComplaintSegment(commentText);
     const textToAnalyze = complaintSegment ? normalizeText(complaintSegment) : lowerCaseText;
-    const keywordHit = criticalKeywords.some(keyword => textToAnalyze.includes(keyword));
+    const keywordHitNegative = criticalKeywords.some(keyword => textToAnalyze.includes(keyword));
 
-    // 2. Gemini: ahora se le pide JSON con sentimiento Y detección de queja mixta,
+    // 2. Detección por keywords POSITIVAS: corre SIEMPRE, para no perder positivos si Gemini falla
+    const keywordHitPositive = positiveKeywords.some(keyword => lowerCaseText.includes(normalizeText(keyword)));
+
+    // 3. Gemini: ahora se le pide JSON con sentimiento Y detección de queja mixta,
     //    para que capte casos que el diccionario no puede anticipar (negaciones,
     //    errores de dedo, frases nuevas). Si falla, no se pierde nada: seguimos
     //    con el resultado del diccionario.
@@ -165,15 +177,25 @@ Comentario: "${commentText}"`;
       console.error(`[ID: ${id}] Gemini falló (usando solo diccionario):`, aiError.status || aiError.message);
     }
 
-    // 3. Combinamos ambas señales. Cualquiera de las dos puede disparar "Review".
-    const isHiddenComplaint = keywordHit || aiHasComplaint;
+    // 4. LÓGICA DE DECISIÓN: combinar keywords + Gemini
+    let finalSentiment = "Neutral";
 
-    let finalSentiment = aiSentiment;
-    if (isHiddenComplaint && aiSentiment !== "Negative") {
-      finalSentiment = "Review";
+    // Si hay keywords NEGATIVOS, es Negative o Review
+    if (keywordHitNegative || aiHasComplaint) {
+      finalSentiment = aiSentiment === "Negative" ? "Negative" : "Review";
     }
-    // Si Gemini falló por completo y el diccionario no detectó nada, al menos
-    // marcamos "Neutral" en vez de dejarlo en "Pending" para siempre.
+    // Si NO hay negativos pero hay keywords POSITIVOS, es Positive
+    else if (keywordHitPositive && !keywordHitNegative) {
+      finalSentiment = "Positive";
+    }
+    // Si Gemini detectó positivo, confiar en Gemini
+    else if (aiSentiment === "Positive") {
+      finalSentiment = "Positive";
+    }
+    // Fallback: si nada coincide, Neutral
+    else {
+      finalSentiment = "Neutral";
+    }
 
     // Actualización del registro en la base de datos
     if (["Positive", "Negative", "Neutral", "Review"].includes(finalSentiment)) {
@@ -181,7 +203,7 @@ Comentario: "${commentText}"`;
         sql: `UPDATE suggestions SET sentiment = ? WHERE id = ?`,
         args: [finalSentiment, BigInt(id)]
       });
-      console.log(`[ID: ${id}] BD actualizada: ${finalSentiment}`);
+      console.log(`[ID: ${id}] BD actualizada: ${finalSentiment} (keywords_neg=${keywordHitNegative}, keywords_pos=${keywordHitPositive}, ai=${aiSentiment})`);
     }
 
     // Formateo y envío de la alerta vía Telegram
@@ -404,7 +426,7 @@ export const getLatestSuggestions = async (req, res) => {
         LEFT JOIN waiters w ON s.waiter_id = w.id
         WHERE (w.id IS NULL OR w.is_test = 0)  
         ORDER BY s.created_at DESC
-        LIMIT 5
+        LIMIT 10
       `
     });
     res.status(200).json(result.rows);

@@ -22,7 +22,7 @@ export default function LatestSuggestionsWidget() {
           Comentarios Recientes
         </h3>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          Últimos 5
+          Últimos 10
         </span>
       </div>
 
