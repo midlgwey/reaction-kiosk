@@ -92,15 +92,15 @@ export const SalesHeader = ({
               {monthConfigured ? ` Editar Metas — ${MONTH_NAMES[selectedMonth]}` : `Configurar Metas — ${MONTH_NAMES[selectedMonth]}`}
             </button>
           )}
-          {season && monthConfigured && (
-            <button
-              onClick={onRegisterSale}
-              disabled={loading}
-              className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
-            >
-              Registrar Venta Diaria
-            </button>
-          )}
+          {season && monthConfigured && userRole !== 'operativo' && (
+              <button
+                onClick={onRegisterSale}
+                disabled={loading}
+                className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
+              >
+                Registrar Venta Diaria
+              </button>
+            )}
         </div>
       </div>
     </div>

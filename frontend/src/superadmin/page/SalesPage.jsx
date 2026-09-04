@@ -238,7 +238,7 @@ export const SalesPage = () => {
         userRole={userRole}
         canEditWithoutPin={canEditWithoutPin}
         onRequestModificacionPin={verifyModificacionPin}
-        // ❌ NO pasar registroPinVerified aquí
+    
       />
 
 

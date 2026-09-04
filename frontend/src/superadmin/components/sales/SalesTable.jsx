@@ -34,21 +34,7 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, onEditSale }) 
           <p className="text-xs text-gray-500 mt-0.5">Meseros y capitanes — semáforo actualizado al día de hoy</p>
         </div>
 
-        {/* Buscador */}
-        <div className="relative w-full sm:max-w-xs">
-          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-            </svg>
-          </span>
-          <input
-            type="text"
-            placeholder="Buscar colaborador..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[#e0e0e0] bg-white py-2 pl-9 pr-4 text-sm text-[#6B7280] focus:border-[#6A64F1] focus:outline-none"
-          />
-        </div>
+      
       </div>
 
       {/* Tabla */}
@@ -129,13 +115,16 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, onEditSale }) 
                     {/* Acciones */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-3">
-                        <button
-                          onClick={() => onViewEmployee(emp)}
-                          className="text-xs font-semibold text-[#6A64F1] hover:text-[#5b55e0] hover:underline transition"
-                        >
-                          Ver historial
-                        </button>
-                        
+                        {userRole !== 'operativo' ? (
+                          <button
+                            onClick={() => onViewEmployee(emp)}
+                            className="text-xs font-semibold text-[#6A64F1] hover:text-[#5b55e0] hover:underline transition"
+                          >
+                            Ver historial
+                          </button>
+                          ) : (
+                            <span className="text-xs text-gray-300">—</span>
+                          )}
                       </div>
                     </td>
                   </tr>
