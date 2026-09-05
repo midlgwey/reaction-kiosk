@@ -208,10 +208,20 @@ const buildMonthSheet = (rows) => {
   });
 
   ws['!cols'] = [
-    { wch: 5 }, { wch: 12 }, { wch: 8 }, { wch: 14 },
+    { wch: 22 }, { wch: 12 }, { wch: 8 }, { wch: 14 },
     { wch: 8 }, { wch: 20 }, { wch: 14 }, { wch: 55 }
   ];
   updateRef(ws, row, 7);
+  // Merge de títulos de sección — debe ir DESPUÉS de updateRef para que ws['!ref'] exista
+  ws['!merges'] = [];
+  const wsRange = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = 0; R <= wsRange.e.r; R++) {
+    const addr = XLSX.utils.encode_cell({ r: R, c: 0 });
+    if (ws[addr] && typeof ws[addr].v === 'string' &&
+       (ws[addr].v.includes('COMENTARIOS DEL MES') || ws[addr].v.includes('DETALLE POR MESERO'))) {
+      ws['!merges'].push({ s: { r: R, c: 0 }, e: { r: R, c: 7 } });
+    }
+  }
   return ws;
 };
 

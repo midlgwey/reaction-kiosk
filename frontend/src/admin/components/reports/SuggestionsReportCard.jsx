@@ -1,30 +1,13 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ChatBubbleLeftRightIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import { useSuggestionsList } from "../../hooks/feedback/useSuggestionsList";
 import { downloadExcel } from "../../utils/excelExport";
 
-const SENTIMENT_LABEL = {
-  'Positive': 'Positivo',
-  'Negative': 'Negativo',
-  'Neutral':  'Neutral',
-  'Review':   'Queja Mixta',
-  'Pending':  'Pendiente'
-};
+
 
 export default function SuggestionsReportCard() {
   const { comments, loading } = useSuggestionsList();
-
-  // Estadísticas rápidas para mostrar en la card antes de descargar
-  const stats = useMemo(() => {
-    if (!comments || comments.length === 0) return null;
-    const total     = comments.length;
-    const positivos = comments.filter(c => c.sentiment === 'Positive').length;
-    const negativos = comments.filter(c => c.sentiment === 'Negative').length;
-    const mixtas    = comments.filter(c => c.sentiment === 'Review').length;
-    const neutrales = comments.filter(c => c.sentiment === 'Neutral' || c.sentiment === 'Pending').length;
-    return { total, positivos, negativos, mixtas, neutrales };
-  }, [comments]);
 
   const handleDownload = () => {
     if (loading) return toast.error('Cargando datos...');
@@ -45,17 +28,6 @@ export default function SuggestionsReportCard() {
         <p className="text-slate-500 text-sm mb-4 leading-relaxed">
           Descarga el historial completo de comentarios con análisis de sentimiento, organizado por mes.
         </p>
-
-
-
-        {/* Skeleton mientras carga */}
-        {loading && (
-          <div className="grid grid-cols-2 gap-2 mb-4 animate-pulse">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-14 bg-slate-100 rounded-xl" />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Botón */}

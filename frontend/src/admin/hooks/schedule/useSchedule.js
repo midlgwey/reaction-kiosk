@@ -5,7 +5,8 @@ import {
   saveSchedule,
   publishSchedule,
   uploadSchedulePdf,
-  fetchEmployees
+  fetchEmployees,
+  fetchShifts
 } from '../../services/scheduleService';
 
 export const useSchedule = () => {
