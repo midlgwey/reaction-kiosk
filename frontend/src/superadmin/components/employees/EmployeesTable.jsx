@@ -5,14 +5,8 @@ import { EmployeeFilters } from './EmployeeFilters';
 import { EmployeeRow } from './EmployeeRow';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import RegisterEmployees from './RegisterEmployees';
-
-const ChartLoading = () => (
-  <div className="h-full w-full min-h-[200px] flex flex-col items-center justify-center bg-white/40 rounded-xl animate-pulse border-2 border-dashed border-indigo-200">
-    <div className="w-10 h-10 border-4 border-indigo-300 border-t-indigo-600 rounded-full animate-spin mb-3" />
-    <span className="text-indigo-400 text-sm font-semibold tracking-wide">Cargando datos...</span>
-  </div>
-);
-
+import { ChartLoading } from '../../../admin/components/ui/ChartLoading';
+ 
 export default function EmployeesTable() {
   const {
     loading, error,
@@ -29,10 +23,10 @@ export default function EmployeesTable() {
     deleteConfirmModal, setDeleteConfirmModal,
     isDeleting, handleOpenDeleteConfirm, handleConfirmDelete,
   } = useEmployeesTable();
-
+ 
   return (
     <div className="w-full font-sans antialiased space-y-6">
-
+ 
       {/* Cabecera */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -51,10 +45,10 @@ export default function EmployeesTable() {
           Agregar Empleado
         </button>
       </div>
-
+ 
       {/* Mensaje de Error */}
       {error && <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>}
-
+ 
       {/* Filtros */}
       <EmployeeFilters
         searchTerm={searchTerm}           setSearchTerm={setSearchTerm}
@@ -64,7 +58,7 @@ export default function EmployeesTable() {
         hasActiveFilters={hasActiveFilters}
         onClearFilters={handleClearFilters}
       />
-
+ 
       {/* Tabla con Scroll Interno y Encabezado Fijo */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
         <div className="overflow-x-auto max-h-[58vh] overflow-y-auto">
@@ -109,7 +103,7 @@ export default function EmployeesTable() {
           </table>
         </div>
       </div>
-
+ 
       {/* Modal de confirmación de eliminación */}
       <DeleteConfirmModal
         isOpen={deleteConfirmModal.isOpen}
@@ -118,7 +112,7 @@ export default function EmployeesTable() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteConfirmModal({ isOpen: false, userId: null, userName: '' })}
       />
-
+ 
       {/* Modal de registro / edición */}
       <RegisterEmployees
         isOpen={isModalOpen}
@@ -128,7 +122,7 @@ export default function EmployeesTable() {
         mode={modalMode}
         isSubmitting={loading}
       />
-
+ 
     </div>
   );
 }

@@ -1,8 +1,10 @@
 // frontend/src/admin/components/attendance/AttendanceTable.jsx
 import React from 'react';
+import { ChartLoading } from '../../../admin/components/ui/ChartLoading';
 import { useAttendanceTable } from '../../../admin/hooks/attendance/useAttendanceTable';
 import { AttendanceFilters } from './AttendanceFilters';
 import { AttendanceRow } from './AttendanceRow';
+
 
 export default function AttendanceTable({ attendance, loading, onMarkAttendance }) {
   const {
@@ -42,8 +44,8 @@ export default function AttendanceTable({ attendance, loading, onMarkAttendance 
               {loading ? (
                 /* Loading */
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-500">
-                    Cargando asistencia...
+                  <td colSpan={6} className="py-6 px-4">
+                    <ChartLoading />
                   </td>
                 </tr>
               ) : filteredAndSortedAttendance.length === 0 ? (
