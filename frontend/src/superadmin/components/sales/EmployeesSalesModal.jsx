@@ -86,7 +86,7 @@ export const EmployeeSalesModal = ({
                 Este registro es anterior a los últimos 2 días hábiles.
               </p>
               <p className="text-sm text-gray-600 mt-2">
-                Ingresa el PIN de modificación para editar.
+                Ingresa el PIN de | Modificación | para poder editar.
               </p>
             </div>
             

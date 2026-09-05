@@ -12,8 +12,6 @@ export const GlobalProgressCard = ({
   const remainingGlobal = Math.max(globalGoal - globalSold, 0);
   const globalBarWidth = Math.min(globalPercentage, 100);
 
-  // Calcular progreso del equipo meseros
-  // El team_sold es el mismo global_sold ya que los chiles los registran meseros y capitanes
   const teamSold = globalSold;
   const teamPercentage = Math.round((teamSold / teamGoal) * 100);
   const teamBarWidth = Math.min(teamPercentage, 100);
@@ -36,9 +34,7 @@ export const GlobalProgressCard = ({
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
               Meta Global de Temporada
             </h2>
-            <p className="text-xs text-gray-700 mt-0.5">
-              Solo meseros y capitanes 
-            </p>
+            <p className="text-xs text-gray-700 mt-0.5">Solo meseros y capitanes</p>
           </div>
           <span className={`text-lg font-bold ${globalPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
             {globalPercentage}%
@@ -57,7 +53,7 @@ export const GlobalProgressCard = ({
             {globalSold.toLocaleString()} chiles vendidos
           </span>
           <span className="text-gray-700 text-md font-semibold">
-            Meta:  <span className='text-indigo-700 font-bold text-xl'> {globalGoal.toLocaleString()} </span>chiles
+            Meta: <span className="text-indigo-700 font-bold text-xl"> {globalGoal.toLocaleString()} </span>chiles
           </span>
         </div>
         <div className="mt-2 text-gray-700 text-md">
@@ -70,11 +66,9 @@ export const GlobalProgressCard = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-bold text-[#07074D] uppercase tracking-wider">
-               Meta del Equipo Meseros
+              Meta del Equipo Meseros
             </h2>
-            <p className="text-xs text-gray-700 mt-0.5">
-              Solo meseros y capitanes 
-            </p>
+            <p className="text-xs text-gray-700 mt-0.5">Solo meseros y capitanes</p>
           </div>
           <span className={`text-lg font-bold ${teamPercentage >= 100 ? 'text-green-600' : 'text-[#07074D]'}`}>
             {teamPercentage}%
@@ -93,7 +87,7 @@ export const GlobalProgressCard = ({
             {teamSold.toLocaleString()} chiles vendidos
           </span>
           <span className="text-gray-700 text-md font-semibold">
-            Meta: <span className='text-indigo-700 font-bold text-xl '> {teamGoal.toLocaleString()} </span>chiles
+            Meta: <span className="text-indigo-700 font-bold text-xl"> {teamGoal.toLocaleString()} </span>chiles
           </span>
         </div>
         <div className="mt-2 text-gray-700 text-md">
@@ -101,39 +95,44 @@ export const GlobalProgressCard = ({
         </div>
       </div>
 
-      {/* Días hábiles del mes */}
-      <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4 flex items-center justify-between">
-        <div>
+      {/* Días hábiles del mes — responsive */}
+      <div className="lg:col-span-2 bg-white rounded-xl border border-[#e0e0e0] shadow-lg p-4">
+
+        {/* Título — siempre arriba */}
+        <div className="mb-3">
           <p className="text-xs text-gray-600 uppercase tracking-wider font-bold">
             Días Hábiles del Mes (Mar — Dom)
           </p>
           <p className="text-sm text-gray-500 mt-0.5 font-semibold">
-            Lunes Cerrado, Martes a Domingo Abierto
+            Lunes Cerrado · Martes a Domingo Abierto
           </p>
         </div>
-        <div className="flex items-center gap-6">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-[#07074D]">
-              {elapsedWorkDays}
-              <span className="text-sm font-normal text-gray-600 ml-1">transcurridos</span>
-            </p>
+
+        {/* Números — en móvil: grid 3 columnas centradas; en desktop: fila con separadores */}
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-around">
+
+          <div className="flex flex-col items-center text-center p-2 bg-gray-50 rounded-lg sm:bg-transparent sm:p-0">
+            <p className="text-2xl font-bold text-[#07074D]">{elapsedWorkDays}</p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-tight">transcurridos</p>
           </div>
-          <div className="h-8 w-px bg-gray-200" />
-          <div className="text-center">
-            <p className="text-2xl font-bold text-[#07074D]">
-              {totalWorkDays}
-              <span className="text-sm font-normal text-gray-600 ml-1">totales del mes</span>
-            </p>
+
+          <div className="hidden sm:block h-8 w-px bg-gray-200" />
+
+          <div className="flex flex-col items-center text-center p-2 bg-gray-50 rounded-lg sm:bg-transparent sm:p-0">
+            <p className="text-2xl font-bold text-[#07074D]">{totalWorkDays}</p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-tight">totales del mes</p>
           </div>
-          <div className="h-8 w-px bg-gray-200" />
-          <div className="text-center">
-            <p className="text-2xl font-bold text-[#07074D]">
-              {totalWorkDays - elapsedWorkDays}
-              <span className="text-sm font-normal text-gray-600 ml-1">restantes</span>
-            </p>
+
+          <div className="hidden sm:block h-8 w-px bg-gray-200" />
+
+          <div className="flex flex-col items-center text-center p-2 bg-gray-50 rounded-lg sm:bg-transparent sm:p-0">
+            <p className="text-2xl font-bold text-[#07074D]">{totalWorkDays - elapsedWorkDays}</p>
+            <p className="text-xs text-gray-500 mt-0.5 leading-tight">restantes</p>
           </div>
+
         </div>
       </div>
+
     </div>
   );
 };
