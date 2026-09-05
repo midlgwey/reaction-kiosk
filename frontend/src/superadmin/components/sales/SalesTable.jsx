@@ -23,22 +23,6 @@ export const SalesTable = ({ employees, userRole, onViewEmployee, loading }) => 
             Meseros y capitanes — semáforo actualizado al día de hoy
           </p>
         </div>
-
-        {/* Buscador */}
-        <div className="relative w-full sm:max-w-xs">
-          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-            </svg>
-          </span>
-          <input
-            type="text"
-            placeholder="Buscar colaborador..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[#e0e0e0] bg-white py-2 pl-9 pr-4 text-sm text-[#6B7280] focus:border-[#6A64F1] focus:outline-none"
-          />
-        </div>
       </div>
 
       {/* Tabla */}
