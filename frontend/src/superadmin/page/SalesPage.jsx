@@ -7,7 +7,6 @@ import { RegisterSaleModal } from '../components/sales/RegisterSalesModal';
 import { EmployeeSalesModal } from '../components/sales/EmployeesSalesModal';
 import { MonthlyGoalsModal } from '../components/sales/MonthlyGoalsModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
-import { MonthSoldCard } from '../components/sales/MonthSoldCard';
 import { useSales } from '../../admin/hooks/sales/useSales';
 import { useSalesPins } from '../../admin/hooks/sales/useSalesPins';
 import toast from 'react-hot-toast';
@@ -190,10 +189,7 @@ export const SalesPage = () => {
             teamGoal={dashboard.season.team_goal}
             elapsedWorkDays={dashboard.elapsed_work_days}
             totalWorkDays={dashboard.total_work_days}
-          />
-
-          <MonthSoldCard
-            employees={dashboard.employees}
+            employees={dashboard.employees}  
             selectedMonth={selectedMonth}
           />
 

@@ -70,7 +70,7 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
         `}
       >
         {/* Encabezado */}
-        <div className="text-indigo-900 text-xl">
+        <div className="bg-indigo-400 text-xl">
           <div className="p-2.5 mt-1 flex items-center justify-between">
             <div className="flex items-center">
               <img 
