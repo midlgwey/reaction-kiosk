@@ -15,10 +15,10 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Barra Superior en Móvil (Botón Hamburguesa) */}
-        <header className="lg:hidden bg-indigo-600 text-white p-4 flex items-center justify-between shadow-md">
+        <header className="lg:hidden bg-indigo-400 text-white p-4 flex items-center justify-between shadow-md">
           <button 
             onClick={() => setOpen(true)}
-            className="p-1 rounded-md hover:bg-indigo-700 transition"
+            className="p-1 rounded-md bg-indigo-400 transition"
             aria-label="Abrir menú"
           >
             <Bars3Icon className="w-7 h-7" />

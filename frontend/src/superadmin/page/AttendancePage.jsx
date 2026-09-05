@@ -1,29 +1,26 @@
-// AttendancePage.jsx 
+// frontend/src/admin/pages/AttendancePage.jsx
 import React, { useState, useEffect } from 'react';
 import AttendanceTable from '../components/attendance/AttendanceTable';
 import AttendanceModal from '../components/attendance/AttendanceModal';
 import { useAttendance } from '../../admin/hooks/attendance/useAttendance';
 import { useEmployees } from '../../admin/hooks/employees/useEmployees';
+import { mergeAttendanceWithEmployees } from '../../admin/utils/attendanceUtils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 
 export default function AttendancePage() {
   const {
-    attendance,
-    loading,
-    error,
-    fetchShifts,
-    fetchAttendanceByDate,
-    updateRecord
+    attendance, loading, error,
+    fetchShifts, fetchAttendanceByDate, updateRecord
   } = useAttendance();
 
   const { employees, fetchEmployees } = useEmployees();
 
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen]   = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving]         = useState(false);
 
   // Cargar turnos y empleados al montar
   useEffect(() => {
@@ -37,24 +34,7 @@ export default function AttendancePage() {
   }, [selectedDate, fetchAttendanceByDate]);
 
   // Combinar empleados activos con asistencia del día
-  const attendanceWithAllEmployees = employees
-    .filter(emp => emp.status === 'Active')
-    .map(emp => {
-      const attendanceRecord = attendance.find(a => a.employee_id === emp.employee_id);
-      return {
-        attendance_id: attendanceRecord?.attendance_id,
-        employee_id: emp.employee_id,
-        first_name: emp.first_name,
-        last_name: emp.last_name,
-        position: emp.position,
-        work_area: emp.work_area,
-        check_in_time: attendanceRecord?.check_in_time || null,
-        check_out_time: attendanceRecord?.check_out_time || null,
-        shift_name: attendanceRecord?.shift_name || null,
-        status: attendanceRecord?.status || 'Presente',
-        justification: attendanceRecord?.justification || null
-      };
-    });
+  const attendanceWithAllEmployees = mergeAttendanceWithEmployees(employees, attendance);
 
   const handleOpenModal = (employee) => {
     setSelectedEmployee(employee);
@@ -70,9 +50,9 @@ export default function AttendancePage() {
     setIsSaving(true);
     try {
       const result = await updateRecord(data.employeeId, selectedDate, {
-        checkInTime: data.checkInTime,
-        checkOutTime: data.checkOutTime,
-        status: data.status,
+        checkInTime:   data.checkInTime,
+        checkOutTime:  data.checkOutTime,
+        status:        data.status,
         justification: data.justification
       });
 
@@ -91,7 +71,7 @@ export default function AttendancePage() {
   return (
     <div className="p-6 sm:p-8">
       <div className="mx-auto max-w-7xl">
-        
+
         {/* Encabezado */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -145,6 +125,7 @@ export default function AttendancePage() {
           employee={selectedEmployee}
           isLoading={isSaving}
         />
+
       </div>
     </div>
   );
