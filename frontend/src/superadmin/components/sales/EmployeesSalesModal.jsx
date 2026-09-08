@@ -86,13 +86,13 @@ export const EmployeeSalesModal = ({
                 Este registro es anterior a los últimos 2 días hábiles.
               </p>
               <p className="text-sm text-gray-600 mt-2">
-                Ingresa el PIN de | Modificación | para poder editar.
+                Ingresa el PIN de modificación para editar.
               </p>
             </div>
             
             <div className="relative" autoComplete="off">
               <input
-                type={showPin ? 'text' : 'password'}
+                type="text"
                 name="kioskly-modificacion-turno"
                 id="kioskly-modificacion-turno"
                 autoComplete="off"
@@ -103,7 +103,7 @@ export const EmployeeSalesModal = ({
                 value={pinInput}
                 onChange={e => setPinInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleVerifyModificacionPin()}
-                className={`pin-input w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${
+                className={`pin-input w-full border rounded-md p-3 pr-12 text-center text-lg tracking-widest font-bold focus:outline-none ${showPin ? "" : "pin-hidden"} ${
                   pinError ? 'border-red-400 focus:border-red-400' : 'border-[#e0e0e0] focus:border-[#6A64F1]'
                 }`}
               />
@@ -114,7 +114,17 @@ export const EmployeeSalesModal = ({
                 className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 tabIndex="-1"
               >
-                
+                {showPin ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
               </button>
             </div>
 

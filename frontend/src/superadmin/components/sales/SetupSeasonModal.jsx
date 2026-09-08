@@ -76,7 +76,7 @@ export const SetupSeasonModal = ({ isOpen, onClose, onSave, loading }) => {
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#e0e0e0] flex justify-between items-center bg-gray-50">
-          <h3 className="font-bold text-[#07074D] text-lg">⚙️ Configurar Temporada {seasonYear}</h3>
+          <h3 className="font-bold text-[#07074D] text-lg">Configurar Temporada {seasonYear}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
 

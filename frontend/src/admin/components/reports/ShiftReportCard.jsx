@@ -81,21 +81,7 @@ export default function ShiftReportCard() {
             </p>
         </div>
         
-        {/* Control de descarga */}
-        <button 
-            onClick={handleDownload}
-            disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-orange-900 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-orange-800 active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-            {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-            ) : (
-                <>
-                    <ArrowDownTrayIcon className="w-5 h-5" /> 
-                    Descargar Excel
-                </>
-            )}
-        </button>
+      
     </div>
   );
 }

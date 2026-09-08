@@ -1,5 +1,5 @@
 // frontend/src/admin/components/reports/SuggestionsReportCard.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChatBubbleLeftRightIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import { useSuggestionsList } from "../../hooks/feedback/useSuggestionsList";
@@ -7,26 +7,29 @@ import { downloadExcel, getAvailableMonths } from "../../utils/excelExport";
 
 export default function SuggestionsReportCard() {
   const { comments, loading } = useSuggestionsList();
-  const [selectedKey, setSelectedKey] = useState('');
+  const [selectedKey, setSelectedKey]     = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Meses disponibles — solo los que tienen comentarios
   const availableMonths = useMemo(() => getAvailableMonths(comments), [comments]);
 
   // Seleccionar el más reciente por defecto cuando cargan los datos
-  React.useEffect(() => {
+  useEffect(() => {
     if (availableMonths.length > 0 && !selectedKey) {
       setSelectedKey(availableMonths[0].key);
     }
-  }, [availableMonths]);
+  }, [availableMonths]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDownload = () => {
-    if (loading)  return toast.error('Cargando datos...');
+    if (loading || isDownloading) return;
     if (!selectedKey) return toast.error('Selecciona un mes para descargar');
     if (!comments || comments.length === 0) return toast.error('No hay sugerencias para exportar');
 
     const month = availableMonths.find(m => m.key === selectedKey);
+    setIsDownloading(true);
     downloadExcel(comments, selectedKey, `Reporte_Sugerencias_${month?.label || selectedKey}.xlsx`);
     toast.success('Reporte descargado');
+    setTimeout(() => setIsDownloading(false), 2000);
   };
 
   return (
@@ -54,7 +57,7 @@ export default function SuggestionsReportCard() {
           ) : (
             <select
               value={selectedKey}
-              onChange={(e) => setSelectedKey(e.target.value)}
+              onChange={e => setSelectedKey(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white"
             >
               {availableMonths.map(m => (
@@ -68,10 +71,10 @@ export default function SuggestionsReportCard() {
       {/* Botón */}
       <button
         onClick={handleDownload}
-        disabled={loading || !selectedKey || availableMonths.length === 0}
+        disabled={loading || !selectedKey || availableMonths.length === 0 || isDownloading}
         className="w-full py-3.5 rounded-xl bg-rose-900 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-rose-800 active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? (
+        {loading || isDownloading ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
           <>
