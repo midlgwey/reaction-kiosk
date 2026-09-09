@@ -9,7 +9,8 @@ import {
   saveMonthlyGoals,
   getEmployeeSales,
   registerDailySale,
-  updateDailySale
+  updateDailySale,
+  updateGlobalGoal
 } from "../controllers/salesController.js";
 
 const router = express.Router();
@@ -33,5 +34,7 @@ router.get("/daily/:employee_id", authenticateAdmin, authorizePermissions('admin
 // Registrar y modificar ventas — solo admin y supervisor
 router.post("/daily", authenticateAdmin, authorizePermissions('admin', 'supervisor'), registerDailySale);
 router.patch("/daily/:sale_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), updateDailySale);
+
+router.patch("/goals/global-goal", authenticateAdmin, authorizePermissions('admin'), updateGlobalGoal);
 
 export default router;

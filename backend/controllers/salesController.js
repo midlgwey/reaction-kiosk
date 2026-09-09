@@ -494,3 +494,48 @@ export const updateDailySale = async (req, res) => {
     message: "Venta actualizada correctamente"
   });
 };
+
+export const updateGlobalGoal = async (req, res) => {
+  const { new_global_goal } = req.body;
+ 
+  // Validar que sea un número positivo
+  if (new_global_goal === undefined || new_global_goal === null) {
+    throw new BadRequestError("La nueva meta global es obligatoria");
+  }
+ 
+  if (typeof new_global_goal !== 'number' || new_global_goal < 0) {
+    throw new BadRequestError("La nueva meta global debe ser un número positivo");
+  }
+ 
+  const today = new Date().toISOString().split('T')[0];
+ 
+  // Verificar que hay una temporada activa
+  const seasonResult = await db.execute({
+    sql: `SELECT goal_id, global_goal FROM sales_goals 
+          WHERE season_start <= ? AND season_end >= ?
+          LIMIT 1`,
+    args: [today, today]
+  });
+ 
+  if (seasonResult.rows.length === 0) {
+    throw new BadRequestError("No hay temporada activa para modificar");
+  }
+ 
+  const season = seasonResult.rows[0];
+  const goal_id = season.goal_id;
+  const old_goal = season.global_goal;
+ 
+  // Actualizar
+  await db.execute({
+    sql: `UPDATE sales_goals SET global_goal = ? WHERE goal_id = ?`,
+    args: [new_global_goal, goal_id]
+  });
+ 
+  res.status(StatusCodes.OK).json({
+    message: "Meta global actualizada correctamente",
+    goal_id,
+    old_goal,
+    new_global_goal,
+    success: true
+  });
+};

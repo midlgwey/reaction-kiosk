@@ -20,13 +20,15 @@ export const useSalesPage = () => {
   const {
     loading, dashboard, employeeSales, monthlyGoals,
     getDashboard, getActiveSeason, getEmployeeSales,
-    registerSale, updateSale, setupSeason, saveMonthGoals, getMonthlyGoals
+    registerSale, updateSale, setupSeason, saveMonthGoals, getMonthlyGoals,
+    updateGlobalGoal
   } = useSales();
 
   const [selectedMonth, setSelectedMonth]           = useState(getCurrentMonth());
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen]     = useState(false);
   const [isMonthlyGoalsOpen, setIsMonthlyGoalsOpen] = useState(false);
+  const [isGlobalGoalOpen, setIsGlobalGoalOpen]     = useState(false);
   const [selectedEmployee, setSelectedEmployee]     = useState(null);
   const [editingSale, setEditingSale]               = useState(null);
 
@@ -110,6 +112,17 @@ export const useSalesPage = () => {
     }
   };
 
+  const handleUpdateGlobalGoal = async (payload) => {
+    try {
+      await updateGlobalGoal(payload);
+      toast.success('Meta global actualizada correctamente');
+      setIsGlobalGoalOpen(false);
+      await loadDashboard(selectedMonth);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al actualizar la meta global');
+    }
+  };
+
   return {
     // Roles y pins
     userRole,
@@ -122,12 +135,14 @@ export const useSalesPage = () => {
     isRegisterModalOpen, setIsRegisterModalOpen,
     isSetupModalOpen,    setIsSetupModalOpen,
     isMonthlyGoalsOpen,  setIsMonthlyGoalsOpen,
+    isGlobalGoalOpen,    setIsGlobalGoalOpen,
     selectedEmployee,    setSelectedEmployee,
     editingSale,         setEditingSale,
     // Handlers
     handleOpenEmployee, handleOpenRegister,
     handleSaveSale,     handleSetupSeason,
     handleOpenMonthlyGoals, handleSaveMonthlyGoals,
+    handleUpdateGlobalGoal,
     // Derivados
     noActiveSeason:   !dashboard && !loading,
     monthConfigured:  dashboard?.month_configured  || false,

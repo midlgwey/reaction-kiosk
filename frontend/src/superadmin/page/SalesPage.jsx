@@ -6,6 +6,7 @@ import { SalesTable } from '../components/sales/SalesTable';
 import { RegisterSaleModal } from '../components/sales/RegisterSalesModal';
 import { EmployeeSalesModal } from '../components/sales/EmployeesSalesModal';
 import { MonthlyGoalsModal } from '../components/sales/MonthlyGoalsModal';
+import { GlobalGoalModal } from '../components/sales/GlobalGoalModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
 import { useSalesPage } from '../../admin/hooks/sales/useSalesPage';
 import { MONTH_OPTIONS } from '../../admin/utils/salesUtils';
@@ -23,19 +24,21 @@ export default function SalesPage() {
     isRegisterModalOpen, setIsRegisterModalOpen,
     isSetupModalOpen,    setIsSetupModalOpen,
     isMonthlyGoalsOpen,  setIsMonthlyGoalsOpen,
+    isGlobalGoalOpen,    setIsGlobalGoalOpen,
     selectedEmployee,    setSelectedEmployee,
     editingSale,         setEditingSale,
     // Handlers
     handleOpenEmployee, handleOpenRegister,
     handleSaveSale,     handleSetupSeason,
     handleOpenMonthlyGoals, handleSaveMonthlyGoals,
+    handleUpdateGlobalGoal,
     // Derivados
     noActiveSeason, monthConfigured, monthsConfigured,
   } = useSalesPage();
-
+ 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-
+ 
       {/* Encabezado y selector de mes */}
       <SalesHeader
         season={dashboard?.season}
@@ -47,11 +50,12 @@ export default function SalesPage() {
         onRegisterSale={() => handleOpenRegister(null)}
         onSetupSeason={() => setIsSetupModalOpen(true)}
         onConfigMonthlyGoals={handleOpenMonthlyGoals}
+        onOpenGlobalGoal={() => setIsGlobalGoalOpen(true)}
         noActiveSeason={noActiveSeason}
         monthConfigured={monthConfigured}
         loading={loading}
       />
-
+ 
       {dashboard ? (
         <>
           {/* Aviso mes sin configurar */}
@@ -70,7 +74,7 @@ export default function SalesPage() {
               )}
             </div>
           )}
-
+ 
           {/* Cards de progreso */}
           <GlobalProgressCard
             globalGoal={dashboard.season.global_goal}
@@ -82,7 +86,7 @@ export default function SalesPage() {
             employees={dashboard.employees}
             selectedMonth={selectedMonth}
           />
-
+ 
           {/* Tabla de rendimiento individual */}
           <SalesTable
             employees={dashboard.employees}
@@ -106,7 +110,7 @@ export default function SalesPage() {
           )}
         </div>
       )}
-
+ 
       {/* Modal — Registrar / Editar venta */}
       <RegisterSaleModal
         isOpen={isRegisterModalOpen}
@@ -121,7 +125,7 @@ export default function SalesPage() {
         onVerifyPin={verifyRegistroPin}
         pinError={registroPinError}
       />
-
+ 
       {/* Modal — Historial de ventas del empleado */}
       <EmployeeSalesModal
         isOpen={!!selectedEmployee}
@@ -136,7 +140,7 @@ export default function SalesPage() {
         canEditWithoutPin={canEditWithoutPin}
         onRequestModificacionPin={verifyModificacionPin}
       />
-
+ 
       {/* Modal — Configurar temporada */}
       <SetupSeasonModal
         isOpen={isSetupModalOpen}
@@ -144,7 +148,7 @@ export default function SalesPage() {
         onSave={handleSetupSeason}
         loading={loading}
       />
-
+ 
       {/* Modal — Metas mensuales */}
       <MonthlyGoalsModal
         isOpen={isMonthlyGoalsOpen}
@@ -156,7 +160,16 @@ export default function SalesPage() {
         season={dashboard?.season}
         loading={loading}
       />
-
+ 
+      {/* Modal — Cambiar Meta Global */}
+      <GlobalGoalModal
+        isOpen={isGlobalGoalOpen}
+        onClose={() => setIsGlobalGoalOpen(false)}
+        onSave={handleUpdateGlobalGoal}
+        currentGoal={dashboard?.season?.global_goal}
+        loading={loading}
+      />
+ 
     </div>
   );
-};
+}

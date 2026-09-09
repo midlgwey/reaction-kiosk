@@ -10,3 +10,5 @@ export const createSeason          = (payload) => api.post('/sales/goals', paylo
 export const saveMonthlyGoals      = (payload) => api.post('/sales/monthly-goals', payload);
 export const postDailySale         = (payload) => api.post('/sales/daily', payload);
 export const patchDailySale        = (sale_id, payload) => api.patch(`/sales/daily/${sale_id}`, payload);
+
+export const patchGlobalGoal = (payload) => api.patch('/sales/goals/global-goal', payload);

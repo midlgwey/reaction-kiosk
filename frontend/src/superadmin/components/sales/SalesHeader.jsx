@@ -1,3 +1,4 @@
+// frontend/src/admin/components/sales/SalesHeader.jsx
 import React from 'react';
 
 const MONTH_NAMES = { '08': 'Agosto', '09': 'Septiembre', '10': 'Octubre' };
@@ -12,6 +13,7 @@ export const SalesHeader = ({
   onRegisterSale,
   onSetupSeason,
   onConfigMonthlyGoals,
+  onOpenGlobalGoal,
   noActiveSeason,
   monthConfigured,
   loading
@@ -22,10 +24,12 @@ export const SalesHeader = ({
       {/* Fila 1 — Título */}
       <div>
         <div className="flex items-center gap-3">
-           <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4"> Control de Ventas | Chiles en Nogada</h1>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4">
+            Control de Ventas | Chiles en Nogada
+          </h1>
           {season ? (
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-green-100 text-green-700">
-             Temporada Activa
+              Temporada Activa
             </span>
           ) : (
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-gray-100 text-gray-500">
@@ -33,9 +37,9 @@ export const SalesHeader = ({
             </span>
           )}
         </div>
-         <p className="text-sm mt-2 text-gray-500">
-            Control de ventas, metas mensuales y semáforo de rendimiento por empleado.
-          </p>
+        <p className="text-sm mt-2 text-gray-500">
+          Control de ventas, metas mensuales y semáforo de rendimiento por empleado.
+        </p>
       </div>
 
       {/* Fila 2 — Selector horizontal de meses + botones */}
@@ -89,18 +93,29 @@ export const SalesHeader = ({
                   : 'bg-amber-500 hover:bg-amber-600 text-white'
               }`}
             >
-              {monthConfigured ? ` Editar Metas — ${MONTH_NAMES[selectedMonth]}` : `Configurar Metas — ${MONTH_NAMES[selectedMonth]}`}
+              {monthConfigured ? `Editar Metas — ${MONTH_NAMES[selectedMonth]}` : `Configurar Metas — ${MONTH_NAMES[selectedMonth]}`}
             </button>
           )}
+
+          {userRole === 'admin' && season && (
+            <button
+              onClick={onOpenGlobalGoal}
+              disabled={loading}
+              className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
+            >
+              Modificar Meta Global
+            </button>
+          )}
+
           {season && monthConfigured && userRole !== 'operativo' && (
-              <button
-                onClick={onRegisterSale}
-                disabled={loading}
-                className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
-              >
-                Registrar Venta Diaria
-              </button>
-            )}
+            <button
+              onClick={onRegisterSale}
+              disabled={loading}
+              className="bg-[#6A64F1] hover:bg-[#5b55e0] text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm disabled:opacity-50"
+            >
+              Registrar Venta Diaria
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -8,7 +8,8 @@ import {
   createSeason,
   saveMonthlyGoals,
   postDailySale,
-  patchDailySale
+  patchDailySale,
+  patchGlobalGoal
 } from '../../services/salesService';
 
 export const useSales = () => {
@@ -138,6 +139,20 @@ export const useSales = () => {
     }
   }, []);
 
+  const updateGlobalGoal = useCallback(async (payload) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await patchGlobalGoal(payload);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al actualizar la meta global');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     error,
@@ -152,6 +167,7 @@ export const useSales = () => {
     setupSeason,
     saveMonthGoals,
     registerSale,
-    updateSale
+    updateSale,
+    updateGlobalGoal
   };
 };
