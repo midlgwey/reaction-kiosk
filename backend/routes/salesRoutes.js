@@ -10,7 +10,11 @@ import {
   getEmployeeSales,
   registerDailySale,
   updateDailySale,
-  updateGlobalGoal
+  updateGlobalGoal,
+  registerAdminSale,
+  getAdminSales,
+  updateAdminSale,
+  deleteAdminSale
 } from "../controllers/salesController.js";
 
 const router = express.Router();
@@ -31,10 +35,17 @@ router.get("/dashboard", authenticateAdmin, authorizePermissions('admin', 'super
 // Ventas por empleado — admin, supervisor, operativo (solo lectura)
 router.get("/daily/:employee_id", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getEmployeeSales);
 
-// Registrar y modificar ventas — solo admin y supervisor
+// Registrar y modificar ventas de empleados — solo admin y supervisor
 router.post("/daily", authenticateAdmin, authorizePermissions('admin', 'supervisor'), registerDailySale);
 router.patch("/daily/:sale_id", authenticateAdmin, authorizePermissions('admin', 'supervisor'), updateDailySale);
 
+// Ventas del admin — solo admin
+router.post("/admin-sales", authenticateAdmin, authorizePermissions('admin'), registerAdminSale);
+router.get("/admin-sales", authenticateAdmin, authorizePermissions('admin'), getAdminSales);
+router.patch("/admin-sales/:admin_sale_id", authenticateAdmin, authorizePermissions('admin'), updateAdminSale);
+router.delete("/admin-sales/:admin_sale_id", authenticateAdmin, authorizePermissions('admin'), deleteAdminSale);
+
+// Meta global — solo admin
 router.patch("/goals/global-goal", authenticateAdmin, authorizePermissions('admin'), updateGlobalGoal);
 
 export default router;

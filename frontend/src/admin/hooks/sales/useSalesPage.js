@@ -18,22 +18,28 @@ export const useSalesPage = () => {
   } = useSalesPins();
 
   const {
-    loading, dashboard, employeeSales, monthlyGoals,
-    getDashboard, getActiveSeason, getEmployeeSales,
+    loading, dashboard, employeeSales, adminSales, monthlyGoals,
+    getDashboard, getActiveSeason, getEmployeeSales, getAdminSalesHistory,
     registerSale, updateSale, setupSeason, saveMonthGoals, getMonthlyGoals,
-    updateGlobalGoal
+    updateGlobalGoal, registerAdminSale, updateAdminSaleRecord, removeAdminSale
   } = useSales();
 
   const [selectedMonth, setSelectedMonth]           = useState(getCurrentMonth());
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isAdminChilesModalOpen, setIsAdminChilesModalOpen] = useState(false);
+  const [isAdminHistoryOpen, setIsAdminHistoryOpen] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen]     = useState(false);
   const [isMonthlyGoalsOpen, setIsMonthlyGoalsOpen] = useState(false);
   const [isGlobalGoalOpen, setIsGlobalGoalOpen]     = useState(false);
   const [selectedEmployee, setSelectedEmployee]     = useState(null);
   const [editingSale, setEditingSale]               = useState(null);
+  const [editingAdminSale, setEditingAdminSale]     = useState(null);
 
   useEffect(() => {
     loadDashboard(selectedMonth);
+    if (userRole === 'admin') {
+      loadAdminSalesHistory(selectedMonth);
+    }
   }, [selectedMonth]);
 
   const loadDashboard = async (month) => {
@@ -43,6 +49,14 @@ export const useSalesPage = () => {
       if (err.response?.status === 404) {
         try { await getActiveSeason(); } catch {}
       }
+    }
+  };
+
+  const loadAdminSalesHistory = async (month) => {
+    try {
+      await getAdminSalesHistory(month);
+    } catch {
+      console.error('Error loading admin sales history');
     }
   };
 
@@ -82,6 +96,59 @@ export const useSalesPage = () => {
       toast.error(err.response?.data?.message || 'Error al guardar la venta');
     }
   };
+
+  // ─── Admin Sales Handlers ─────────────────────────────────────────
+  const handleOpenAdminChilesModal = () => {
+    setEditingAdminSale(null);
+    setIsAdminChilesModalOpen(true);
+  };
+
+  const handleOpenAdminHistory = async () => {
+    try {
+      await loadAdminSalesHistory(selectedMonth);
+      setIsAdminHistoryOpen(true);
+    } catch {
+      toast.error('Error al cargar el historial');
+    }
+  };
+
+  const handleSaveAdminSale = async (payload) => {
+    try {
+      if (editingAdminSale?.admin_sale_id) {
+        await updateAdminSaleRecord(editingAdminSale.admin_sale_id, payload);
+        toast.success('Registro actualizado correctamente');
+      } else {
+        await registerAdminSale(payload);
+        toast.success('Chiles registrados correctamente');
+      }
+      setIsAdminChilesModalOpen(false);
+      setEditingAdminSale(null);
+      await loadDashboard(selectedMonth);
+      await loadAdminSalesHistory(selectedMonth);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al guardar');
+    }
+  };
+
+  const handleEditAdminSale = (adminSale) => {
+    setEditingAdminSale(adminSale);
+    setIsAdminChilesModalOpen(true);
+  };
+
+  const handleDeleteAdminSale = async (admin_sale_id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este registro?')) return;
+
+    try {
+      await removeAdminSale(admin_sale_id);
+      toast.success('Registro eliminado correctamente');
+      await loadAdminSalesHistory(selectedMonth);
+      await loadDashboard(selectedMonth);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al eliminar');
+    }
+  };
+
+  // ─── End Admin Sales Handlers ────────────────────────────────────
 
   const handleSetupSeason = async (payload) => {
     try {
@@ -129,20 +196,26 @@ export const useSalesPage = () => {
     registroPinVerified, registroPinExpireTime, registroPinError,
     verifyRegistroPin, verifyModificacionPin, canEditWithoutPin,
     // Estado del dashboard
-    loading, dashboard, employeeSales, monthlyGoals,
+    loading, dashboard, employeeSales, adminSales, monthlyGoals,
     selectedMonth, handleMonthChange,
     // Modales
     isRegisterModalOpen, setIsRegisterModalOpen,
+    isAdminChilesModalOpen, setIsAdminChilesModalOpen,
+    isAdminHistoryOpen, setIsAdminHistoryOpen,
     isSetupModalOpen,    setIsSetupModalOpen,
     isMonthlyGoalsOpen,  setIsMonthlyGoalsOpen,
     isGlobalGoalOpen,    setIsGlobalGoalOpen,
     selectedEmployee,    setSelectedEmployee,
     editingSale,         setEditingSale,
-    // Handlers
+    editingAdminSale,    setEditingAdminSale,
+    // Handlers empleados
     handleOpenEmployee, handleOpenRegister,
     handleSaveSale,     handleSetupSeason,
     handleOpenMonthlyGoals, handleSaveMonthlyGoals,
     handleUpdateGlobalGoal,
+    // Handlers admin sales
+    handleOpenAdminChilesModal, handleOpenAdminHistory,
+    handleSaveAdminSale, handleEditAdminSale, handleDeleteAdminSale,
     // Derivados
     noActiveSeason:   !dashboard && !loading,
     monthConfigured:  dashboard?.month_configured  || false,

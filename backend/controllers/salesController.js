@@ -311,14 +311,20 @@ export const getSalesDashboard = async (req, res) => {
     };
   });
 
-  // Meta global — total de la temporada
-  const globalSoldResult = await db.execute({
-    sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS global_sold
-          FROM daily_sales WHERE goal_id = ?`,
-    args: [season.goal_id]
-  });
+  // Meta global — total de la temporada (daily_sales + admin_sales)
+const dailySalesResult = await db.execute({
+  sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
+        FROM daily_sales WHERE goal_id = ?`,
+  args: [season.goal_id]
+});
 
-  const global_sold = Number(globalSoldResult.rows[0].global_sold);
+const adminSalesResult = await db.execute({
+  sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
+        FROM admin_sales WHERE goal_id = ?`,
+  args: [season.goal_id]
+});
+
+const global_sold = Number(dailySalesResult.rows[0].total) + Number(adminSalesResult.rows[0].total);
   const global_percentage = Math.round((global_sold / season.global_goal) * 100);
 
   res.status(StatusCodes.OK).json({
@@ -537,5 +543,185 @@ export const updateGlobalGoal = async (req, res) => {
     old_goal,
     new_global_goal,
     success: true
+  });
+};
+
+// ─── POST /sales/admin-sales ─────────────────────────────────────────────────
+export const registerAdminSale = async (req, res) => {
+  const { sale_date, chiles_sold, notes } = req.body;
+  const admin_id = req.user.id;
+
+  // Validar campos obligatorios
+  if (!sale_date || chiles_sold === undefined) {
+    throw new BadRequestError("sale_date y chiles_sold son obligatorios");
+  }
+
+  // Validar formato de fecha
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(sale_date)) {
+    throw new BadRequestError("La fecha debe tener formato yyyy-MM-dd");
+  }
+
+  // Validar número de chiles
+  if (chiles_sold < 0) {
+    throw new BadRequestError("El número de chiles no puede ser negativo");
+  }
+
+  // Validar que no sea fecha futura
+  const today = new Date().toISOString().split('T')[0];
+  if (sale_date > today) {
+    throw new BadRequestError("No puedes registrar chiles de fechas futuras");
+  }
+
+  // Verificar que hay temporada activa en esa fecha
+  const seasonResult = await db.execute({
+    sql: `SELECT goal_id FROM sales_goals
+          WHERE season_start <= ? AND season_end >= ?
+          LIMIT 1`,
+    args: [sale_date, sale_date]
+  });
+
+  if (seasonResult.rows.length === 0) {
+    throw new BadRequestError("La fecha no corresponde a ninguna temporada activa");
+  }
+
+  const goal_id = seasonResult.rows[0].goal_id;
+
+  // Insertar registro (sin UNIQUE constraint, admin puede registrar múltiples veces por día)
+  await db.execute({
+    sql: `INSERT INTO admin_sales (admin_id, goal_id, sale_date, chiles_sold, notes)
+          VALUES (?, ?, ?, ?, ?)`,
+    args: [admin_id, goal_id, sale_date, chiles_sold, notes || null]
+  });
+
+  res.status(StatusCodes.CREATED).json({
+    message: "Chiles registrados correctamente"
+  });
+};
+
+// ─── GET /sales/admin-sales ──────────────────────────────────────────────────
+export const getAdminSales = async (req, res) => {
+  const admin_id = req.user.id;
+  const { month } = req.query;
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Verificar temporada activa
+  const seasonResult = await db.execute({
+    sql: `SELECT goal_id FROM sales_goals 
+          WHERE season_start <= ? AND season_end >= ?
+          LIMIT 1`,
+    args: [today, today]
+  });
+
+  if (seasonResult.rows.length === 0) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "No hay temporada activa."
+    });
+  }
+
+  const goal_id = seasonResult.rows[0].goal_id;
+  const filterMonth = month || String(new Date().getMonth() + 1).padStart(2, '0');
+  const filterYear = String(new Date().getFullYear());
+
+  const salesResult = await db.execute({
+    sql: `SELECT 
+            admin_sale_id,
+            admin_id,
+            sale_date,
+            chiles_sold,
+            notes,
+            created_at,
+            updated_at
+          FROM admin_sales
+          WHERE admin_id = ?
+            AND goal_id = ?
+            AND strftime('%m', sale_date) = ?
+            AND strftime('%Y', sale_date) = ?
+          ORDER BY sale_date DESC`,
+    args: [admin_id, goal_id, filterMonth, filterYear]
+  });
+
+  res.status(StatusCodes.OK).json({
+    admin_sales: salesResult.rows
+  });
+};
+
+// ─── PATCH /sales/admin-sales/:admin_sale_id ─────────────────────────────────
+export const updateAdminSale = async (req, res) => {
+  const { admin_sale_id } = req.params;
+  const { chiles_sold, notes } = req.body;
+  const admin_id = req.user.id;
+
+  if (chiles_sold === undefined) {
+    throw new BadRequestError("chiles_sold es obligatorio para modificar");
+  }
+
+  if (chiles_sold < 0) {
+    throw new BadRequestError("El número de chiles no puede ser negativo");
+  }
+
+  // Verificar que el registro existe y pertenece al admin
+  const check = await db.execute({
+    sql: `SELECT sale_date FROM admin_sales 
+          WHERE admin_sale_id = ? AND admin_id = ?`,
+    args: [admin_sale_id, admin_id]
+  });
+
+  if (check.rows.length === 0) {
+    throw new BadRequestError("El registro no existe o no tienes permisos para editarlo");
+  }
+
+  // Validar que no sea fecha futura
+  const today = new Date().toISOString().split('T')[0];
+  if (check.rows[0].sale_date > today) {
+    throw new BadRequestError("No puedes modificar registros de fechas futuras");
+  }
+
+  // Actualizar
+  await db.execute({
+    sql: `UPDATE admin_sales 
+          SET chiles_sold = ?, 
+              notes = ?,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE admin_sale_id = ?`,
+    args: [chiles_sold, notes || null, admin_sale_id]
+  });
+
+  res.status(StatusCodes.OK).json({
+    message: "Registro actualizado correctamente"
+  });
+};
+
+// ─── DELETE /sales/admin-sales/:admin_sale_id ────────────────────────────────
+export const deleteAdminSale = async (req, res) => {
+  const { admin_sale_id } = req.params;
+  const admin_id = req.user.id;
+
+  // Verificar que el registro existe y pertenece al admin
+  const check = await db.execute({
+    sql: `SELECT sale_date FROM admin_sales 
+          WHERE admin_sale_id = ? AND admin_id = ?`,
+    args: [admin_sale_id, admin_id]
+  });
+
+  if (check.rows.length === 0) {
+    throw new BadRequestError("El registro no existe o no tienes permisos para eliminarlo");
+  }
+
+  // Validar que no sea fecha futura
+  const today = new Date().toISOString().split('T')[0];
+  if (check.rows[0].sale_date > today) {
+    throw new BadRequestError("No puedes eliminar registros de fechas futuras");
+  }
+
+  // Eliminar
+  await db.execute({
+    sql: `DELETE FROM admin_sales WHERE admin_sale_id = ?`,
+    args: [admin_sale_id]
+  });
+
+  res.status(StatusCodes.OK).json({
+    message: "Registro eliminado correctamente"
   });
 };

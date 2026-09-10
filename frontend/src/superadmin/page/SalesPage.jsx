@@ -8,6 +8,8 @@ import { EmployeeSalesModal } from '../components/sales/EmployeesSalesModal';
 import { MonthlyGoalsModal } from '../components/sales/MonthlyGoalsModal';
 import { GlobalGoalModal } from '../components/sales/GlobalGoalModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
+import { AdminChilesModal } from '../components/sales/AdminChilesModal';
+import { AdminSalesHistoryTable } from '../components/sales/AdminSalesHistoryTable';
 import { useSalesPage } from '../../admin/hooks/sales/useSalesPage';
 import { MONTH_OPTIONS } from '../../admin/utils/salesUtils';
 
@@ -18,20 +20,24 @@ export default function SalesPage() {
     registroPinVerified, registroPinExpireTime, registroPinError,
     verifyRegistroPin, verifyModificacionPin, canEditWithoutPin,
     // Dashboard
-    loading, dashboard, employeeSales, monthlyGoals,
+    loading, dashboard, employeeSales, adminSales, monthlyGoals,
     selectedMonth, handleMonthChange,
     // Modales
     isRegisterModalOpen, setIsRegisterModalOpen,
-    isSetupModalOpen,    setIsSetupModalOpen,
-    isMonthlyGoalsOpen,  setIsMonthlyGoalsOpen,
-    isGlobalGoalOpen,    setIsGlobalGoalOpen,
-    selectedEmployee,    setSelectedEmployee,
-    editingSale,         setEditingSale,
+    isAdminChilesModalOpen, setIsAdminChilesModalOpen,
+    isSetupModalOpen, setIsSetupModalOpen,
+    isMonthlyGoalsOpen, setIsMonthlyGoalsOpen,
+    isGlobalGoalOpen, setIsGlobalGoalOpen,
+    selectedEmployee, setSelectedEmployee,
+    editingSale, setEditingSale,
+    editingAdminSale, setEditingAdminSale,
     // Handlers
     handleOpenEmployee, handleOpenRegister,
-    handleSaveSale,     handleSetupSeason,
+    handleSaveSale, handleSetupSeason,
     handleOpenMonthlyGoals, handleSaveMonthlyGoals,
     handleUpdateGlobalGoal,
+    handleOpenAdminChilesModal,
+    handleSaveAdminSale, handleEditAdminSale, handleDeleteAdminSale,
     // Derivados
     noActiveSeason, monthConfigured, monthsConfigured,
   } = useSalesPage();
@@ -95,9 +101,34 @@ export default function SalesPage() {
             onViewEmployee={handleOpenEmployee}
             onEditSale={handleOpenRegister}
           />
+
+          {/* Sección de admin - registrar sus propios chiles */}
+          {userRole === 'admin' && (
+            <div className="mt-10">
+              {/* Tabla de historial de admin sales - Siempre visible */}
+              <div className="mb-6">
+                <AdminSalesHistoryTable
+                  adminSales={adminSales}
+                  onEdit={handleEditAdminSale}
+                  onDelete={handleDeleteAdminSale}
+                  loading={loading}
+                />
+              </div>
+
+              {/* Botón para registrar chiles - Debajo de la tabla */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleOpenAdminChilesModal}
+                  className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  + Registrar Mis Chiles
+                </button>
+              </div>
+            </div>
+          )}
         </>
       ) : !loading && (
-        /* Sin temporada activa */
+        // Sin temporada activa
         <div className="mt-12 text-center">
           <p className="text-gray-400 text-lg">No hay una temporada activa.</p>
           {userRole === 'admin' && (
@@ -111,7 +142,7 @@ export default function SalesPage() {
         </div>
       )}
  
-      {/* Modal — Registrar / Editar venta */}
+      {/* Modal - Registrar / Editar venta de empleado */}
       <RegisterSaleModal
         isOpen={isRegisterModalOpen}
         onClose={() => { setIsRegisterModalOpen(false); setEditingSale(null); }}
@@ -126,7 +157,7 @@ export default function SalesPage() {
         pinError={registroPinError}
       />
  
-      {/* Modal — Historial de ventas del empleado */}
+      {/* Modal - Historial de ventas del empleado */}
       <EmployeeSalesModal
         isOpen={!!selectedEmployee}
         onClose={() => setSelectedEmployee(null)}
@@ -141,7 +172,7 @@ export default function SalesPage() {
         onRequestModificacionPin={verifyModificacionPin}
       />
  
-      {/* Modal — Configurar temporada */}
+      {/* Modal - Configurar temporada */}
       <SetupSeasonModal
         isOpen={isSetupModalOpen}
         onClose={() => setIsSetupModalOpen(false)}
@@ -149,7 +180,7 @@ export default function SalesPage() {
         loading={loading}
       />
  
-      {/* Modal — Metas mensuales */}
+      {/* Modal - Metas mensuales */}
       <MonthlyGoalsModal
         isOpen={isMonthlyGoalsOpen}
         onClose={() => setIsMonthlyGoalsOpen(false)}
@@ -161,13 +192,22 @@ export default function SalesPage() {
         loading={loading}
       />
  
-      {/* Modal — Cambiar Meta Global */}
+      {/* Modal - Cambiar Meta Global */}
       <GlobalGoalModal
         isOpen={isGlobalGoalOpen}
         onClose={() => setIsGlobalGoalOpen(false)}
         onSave={handleUpdateGlobalGoal}
         currentGoal={dashboard?.season?.global_goal}
         loading={loading}
+      />
+
+      {/* Modal - Registrar mis chiles (admin) */}
+      <AdminChilesModal
+        isOpen={isAdminChilesModalOpen}
+        onClose={() => { setIsAdminChilesModalOpen(false); setEditingAdminSale(null); }}
+        onSave={handleSaveAdminSale}
+        loading={loading}
+        editingAdminSale={editingAdminSale}
       />
  
     </div>

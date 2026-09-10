@@ -5,10 +5,15 @@ export const fetchActiveSeason     = () => api.get('/sales/goals/active');
 export const fetchSalesDashboard   = (month) => api.get('/sales/dashboard', { params: { month } });
 export const fetchEmployeeSales    = (employee_id, month) => api.get(`/sales/daily/${employee_id}`, { params: { month } });
 export const fetchMonthlyGoals     = (month) => api.get(`/sales/monthly-goals/${month}`);
+export const fetchAdminSales       = (month) => api.get('/sales/admin-sales', { params: { month } });
 
 export const createSeason          = (payload) => api.post('/sales/goals', payload);
 export const saveMonthlyGoals      = (payload) => api.post('/sales/monthly-goals', payload);
 export const postDailySale         = (payload) => api.post('/sales/daily', payload);
 export const patchDailySale        = (sale_id, payload) => api.patch(`/sales/daily/${sale_id}`, payload);
 
-export const patchGlobalGoal = (payload) => api.patch('/sales/goals/global-goal', payload);
+export const postAdminSale         = (payload) => api.post('/sales/admin-sales', payload);
+export const patchAdminSale        = (admin_sale_id, payload) => api.patch(`/sales/admin-sales/${admin_sale_id}`, payload);
+export const deleteAdminSale       = (admin_sale_id) => api.delete(`/sales/admin-sales/${admin_sale_id}`);
+
+export const patchGlobalGoal       = (payload) => api.patch('/sales/goals/global-goal', payload);
