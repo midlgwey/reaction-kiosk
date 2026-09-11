@@ -218,35 +218,35 @@ export const getSalesDashboard = async (req, res) => {
   const { month } = req.query; // formato: '08', '09', '10'
   const today = new Date().toISOString().split('T')[0];
   const now = new Date();
-
+ 
   const currentMonth = month || String(now.getMonth() + 1).padStart(2, '0');
   const currentYear = now.getFullYear();
-
+ 
   const seasonResult = await db.execute({
     sql: `SELECT * FROM sales_goals 
           WHERE season_start <= ? AND season_end >= ?
           LIMIT 1`,
     args: [today, today]
   });
-
+ 
   if (seasonResult.rows.length === 0) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: "No hay una temporada activa."
     });
   }
-
+ 
   const season = seasonResult.rows[0];
-
+ 
   // Calcular días hábiles del mes seleccionado (sin lunes)
   const { totalWorkDays, elapsedWorkDays } = getWorkDays(currentYear, parseInt(currentMonth));
-
+ 
   // Verificar qué meses están configurados
   const configuredMonths = await db.execute({
     sql: `SELECT DISTINCT month FROM monthly_goals WHERE goal_id = ?`,
     args: [season.goal_id]
   });
   const monthsConfigured = configuredMonths.rows.map(r => r.month);
-
+ 
   // Traer metas mensuales + ventas acumuladas del mes
   const dashboardResult = await db.execute({
     sql: `SELECT 
@@ -277,7 +277,7 @@ export const getSalesDashboard = async (req, res) => {
           ORDER BY e.position ASC, e.first_name ASC`,
     args: [currentMonth, String(currentYear), season.goal_id, currentMonth]
   });
-
+ 
   // Calcular semáforo y meta alcanzada
   const employees = dashboardResult.rows.map(emp => {
     const dailyGoal = totalWorkDays > 0 ? emp.goal_amount / totalWorkDays : 0;
@@ -286,18 +286,18 @@ export const getSalesDashboard = async (req, res) => {
     const percentage = expectedToday > 0
       ? Math.round((monthSold / expectedToday) * 100)
       : monthSold > 0 ? 100 : 0;
-
+ 
     let status;
     if (percentage >= 100) status = 'green';
     else if (percentage >= 90) status = 'orange';
     else if (percentage >= 80) status = 'blue';
     else status = 'red';
-
+ 
     // Meta alcanzada — solo se evalúa si el mes ya terminó
     const monthEnd = new Date(currentYear, parseInt(currentMonth), 0);
     const monthFinished = now > monthEnd;
     const goalReached = monthFinished ? monthSold >= emp.goal_amount : null;
-
+ 
     return {
       ...emp,
       monthly_goal: emp.goal_amount,
@@ -310,27 +310,33 @@ export const getSalesDashboard = async (req, res) => {
       goal_reached: goalReached
     };
   });
-
+ 
   // Meta global — total de la temporada (daily_sales + admin_sales)
-const dailySalesResult = await db.execute({
-  sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
-        FROM daily_sales WHERE goal_id = ?`,
-  args: [season.goal_id]
-});
-
-const adminSalesResult = await db.execute({
-  sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
-        FROM admin_sales WHERE goal_id = ?`,
-  args: [season.goal_id]
-});
-
-const global_sold = Number(dailySalesResult.rows[0].total) + Number(adminSalesResult.rows[0].total);
+  const dailySalesResult = await db.execute({
+    sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
+          FROM daily_sales WHERE goal_id = ?`,
+    args: [season.goal_id]
+  });
+ 
+  const adminSalesResult = await db.execute({
+    sql: `SELECT COALESCE(SUM(chiles_sold), 0) AS total
+          FROM admin_sales WHERE goal_id = ?`,
+    args: [season.goal_id]
+  });
+ 
+  const global_sold = Number(dailySalesResult.rows[0].total) + Number(adminSalesResult.rows[0].total);
   const global_percentage = Math.round((global_sold / season.global_goal) * 100);
-
+ 
+  // Meta del equipo — total de daily_sales SOLO (sin admin_sales)
+  const team_sold = Number(dailySalesResult.rows[0].total);
+  const team_percentage = Math.round((team_sold / season.team_goal) * 100);
+ 
   res.status(StatusCodes.OK).json({
     season,
     global_sold,
     global_percentage,
+    team_sold,
+    team_percentage,
     total_work_days: totalWorkDays,
     elapsed_work_days: elapsedWorkDays,
     months_configured: monthsConfigured,

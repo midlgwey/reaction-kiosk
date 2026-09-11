@@ -76,14 +76,7 @@ export const SalesHeader = ({
 
         {/* Botones de acción */}
         <div className="flex items-center gap-2 flex-wrap">
-          {userRole === 'admin' && noActiveSeason && (
-            <button
-              onClick={onSetupSeason}
-              className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg font-semibold transition-colors shadow-sm text-sm"
-            >
-              Configurar Temporada
-            </button>
-          )}
+        
           {userRole === 'admin' && season && (
             <button
               onClick={onConfigMonthlyGoals}

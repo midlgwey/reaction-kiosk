@@ -27,7 +27,6 @@ export const useSalesPage = () => {
   const [selectedMonth, setSelectedMonth]           = useState(getCurrentMonth());
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAdminChilesModalOpen, setIsAdminChilesModalOpen] = useState(false);
-  const [isAdminHistoryOpen, setIsAdminHistoryOpen] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen]     = useState(false);
   const [isMonthlyGoalsOpen, setIsMonthlyGoalsOpen] = useState(false);
   const [isGlobalGoalOpen, setIsGlobalGoalOpen]     = useState(false);
@@ -62,6 +61,7 @@ export const useSalesPage = () => {
 
   const handleMonthChange = (month) => setSelectedMonth(month);
 
+  // Abrir empleado y cargar su historial
   const handleOpenEmployee = async (employee) => {
     setSelectedEmployee(employee);
     try {
@@ -71,12 +71,14 @@ export const useSalesPage = () => {
     }
   };
 
+  // Abrir modal para registrar/editar venta de empleado
   const handleOpenRegister = (sale = null) => {
     setSelectedEmployee(null);
     setEditingSale(sale);
     setIsRegisterModalOpen(true);
   };
 
+  // Guardar venta de empleado
   const handleSaveSale = async (payload) => {
     try {
       if (editingSale?.sale_id) {
@@ -97,21 +99,13 @@ export const useSalesPage = () => {
     }
   };
 
-  // ─── Admin Sales Handlers ─────────────────────────────────────────
+  // Abrir modal para registrar chiles del admin
   const handleOpenAdminChilesModal = () => {
     setEditingAdminSale(null);
     setIsAdminChilesModalOpen(true);
   };
 
-  const handleOpenAdminHistory = async () => {
-    try {
-      await loadAdminSalesHistory(selectedMonth);
-      setIsAdminHistoryOpen(true);
-    } catch {
-      toast.error('Error al cargar el historial');
-    }
-  };
-
+  // Guardar chiles del admin
   const handleSaveAdminSale = async (payload) => {
     try {
       if (editingAdminSale?.admin_sale_id) {
@@ -130,11 +124,13 @@ export const useSalesPage = () => {
     }
   };
 
+  // Editar registro de admin sales
   const handleEditAdminSale = (adminSale) => {
     setEditingAdminSale(adminSale);
     setIsAdminChilesModalOpen(true);
   };
 
+  // Eliminar registro de admin sales
   const handleDeleteAdminSale = async (admin_sale_id) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este registro?')) return;
 
@@ -148,8 +144,7 @@ export const useSalesPage = () => {
     }
   };
 
-  // ─── End Admin Sales Handlers ────────────────────────────────────
-
+  // Configurar nueva temporada
   const handleSetupSeason = async (payload) => {
     try {
       await setupSeason(payload);
@@ -161,6 +156,7 @@ export const useSalesPage = () => {
     }
   };
 
+  // Abrir modal de metas mensuales
   const handleOpenMonthlyGoals = async () => {
     try {
       await getMonthlyGoals(selectedMonth);
@@ -168,6 +164,7 @@ export const useSalesPage = () => {
     setIsMonthlyGoalsOpen(true);
   };
 
+  // Guardar metas mensuales
   const handleSaveMonthlyGoals = async (payload) => {
     try {
       await saveMonthGoals(payload);
@@ -179,6 +176,7 @@ export const useSalesPage = () => {
     }
   };
 
+  // Actualizar meta global
   const handleUpdateGlobalGoal = async (payload) => {
     try {
       await updateGlobalGoal(payload);
@@ -201,24 +199,23 @@ export const useSalesPage = () => {
     // Modales
     isRegisterModalOpen, setIsRegisterModalOpen,
     isAdminChilesModalOpen, setIsAdminChilesModalOpen,
-    isAdminHistoryOpen, setIsAdminHistoryOpen,
-    isSetupModalOpen,    setIsSetupModalOpen,
-    isMonthlyGoalsOpen,  setIsMonthlyGoalsOpen,
-    isGlobalGoalOpen,    setIsGlobalGoalOpen,
-    selectedEmployee,    setSelectedEmployee,
-    editingSale,         setEditingSale,
-    editingAdminSale,    setEditingAdminSale,
+    isSetupModalOpen, setIsSetupModalOpen,
+    isMonthlyGoalsOpen, setIsMonthlyGoalsOpen,
+    isGlobalGoalOpen, setIsGlobalGoalOpen,
+    selectedEmployee, setSelectedEmployee,
+    editingSale, setEditingSale,
+    editingAdminSale, setEditingAdminSale,
     // Handlers empleados
     handleOpenEmployee, handleOpenRegister,
-    handleSaveSale,     handleSetupSeason,
+    handleSaveSale, handleSetupSeason,
     handleOpenMonthlyGoals, handleSaveMonthlyGoals,
     handleUpdateGlobalGoal,
     // Handlers admin sales
-    handleOpenAdminChilesModal, handleOpenAdminHistory,
+    handleOpenAdminChilesModal,
     handleSaveAdminSale, handleEditAdminSale, handleDeleteAdminSale,
     // Derivados
-    noActiveSeason:   !dashboard && !loading,
-    monthConfigured:  dashboard?.month_configured  || false,
+    noActiveSeason: !dashboard && !loading,
+    monthConfigured: dashboard?.month_configured || false,
     monthsConfigured: dashboard?.months_configured || [],
   };
 };

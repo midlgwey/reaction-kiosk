@@ -1,3 +1,5 @@
+//frontend/src/admin/components/ui/ChartLoading.jsx
+
 import React from 'react';
  
 export const ChartLoading = () => (

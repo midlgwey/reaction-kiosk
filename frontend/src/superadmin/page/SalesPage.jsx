@@ -10,6 +10,7 @@ import { GlobalGoalModal } from '../components/sales/GlobalGoalModal';
 import { SetupSeasonModal } from '../components/sales/SetupSeasonModal';
 import { AdminChilesModal } from '../components/sales/AdminChilesModal';
 import { AdminSalesHistoryTable } from '../components/sales/AdminSalesHistoryTable';
+import { ChartLoading } from '../../admin/components/ui/ChartLoading';
 import { useSalesPage } from '../../admin/hooks/sales/useSalesPage';
 import { MONTH_OPTIONS } from '../../admin/utils/salesUtils';
 
@@ -45,25 +46,26 @@ export default function SalesPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
  
-      {/* Encabezado y selector de mes */}
-      <SalesHeader
-        season={dashboard?.season}
-        selectedMonth={selectedMonth}
-        monthOptions={MONTH_OPTIONS}
-        monthsConfigured={monthsConfigured}
-        onMonthChange={handleMonthChange}
-        userRole={userRole}
-        onRegisterSale={() => handleOpenRegister(null)}
-        onSetupSeason={() => setIsSetupModalOpen(true)}
-        onConfigMonthlyGoals={handleOpenMonthlyGoals}
-        onOpenGlobalGoal={() => setIsGlobalGoalOpen(true)}
-        noActiveSeason={noActiveSeason}
-        monthConfigured={monthConfigured}
-        loading={loading}
-      />
- 
+      {/* Mostrar contenido solo si hay dashboard */}
       {dashboard ? (
         <>
+          {/* Encabezado y selector de mes */}
+          <SalesHeader
+            season={dashboard?.season}
+            selectedMonth={selectedMonth}
+            monthOptions={MONTH_OPTIONS}
+            monthsConfigured={monthsConfigured}
+            onMonthChange={handleMonthChange}
+            userRole={userRole}
+            onRegisterSale={() => handleOpenRegister(null)}
+            onSetupSeason={() => setIsSetupModalOpen(true)}
+            onConfigMonthlyGoals={handleOpenMonthlyGoals}
+            onOpenGlobalGoal={() => setIsGlobalGoalOpen(true)}
+            noActiveSeason={noActiveSeason}
+            monthConfigured={monthConfigured}
+            loading={loading}
+          />
+
           {/* Aviso mes sin configurar */}
           {!monthConfigured && (
             <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between">
@@ -81,19 +83,22 @@ export default function SalesPage() {
             </div>
           )}
  
-          {/* Cards de progreso */}
+          {/* Cards de progreso global y del equipo */}
           <GlobalProgressCard
             globalGoal={dashboard.season.global_goal}
             globalSold={dashboard.global_sold}
             globalPercentage={dashboard.global_percentage}
             teamGoal={dashboard.season.team_goal}
+            teamSold={dashboard.team_sold}
+            teamPercentage={dashboard.team_percentage}
             elapsedWorkDays={dashboard.elapsed_work_days}
             totalWorkDays={dashboard.total_work_days}
             employees={dashboard.employees}
             selectedMonth={selectedMonth}
+            adminSales={adminSales}
           />
  
-          {/* Tabla de rendimiento individual */}
+          {/* Tabla de rendimiento individual de empleados */}
           <SalesTable
             employees={dashboard.employees}
             userRole={userRole}
@@ -119,28 +124,20 @@ export default function SalesPage() {
               <div className="flex justify-end">
                 <button
                   onClick={handleOpenAdminChilesModal}
-                  className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+                  className="bg-indigo-500 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-600 transition-colors"
                 >
-                  + Registrar Mis Chiles
+                  Registrar Mis Chiles
                 </button>
               </div>
             </div>
           )}
         </>
-      ) : !loading && (
-        // Sin temporada activa
-        <div className="mt-12 text-center">
-          <p className="text-gray-400 text-lg">No hay una temporada activa.</p>
-          {userRole === 'admin' && (
-            <button
-              onClick={() => setIsSetupModalOpen(true)}
-              className="mt-4 bg-[#6A64F1] text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-[#5b55e0] transition-colors"
-            >
-              Configurar Temporada
-            </button>
-          )}
+      ) : loading ? (
+        // Mostrar ChartLoading mientras está cargando
+        <div className="mt-12">
+          <ChartLoading />
         </div>
-      )}
+      ) : null}
  
       {/* Modal - Registrar / Editar venta de empleado */}
       <RegisterSaleModal

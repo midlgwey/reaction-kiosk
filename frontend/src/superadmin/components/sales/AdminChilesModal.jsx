@@ -127,7 +127,7 @@ export const AdminChilesModal = ({
           {/* Cantidad de chiles */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Cantidad de Chiles *
+              Cantidad de Chiles 
             </label>
             <input
               type="number"

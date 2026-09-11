@@ -28,9 +28,9 @@ export const AdminSalesHistoryTable = ({
           <h3 className="text-sm font-bold text-[#07074D] uppercase tracking-wider gap-2">
             Mi Historial de Chiles
           </h3>
-          <div className="bg-emerald-600 px-4 py-2 rounded-lg">
-            <p className="text-white font-semibold text-sm">
-              Total: <span className="text-xl">{totalChiles.toLocaleString()}</span> chiles
+          <div className="bg-white border-2 border-indigo-500 px-4 py-2 rounded-lg">
+            <p className="text-indigo-500 font-semibold text-sm">
+              Total: <span className="text-xl font-bold">{totalChiles.toLocaleString()}</span> chiles
             </p>
           </div>
         </div>
@@ -67,7 +67,7 @@ export const AdminSalesHistoryTable = ({
 
                 {/* Cantidad */}
                 <td className="px-6 py-4 text-center">
-                  <div className="inline-flex items-center gap-2 bg-emerald-500 px-3 py-1 rounded-full">
+                  <div className="inline-flex items-center gap-2 bg-indigo-500 px-3 py-1 rounded-full">
                     <span className="font-bold text-white text-sm">
                       {Number(sale.chiles_sold).toLocaleString()}
                     </span>
