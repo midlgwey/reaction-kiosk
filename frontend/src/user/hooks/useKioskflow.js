@@ -32,13 +32,13 @@ export const useKioskflow = () => {
   const iniciarKiosco = () => setEmpezado(true);
 
   /**
-   * Control de tiempo de espera por inactividad (3 minutos).
+   * Control de tiempo de espera por inactividad (5 minutos) para reiniciar el flujo automáticamente.
    */
   const iniciarTemporizador = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       reiniciarKiosco();
-    }, 180000);
+    }, 320000);
   }, [reiniciarKiosco]);
 
   /**

@@ -18,7 +18,7 @@ import declineRoutes from './routes/declineRoutes.js';
 import realTablesRoutes from './routes/realTablesRoutes.js';
 import employeesRoutes from './routes/employeesRoutes.js'; 
 import attendanceRoutes from './routes/attendanceRoutes.js';
-import scheduleRoutes from './routes/scheduleRoutes.js'; 
+import scheduleRoutes from './routes/scheduleRoutes.js';  
 import salesRoutes from './routes/salesRoutes.js';
 
 import { errorHandlerMiddleware } from './middlewares/errorHandler.js';

@@ -18,7 +18,6 @@ export const useExportSchedule = () => {
       wsData.push(['', '', 'ASISTIR A TU TURNO ES APOYAR A TODO EL EQUIPO. ¡GRACIAS POR TU COMPROMISO!', '', '', '', '', '', '']);
       wsData.push(['Colaborador', 'Horario', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo', 'Lunes']);
 
-      // Valores exactos de position en la BD
       const ordenPuestos = {
         'Capitan': 'CAPITÁN',
         'Mesero': 'MESEROS',
@@ -46,19 +45,46 @@ export const useExportSchedule = () => {
         wsData.push([grupo, '', '', '', '', '', '', '', '']);
 
         grupos[grupo].forEach(emp => {
+          // Limpiar sufijos del nombre del turno
+          const cleanShiftName = (name) => {
+            return name
+              .replace(/\s+\(hostess\)$/i, '')
+              .replace(/\s+\(medio\)$/i, '')
+              .replace(/\s+Hostess$/i, '')
+              .replace(/\s+Caja$/i, '')
+              .trim();
+          };
+
+          // Convertir HH:MM a formato AM/PM
+          const toAmPm = (time) => {
+            const [h, m] = time.split(':').map(Number);
+            const period = h >= 12 ? 'pm' : 'am';
+            const hour = h % 12 || 12;
+            return `${hour}:${String(m).padStart(2, '0')} ${period}`;
+          };
+
+          // Formatear hora con AM/PM, conservando CIERRE
+          const formatHour = (startTime, endTime) => {
+            const closeHours = ['21:30', '21:00', '18:30'];
+            if (closeHours.includes(endTime)) {
+              return `${toAmPm(startTime)} - CIERRE`;
+            }
+            return `${toAmPm(startTime)} - ${toAmPm(endTime)}`;
+          };
+
           const turnos = WORK_DAYS.map(day => emp.shifts[day]?.shift_name).filter(Boolean);
           const turnoConteo = {};
           turnos.forEach(t => { turnoConteo[t] = (turnoConteo[t] || 0) + 1; });
-          const turnoPrincipal = Object.keys(turnoConteo).sort((a, b) => turnoConteo[b] - turnoConteo[a])[0] || 'Descanso';
+          const turnoPrincipal = cleanShiftName(Object.keys(turnoConteo).sort((a, b) => turnoConteo[b] - turnoConteo[a])[0]) || 'Descanso';
 
           wsData.push([
             emp.name,
             turnoPrincipal,
             ...WORK_DAYS.map(day => {
               const shift = emp.shifts[day];
-              return shift ? `${shift.start_time} - ${shift.end_time}` : 'DESCANSO';
+              return shift ? formatHour(shift.start_time, shift.end_time) : 'DESCANSO';
             }),
-            'DESCANSO' // Lunes siempre cerrado
+            'DESCANSO'
           ]);
         });
       });

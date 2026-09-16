@@ -42,7 +42,7 @@ export const ScheduleTable = ({ schedules, userRole, isPublished, onEditEmployee
                       </div>
                       <div>
                         <p className="font-medium text-[#07074D]">{emp.name}</p>
-                        <p className="text-xs text-[#6B7280]">{emp.role}</p>
+                        <p className="text-xs text-[#6B7280]">{emp.role}</p> 
                       </div>
                     </div>
                   </td>

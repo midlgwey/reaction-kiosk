@@ -1,4 +1,5 @@
 // frontend/src/admin/hooks/schedule/useSchedulePage.js
+// ✅ NOTA: No requiere cambios — el nuevo ScheduleModal sigue usando onChangeShift(day, shift)
 import { useState, useEffect, useCallback } from 'react';
 import { useSchedule } from './useSchedule';
 import { useExportSchedule } from '../../../superadmin/components/schedule/useExportSchedule';
