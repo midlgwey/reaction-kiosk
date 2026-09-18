@@ -1,8 +1,7 @@
 import React from 'react';
 import SuggestionsReportCard from "../components/reports/SuggestionsReportCard";
 import TrendReportCard from '../components/reports/TrendReportCard';
-import ShiftReportCard from '../components/reports/ShiftReportCard';
-import PageHeader from '../components/ui/Pageheader';
+import PageHeader from '../components/ui/PageHeader';
 
 export default function ReportsPage() {
   return (
@@ -19,7 +18,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           <SuggestionsReportCard />
           <TrendReportCard />
-          <ShiftReportCard />
+
         </div>
 
       </div>

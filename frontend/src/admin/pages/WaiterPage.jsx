@@ -1,26 +1,8 @@
 import React from 'react'
 import WaiterPerformance from '../components/charts/waiter/WaiterPerfomance'
 import WaiterRanking from '../components/tables/WaiterRanking';
-
+import PageHeader from '../components/ui/PageHeader';
 import ReporteRendimientoMensual from '../components/tables/ReporteRendimientoMensual';
-
-/**
- * PageHeader - Componente reutilizable para encabezados
- */
-function PageHeader({ title, subtitle }) {
-  return (
-    <div className="mb-6">
-      <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4">
-        {title}
-      </h1>
-      {subtitle && (
-        <p className="text-sm mt-2 text-gray-500">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
 
 const WaiterPage = () => {
   return (
