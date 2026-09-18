@@ -17,36 +17,37 @@ export default function StatGrid() {
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
 
       <StatCard
-        title="TOTAL DE REACCIONES"
-        value={reactionsCard.value ?? <Spinner />}
-        subtitle={reactionsCard.subtitle}
-        icon={<ChartBarIcon className={ICON_CLASS} />}
-      />
-
-      <StatCard
-        title="SERVICIO DEL MESERO"
-        value={serverScoreCard.value ?? <Spinner />}
-        subtitle={serverScoreCard.subtitle}
-        icon={<StarIcon className={ICON_CLASS} />}
-        color="amber"
-      />
-
-      <StatCard
-        title="MESEROS CON MENOS INTERACCIONES"
-        value={lowInteractionCard.value ?? <Spinner />}
-        subtitle={lowInteractionCard.subtitle}
-        tooltip={lowInteractionCard.tooltip}
-        icon={<ArrowTrendingDownIcon className={ICON_CLASS} />}
-        color="orange"
-      />
+      title="TOTAL DE REACCIONES"
+      value={reactionsCard.value ?? <Spinner />}
+      subtitle={reactionsCard.subtitle}
+      icon={<ChartBarIcon className={ICON_CLASS} />}
+    />
 
      <StatCard
-        title="ENCUESTAS DEL DÍA"
-        value={surveyCountCard.value ?? <Spinner />}
-        subtitle={surveyCountCard.subtitle}
-        icon={<ClipboardDocumentCheckIcon className={ICON_CLASS} />}
-        color="indigo"
-      />
+      title="ENCUESTAS DEL DÍA"
+      value={surveyCountCard.value ?? <Spinner />}
+      subtitle={surveyCountCard.subtitle}
+      icon={<ClipboardDocumentCheckIcon className={ICON_CLASS} />}
+      color="indigo"
+    />
+
+    <StatCard
+      title="SERVICIO DEL MESERO"
+      value={serverScoreCard.value ?? <Spinner />}
+      subtitle={serverScoreCard.subtitle}
+      icon={<StarIcon className={ICON_CLASS} />}
+      color="amber"
+    />
+
+    <StatCard
+      title="MESEROS CON MENOS INTERACCIONES"
+      value={lowInteractionCard.value ?? <Spinner />}
+      subtitle={lowInteractionCard.subtitle}
+      tooltip={lowInteractionCard.tooltip}
+      icon={<ArrowTrendingDownIcon className={ICON_CLASS} />}
+      color="orange"
+    />
+
 
     </div>
   );

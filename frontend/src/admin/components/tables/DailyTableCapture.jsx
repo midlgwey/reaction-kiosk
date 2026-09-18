@@ -8,13 +8,11 @@ import { usePeriodFilter } from '../../hooks/shared/usePeriodFilter';
 import PeriodSelector from '../shared/PeriodSelector';
 import DashboardFilter from '../shared/DashboardFilter';
 
-// Opciones del selector de fecha
 const DATE_OPTIONS = [
   { value: 'hoy', label: 'Hoy' },
   { value: 'custom', label: '📅 Historial...' },
 ];
 
-// Estilos del selector de mesero — fuera del componente para evitar recreación en cada render
 const customSelectStyles = {
   control: (base) => ({
     ...base,
@@ -39,31 +37,141 @@ const customSelectStyles = {
   })
 };
 
+// Modal de Edición
+function EditModal({ entry, isOpen, onClose, onSave, loading }) {
+  const [value, setValue] = useState(entry?.table_count || '');
+
+  const handleSave = async () => {
+    await onSave(entry.id, parseInt(value));
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg max-w-sm w-full">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-200 bg-indigo-50/50 flex justify-between items-center">
+          <h3 className="font-bold text-slate-800">Editar Mesas</h3>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-slate-200 rounded-lg transition"
+          >
+            <XMarkIcon className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6">
+          <div className="mb-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
+              Fecha
+            </label>
+            <p className="text-slate-700 font-medium">
+              {format(new Date(entry?.date + 'T12:00:00'), 'dd MMMM yyyy')}
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
+              Número de Mesas
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full border border-indigo-300 rounded-lg px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              autoFocus
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-200 flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg font-medium transition"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg disabled:opacity-50 transition"
+          >
+            {loading ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modal de Confirmación de Delete
+function DeleteConfirmModal({ isOpen, onClose, onConfirm, loading, entryDate }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg max-w-sm w-full">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-200 bg-rose-50/50">
+          <h3 className="font-bold text-slate-800">Eliminar Registro</h3>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6">
+          <p className="text-slate-600 mb-2">
+            ¿Estás seguro de que deseas eliminar el registro de <strong>{entryDate}</strong>?
+          </p>
+          <p className="text-xs text-slate-500">Esta acción no se puede deshacer.</p>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-200 flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg font-medium transition"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-6 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg disabled:opacity-50 transition"
+          >
+            {loading ? 'Eliminando...' : 'Eliminar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DailyTableCapture() {
   const [selectedWaiterId, setSelectedWaiterId] = useState('');
   const [tableCount, setTableCount] = useState('');
   const [dateOption, setDateOption] = useState(DATE_OPTIONS[0]);
   const [selectedDay, setSelectedDay] = useState(new Date());
-  const [editingId, setEditingId] = useState(null);
-  const [editValue, setEditValue] = useState('');
+  
+  // Estados para Modales
+  const [editModal, setEditModal] = useState({ isOpen: false, entry: null });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, entry: null });
 
   const { selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions } = usePeriodFilter();
   const { waiters } = useActiveWaitersAdmin();
   const { history, loading, error, captureToday, updateEntry, deleteEntry, refetch } = useDailyTableCapture(selectedMonth.value, selectedYear);
 
-  // Mesero actualmente seleccionado
   const selectedWaiter = waiters.find(w => w.id === selectedWaiterId);
-
-  // Opciones del selector — dependen de waiters (dato dinámico) así que van dentro
   const waiterOptions = waiters.map(w => ({ value: w.id, label: w.name }));
 
-  // Fecha de captura — hoy por defecto, fecha elegida si es historial
   const captureDate = useMemo(() => {
     if (dateOption.value === 'custom' && selectedDay) return format(selectedDay, 'yyyy-MM-dd');
     return format(new Date(), 'yyyy-MM-dd');
   }, [dateOption, selectedDay]);
 
-  // Solo muestra registros del mesero seleccionado en el mes activo
   const filteredHistory = selectedWaiterId
     ? history.filter(entry => entry.waiter_id === selectedWaiterId)
     : [];
@@ -74,27 +182,26 @@ export default function DailyTableCapture() {
     setTableCount('');
   };
 
-  const startEdit = (entry) => {
-    setEditingId(entry.id);
-    setEditValue(entry.table_count);
+  const handleEditConfirm = async (id, newValue) => {
+    await updateEntry(id, newValue);
+    setEditModal({ isOpen: false, entry: null });
   };
 
-  const confirmEdit = async (id) => {
-    await updateEntry(id, parseInt(editValue));
-    setEditingId(null);
+  const handleDeleteConfirm = async () => {
+    await deleteEntry(deleteModal.entry.id);
+    setDeleteModal({ isOpen: false, entry: null });
   };
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm">
-
-      {/* Encabezado con selector de mes y botón de refresh */}
+      {/* Header */}
       <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Captura de Mesas Reales
           </h3>
           <p className="text-[10px] text-slate-500 mt-1 font-medium">
-            Selecciona un mesero para ver su historial y registrar sus mesas
+            Registra, visualiza y edita las mesas atendidas por mesero
           </p>
         </div>
         <div className="flex gap-2 items-center">
@@ -115,7 +222,7 @@ export default function DailyTableCapture() {
         </div>
       </div>
 
-      {/* Selector de mesero — al cambiar resetea el modo edición */}
+      {/* Selector de Mesero */}
       <div className="px-6 py-4 border-b border-slate-100 bg-indigo-50/20">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
           Mesero
@@ -125,7 +232,8 @@ export default function DailyTableCapture() {
           value={waiterOptions.find(o => o.value === selectedWaiterId) || null}
           onChange={(opt) => {
             setSelectedWaiterId(opt ? opt.value : '');
-            setEditingId(null);
+            setEditModal({ isOpen: false, entry: null });
+            setDeleteModal({ isOpen: false, entry: null });
           }}
           styles={customSelectStyles}
           placeholder="Selecciona un mesero"
@@ -134,17 +242,14 @@ export default function DailyTableCapture() {
         />
       </div>
 
-      {/* Estado vacío cuando no hay mesero seleccionado */}
       {!selectedWaiterId ? (
         <div className="flex items-center justify-center min-h-[200px]">
           <p className="text-slate-400 text-sm italic">Selecciona un mesero para continuar</p>
         </div>
       ) : (
         <>
-          {/* Formulario de captura — fecha editable para registros atrasados */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 overflow-visible">
-
-            {/* Avatar y nombre del mesero seleccionado */}
+          {/* Formulario de Captura */}
+          <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 bg-gradient-to-r from-indigo-50/30 to-transparent">
             <div className="flex items-center gap-2 flex-1">
               <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
                 {selectedWaiter?.name?.charAt(0)}
@@ -152,7 +257,6 @@ export default function DailyTableCapture() {
               <span className="font-bold text-slate-700 text-sm">{selectedWaiter?.name}</span>
             </div>
 
-            {/* Selector de fecha — hoy por defecto, historial para capturas atrasadas */}
             <div className="w-full sm:w-auto">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
                 Fecha
@@ -166,7 +270,6 @@ export default function DailyTableCapture() {
               />
             </div>
 
-            {/* Número de mesas atendidas */}
             <div className="w-full sm:w-36">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
                 Mesas
@@ -186,12 +289,12 @@ export default function DailyTableCapture() {
               disabled={!tableCount}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2.5 rounded-lg shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
             >
-              Guardar
+              ➕ Guardar
             </button>
           </div>
 
-          {/* Historial de capturas del mesero en el mes seleccionado */}
-          <div className="overflow-x-auto">
+          {/* Tabla de Historial */}
+          <div className="overflow-x-auto overflow-y-auto max-h-[200px] md:max-h-[300px] lg:max-h-[400px]">
             {loading ? (
               <div className="flex justify-center items-center min-h-[120px]">
                 <div className="w-7 h-7 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
@@ -201,7 +304,7 @@ export default function DailyTableCapture() {
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200">
+                  <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0">
                     <th className="px-5 py-3 whitespace-nowrap">Fecha</th>
                     <th className="px-5 py-3 text-center whitespace-nowrap">Mesas</th>
                     <th className="px-5 py-3 text-center whitespace-nowrap">Acciones</th>
@@ -216,54 +319,35 @@ export default function DailyTableCapture() {
                     </tr>
                   ) : (
                     filteredHistory.map((entry) => (
-                      <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
-
-                        {/* +T12:00:00 evita el desfase de zona horaria al mostrar la fecha */}
+                      <tr key={entry.id} className="hover:bg-indigo-50/30 transition-colors">
                         <td className="px-5 py-3 text-sm text-slate-600 font-medium whitespace-nowrap">
                           {format(new Date(entry.date + 'T12:00:00'), 'dd MMM yyyy')}
                         </td>
 
                         <td className="px-5 py-3 text-center">
-                          {editingId === entry.id ? (
-                            <input
-                              type="number"
-                              min="0"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              className="w-16 text-center border border-indigo-300 rounded-md px-2 py-1 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                              autoFocus
-                            />
-                          ) : (
-                            <span className="bg-indigo-50 text-indigo-700 font-bold text-xs px-2.5 py-1 rounded-md border border-indigo-100">
-                              {entry.table_count}
-                            </span>
-                          )}
+                          <span className="bg-indigo-50 text-indigo-700 font-bold text-xs px-2.5 py-1 rounded-md border border-indigo-100">
+                            {entry.table_count}
+                          </span>
                         </td>
 
                         <td className="px-5 py-3">
-                          <div className="flex justify-center items-center gap-1">
-                            {editingId === entry.id ? (
-                              <>
-                                <button onClick={() => confirmEdit(entry.id)} className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 transition-colors" title="Confirmar">
-                                  <CheckIcon className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors" title="Cancelar">
-                                  <XMarkIcon className="w-4 h-4" />
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button onClick={() => startEdit(entry)} className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors" title="Editar">
-                                  <PencilIcon className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => deleteEntry(entry.id)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 transition-colors" title="Eliminar">
-                                  <TrashIcon className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
+                          <div className="flex justify-center items-center gap-2">
+                            <button
+                              onClick={() => setEditModal({ isOpen: true, entry })}
+                              className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors"
+                              title="Editar"
+                            >
+                              <PencilIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteModal({ isOpen: true, entry })}
+                              className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 transition-colors"
+                              title="Eliminar"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
-
                       </tr>
                     ))
                   )}
@@ -274,6 +358,22 @@ export default function DailyTableCapture() {
         </>
       )}
 
+      {/* Modales */}
+      <EditModal
+        entry={editModal.entry}
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, entry: null })}
+        onSave={handleEditConfirm}
+        loading={loading}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, entry: null })}
+        onConfirm={handleDeleteConfirm}
+        loading={loading}
+        entryDate={deleteModal.entry ? format(new Date(deleteModal.entry.date + 'T12:00:00'), 'dd MMM yyyy') : ''}
+      />
     </div>
   );
 }

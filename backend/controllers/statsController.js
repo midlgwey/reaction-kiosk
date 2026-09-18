@@ -1,11 +1,33 @@
 import { db } from '../db.js';
 import { NotFoundError, InternalServerError } from '../errors/customErrors.js';
-import { TIME_OFFSET, EXCLUDE_TEST_JOIN, getDateFilters } from '../utils/queryHelpers.js';
+import { TIME_OFFSET, EXCLUDE_TEST_JOIN, getDateFilters, getPreviousPeriodFilters } from '../utils/queryHelpers.js';
 
-// Pregunta con mejor calificación promedio de la semana (mínimo 5 votos)
+/**
+ * Calcula la dirección y el label de un trend comparando dos valores.
+ * threshold: diferencia mínima para considerarse un cambio real (evita ruido de ±0.1%)
+ */
+function buildTrend(current, previous, threshold = 1) {
+  if (previous === null || previous === undefined || previous === 0) {
+    return { direction: 'flat', diffLabel: 'Sin datos previos' };
+  }
+
+  const diff = current - previous;
+
+  if (Math.abs(diff) < threshold) {
+    return { direction: 'flat', diffLabel: 'Sin cambios' };
+  }
+
+  const direction = diff > 0 ? 'up' : 'down';
+  const diffLabel = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}%`;
+
+  return { direction, diffLabel };
+}
+
+// Pregunta con mejor calificación promedio — con trend vs semana anterior
 export const getBestQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
+    const prevFilter = getPreviousPeriodFilters(req);
     const MIN_VOTES = 5;
 
     const result = await db.execute({
@@ -16,7 +38,7 @@ export const getBestQuestionWeek = async (req, res) => {
           COUNT(r.id) AS total_votes
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        WHERE ${filter.condition}
         ${EXCLUDE_TEST_JOIN}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
@@ -26,17 +48,44 @@ export const getBestQuestionWeek = async (req, res) => {
       args: filter.args
     });
 
-    res.status(200).json({ bestQuestionWeek: result.rows[0] || null });
+    const best = result.rows[0] || null;
+
+    if (!best) {
+      return res.status(200).json({ bestQuestionWeek: null });
+    }
+
+    const prevResult = await db.execute({
+      sql: `
+        SELECT ROUND(AVG(r.value), 2) AS avg_score
+        FROM reactions r
+        JOIN questions q ON q.id = r.question_id
+        WHERE q.text = ?
+        AND ${prevFilter.condition}
+        ${EXCLUDE_TEST_JOIN};
+      `,
+      args: [best.question, ...prevFilter.args]
+    });
+
+    const prevAvg = prevResult.rows[0]?.avg_score;
+    const currentPct = Math.round((best.avg_score / 4) * 100);
+    const prevPct = prevAvg ? Math.round((prevAvg / 4) * 100) : null;
+
+    const trend = buildTrend(currentPct, prevPct);
+
+    res.status(200).json({ 
+      bestQuestionWeek: { ...best, trend } 
+    });
   } catch (error) {
     console.error("Error en getBestQuestionWeek:", error);
     throw new InternalServerError("Error obteniendo mejor pregunta");
   }
 };
 
-// Pregunta con peor calificación promedio de la semana (mínimo 5 votos)
+// Pregunta con peor calificación promedio — con trend vs semana anterior
 export const getWorstQuestionWeek = async (req, res) => {
   try {
     const filter = getDateFilters(req);
+    const prevFilter = getPreviousPeriodFilters(req);
     const MIN_VOTES = 5;
 
     const result = await db.execute({
@@ -47,7 +96,7 @@ export const getWorstQuestionWeek = async (req, res) => {
           COUNT(r.id) AS total_votes
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        WHERE ${filter.condition}
         ${EXCLUDE_TEST_JOIN}
         GROUP BY r.question_id
         HAVING COUNT(r.id) >= ${MIN_VOTES}
@@ -57,10 +106,138 @@ export const getWorstQuestionWeek = async (req, res) => {
       args: filter.args
     });
 
-    res.status(200).json({ worstQuestionWeek: result.rows[0] || null });
+    const worst = result.rows[0] || null;
+
+    if (!worst) {
+      return res.status(200).json({ worstQuestionWeek: null });
+    }
+
+    const prevResult = await db.execute({
+      sql: `
+        SELECT ROUND(AVG(r.value), 2) AS avg_score
+        FROM reactions r
+        JOIN questions q ON q.id = r.question_id
+        WHERE q.text = ?
+        AND ${prevFilter.condition}
+        ${EXCLUDE_TEST_JOIN};
+      `,
+      args: [worst.question, ...prevFilter.args]
+    });
+
+    const prevAvg = prevResult.rows[0]?.avg_score;
+    const currentPct = Math.round((worst.avg_score / 4) * 100);
+    const prevPct = prevAvg ? Math.round((prevAvg / 4) * 100) : null;
+
+    const trend = buildTrend(currentPct, prevPct);
+
+    res.status(200).json({ 
+      worstQuestionWeek: { ...worst, trend } 
+    });
   } catch (error) {
     console.error("Error en getWorstQuestionWeek:", error);
     throw new InternalServerError("Error obteniendo peor pregunta");
+  }
+};
+
+// Total de rechazos de encuesta — semana actual vs semana anterior
+export const getWeeklyDeclinesTrend = async (req, res) => {
+  try {
+    const filter = getDateFilters(req);
+    const prevFilter = getPreviousPeriodFilters(req);
+
+    const [currentResult, prevResult] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT COUNT(*) AS total
+          FROM declines r
+          WHERE ${filter.condition}
+          AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1);
+        `,
+        args: filter.args
+      }),
+      db.execute({
+        sql: `
+          SELECT COUNT(*) AS total
+          FROM declines r
+          WHERE ${prevFilter.condition}
+          AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1);
+        `,
+        args: prevFilter.args
+      })
+    ]);
+
+    const current = currentResult.rows[0]?.total || 0;
+    const previous = prevResult.rows[0]?.total || 0;
+
+    const diff = current - previous;
+    let trend;
+    if (previous === 0 && current === 0) {
+      trend = { direction: 'flat', diffLabel: 'Sin datos previos' };
+    } else if (diff === 0) {
+      trend = { direction: 'flat', diffLabel: 'Sin cambios' };
+    } else {
+      // Invertido a propósito: menos rechazos = bueno = verde
+      trend = {
+        direction: diff > 0 ? 'down' : 'up',
+        diffLabel: `${diff > 0 ? '+' : ''}${diff} vs semana pasada`
+      };
+    }
+
+    res.status(200).json({ total: current, previous, trend });
+  } catch (error) {
+    console.error("Error en getWeeklyDeclinesTrend:", error);
+    throw new InternalServerError("Error obteniendo rechazos semanales");
+  }
+};
+
+// Total de encuestas realizadas — semana actual vs semana anterior
+export const getWeeklyTotalSurveys = async (req, res) => {
+  try {
+    const filter = getDateFilters(req);
+    const prevFilter = getPreviousPeriodFilters(req);
+
+    const [currentResult, prevResult] = await Promise.all([
+      db.execute({
+        sql: `
+          SELECT COUNT(DISTINCT r.survey_id) AS total
+          FROM reactions r
+          WHERE ${filter.condition}
+          ${EXCLUDE_TEST_JOIN};
+        `,
+        args: filter.args
+      }),
+      db.execute({
+        sql: `
+          SELECT COUNT(DISTINCT r.survey_id) AS total
+          FROM reactions r
+          WHERE ${prevFilter.condition}
+          ${EXCLUDE_TEST_JOIN};
+        `,
+        args: prevFilter.args
+      })
+    ]);
+
+    const current = currentResult.rows[0]?.total || 0;
+    const previous = prevResult.rows[0]?.total || 0;
+
+    const diff = current - previous;
+    let trend;
+    if (previous === 0 && current === 0) {
+      trend = { direction: 'flat', diffLabel: 'Sin datos previos' };
+    } else if (diff === 0) {
+      trend = { direction: 'flat', diffLabel: 'Sin cambios' };
+    } else {
+      const pct = previous > 0 ? Math.round((diff / previous) * 100) : 0;
+      trend = {
+        direction: diff > 0 ? 'up' : 'down',
+        diffLabel: `${diff > 0 ? '+' : ''}${pct}% vs semana pasada`
+      };
+    }
+
+    res.status(200).json({ total: current, previous, trend });
+  } catch (error) {
+    console.error("Error en getWeeklyTotalSurveys:", error);
+    throw new InternalServerError("Error obteniendo total de encuestas");
   }
 };
 
@@ -79,7 +256,7 @@ export const getWeeklySurveyChart = async (req, res) => {
           SUM(CASE WHEN r.value = 1 THEN 1 ELSE 0 END) AS malo
         FROM reactions r
         JOIN questions q ON q.id = r.question_id
-        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        WHERE ${filter.condition}
         ${EXCLUDE_TEST_JOIN}
         GROUP BY q.id
         ORDER BY q.id;
@@ -167,7 +344,7 @@ export const getOverallDistributionWeek = async (req, res) => {
           r.value,
           COUNT(*) as total
         FROM reactions r
-        WHERE ${filter.condition.replace(/r\.created_at/g, 'r.created_at')}
+        WHERE ${filter.condition}
           AND r.shift IS NOT NULL
           ${EXCLUDE_TEST_JOIN}
         GROUP BY day, r.shift, r.value
@@ -189,7 +366,6 @@ export const getWeeklyDayStrong = async (req, res) => {
     const filter = getDateFilters(req);
     const MIN_RESPONSES = 5;
 
-    // Esta query no usa alias r, se reemplaza para que funcione sin JOIN
     const condition = filter.condition.replace(/r\.created_at/g, 'created_at');
 
     const result = await db.execute({

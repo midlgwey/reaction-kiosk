@@ -9,6 +9,7 @@ import SuggestionsPage from "./admin/pages/SuggestionsPage";
 import ReportsPage from "./admin/pages/ReportsPage";
 import QuestionScreen from "./user/pages/QuestionScreen";
 import WaiterPage from "./admin/pages/WaiterPage";
+import WaiterTablePage from "./admin/pages/WaiterTablePage";
 import EmployeesPage from "./superadmin/page/EmployeesPage";
 import AttendancePage from "./superadmin/page/AttendancePage";
 import SchedulewPage from "./superadmin/page/SchedulewPage";
@@ -52,6 +53,11 @@ function App() {
           <Route element={<PermissionGuard permissionKey="meseros" />}>
             <Route path="waiter" element={<WaiterPage />} />
           </Route>
+
+              <Route element={<PermissionGuard permissionKey="meseros" />}>
+            <Route path="waitertable" element={<WaiterTablePage />} />
+          </Route>
+
 
           <Route element={<PermissionGuard permissionKey="estadisticas" />}>
             <Route path="stats" element={<StatsPage />} />

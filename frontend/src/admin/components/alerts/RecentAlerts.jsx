@@ -19,9 +19,9 @@ export default function RecentAlerts() {
     }
     if (type === 'rechazo_encuesta') {
       return {
-        wrapper: 'bg-slate-50 border-slate-200 hover:shadow-md',
-        iconBg: 'bg-slate-100 text-slate-600',
-        label: 'text-slate-700',
+        wrapper: 'bg-orange-50 border-orange-200 hover:shadow-md',
+        iconBg: 'bg-orange-100 text-orange-600',
+        label: 'text-orange-800',
         icon: <ExclamationTriangleIcon className="w-5 h-5" />,
         titulo: 'Encuesta rechazada'
       };

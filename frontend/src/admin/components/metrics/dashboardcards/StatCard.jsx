@@ -1,23 +1,59 @@
 import React, { useState } from 'react';
 
-const variants = {
-  indigo: { bg: "bg-indigo-100", border: "border-indigo-200", textTitle: "text-indigo-800", iconContainer: "bg-white/60 text-indigo-600" },
-  emerald: { bg: "bg-emerald-100", border: "border-emerald-200", textTitle: "text-emerald-800", iconContainer: "bg-white/60 text-emerald-600" },
-  amber: { bg: "bg-amber-100", border: "border-amber-200", textTitle: "text-amber-800", iconContainer: "bg-white/60 text-amber-600" },
-  blue: { bg: "bg-blue-100", border: "border-blue-200", textTitle: "text-blue-800", iconContainer: "bg-white/60 text-blue-600" },
-  purple: { bg: "bg-purple-100", border: "border-purple-200", textTitle: "text-purple-800", iconContainer: "bg-white/60 text-purple-600" },
-  rose: { bg: "bg-rose-100", border: "border-rose-200", textTitle: "text-rose-800", iconContainer: "bg-white/60 text-rose-600" },
-  orange: { bg: "bg-orange-100", border: "border-orange-200", textTitle: "text-orange-800", iconContainer: "bg-white/60 text-orange-600" }
+/**
+ * Colores de acento — SOLO se usan en el ícono y en el borde izquierdo.
+ * El fondo de la card siempre es blanco, sin importar el color asignado.
+ */
+const accentColors = {
+  indigo: {
+    iconBg: "bg-indigo-100",
+    iconText: "text-indigo-600",
+    borderAccent: "border-l-indigo-400",
+    titleText: "text-indigo-700",
+  },
+  emerald: {
+    iconBg: "bg-emerald-100",
+    iconText: "text-emerald-600",
+    borderAccent: "border-l-emerald-400",
+    titleText: "text-emerald-700",
+  },
+  amber: {
+    iconBg: "bg-amber-100",
+    iconText: "text-amber-600",
+    borderAccent: "border-l-amber-400",
+    titleText: "text-amber-700",
+  },
+  blue: {
+    iconBg: "bg-blue-100",
+    iconText: "text-blue-600",
+    borderAccent: "border-l-blue-400",
+    titleText: "text-blue-700",
+  },
+  purple: {
+    iconBg: "bg-purple-100",
+    iconText: "text-purple-600",
+    borderAccent: "border-l-purple-400",
+    titleText: "text-purple-700",
+  },
+  rose: {
+    iconBg: "bg-rose-100",
+    iconText: "text-rose-600",
+    borderAccent: "border-l-rose-400",
+    titleText: "text-rose-700",
+  },
+  orange: {
+    iconBg: "bg-orange-100",
+    iconText: "text-orange-600",
+    borderAccent: "border-l-orange-400",
+    titleText: "text-orange-700",
+  },
 };
 
 export default function StatCard({ title, value, subtitle, icon, color = 'indigo', tooltip }) {
-  // Seleccionamos el tema de color o usamos 'indigo' por defecto
-  const theme = variants[color] || variants.indigo;
+  const accent = accentColors[color] || accentColors.indigo;
   
-  // Estado para controlar la visibilidad del modal en móviles
   const [isOpen, setIsOpen] = useState(false);
 
-  // Al hacer clic o touch, si hay tooltip abrimos el modal personalizado
   const handleClick = () => {
     if (tooltip) {
       setIsOpen(true);
@@ -30,21 +66,21 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
       <div 
         onClick={handleClick}
         className={`
-          ${theme.bg} ${theme.border} 
+          bg-white border border-slate-200 border-l-4 ${accent.borderAccent}
           p-4 lg:p-5             
-          rounded-2xl border flex flex-col justify-between 
+          rounded-2xl flex flex-col justify-between 
           shadow-sm transition-all hover:shadow-md 
           min-h-32.5 cursor-pointer select-none
         `}
       >
         {/* Cabecera con título e icono */}
         <div className="flex justify-between items-start gap-2">
-          <p className={`${theme.textTitle} text-[10px] lg:text-xs font-extrabold uppercase tracking-wider mt-1`}>
+          <p className={`${accent.titleText} text-[10px] lg:text-xs font-extrabold uppercase tracking-wider mt-1`}>
             {title}
           </p>
           
           {icon && (
-            <div className={`${theme.iconContainer} p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0`}>
+            <div className={`${accent.iconBg} ${accent.iconText} p-2 rounded-xl flex items-center justify-center w-10 h-10 shrink-0`}>
               {React.cloneElement(icon, { className: "w-5 h-5 lg:w-6 lg:h-6" })}
             </div>
           )}
@@ -60,7 +96,7 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
           </h3>
 
           {subtitle && (
-            <p className="text-slate-800 text-[10px] lg:text-xs font-bold mt-1 leading-snug">
+            <p className="text-slate-500 text-[10px] lg:text-xs font-bold mt-1 leading-snug">
               {subtitle}
             </p>
           )}

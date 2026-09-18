@@ -41,7 +41,7 @@ export default function WaiterPerformanceTable() {
           </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-auto max-h-[300px] md:max-h-[400px] lg:max-h-[450px]">
         {loading ? (
           <div className="flex justify-center items-center min-h-[200px]">
             <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
@@ -51,7 +51,7 @@ export default function WaiterPerformanceTable() {
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200">
+               <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0">
                 <th className="px-5 py-4 whitespace-nowrap">Mesero</th>
                 <th className="px-5 py-4 text-center whitespace-nowrap">Captadas</th>
                 <th className="px-5 py-4 text-center whitespace-nowrap">Mesas Reales</th>

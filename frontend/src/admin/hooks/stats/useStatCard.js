@@ -1,3 +1,4 @@
+// src/admin/hooks/stats/useStatCard.js
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
@@ -20,7 +21,6 @@ function useGenericCardData(endpoint, days) {
         const res = await api.get(`${endpoint}?days=${days}`);
 
         // Verificamos si la respuesta viene vacía o nula
-        // Ajusta la validación según la estructura de cada endpoint
         const values = Object.values(res.data)[0]; // Truco para agarrar la primera llave del JSON (ej: bestQuestionWeek)
         
         if (!res.data || !values) {
@@ -29,7 +29,7 @@ function useGenericCardData(endpoint, days) {
         }
 
         setState({
-          data: values, // Guardamos el objeto (question, avg_score, etc.)
+          data: values, // Guardamos el objeto (question, avg_score, trend, etc.)
           loading: false,
           error: null,
           ready: true
@@ -46,7 +46,7 @@ function useGenericCardData(endpoint, days) {
 }
 
 /* ===============================
-   HOOKS EXPORTABLES 
+   HOOKS EXPORTABLES — PREGUNTAS
 =================================*/
 
 export function useBestQuestionWeek(days = 7) {
@@ -55,6 +55,7 @@ export function useBestQuestionWeek(days = 7) {
     question: data?.question || "",
     avg: data?.avg_score || 0,
     votes: data?.total_votes || 0,
+    trend: data?.trend || null,
     loading, error, ready
   };
 }
@@ -65,14 +66,16 @@ export function useWorstQuestionWeek(days = 7) {
     question: data?.question || "",
     avg: data?.avg_score || 0,
     votes: data?.total_votes || 0,
+    trend: data?.trend || null,
     loading, error, ready
   };
 }
 
+/* ===============================
+   HOOKS EXPORTABLES — DÍAS
+=================================*/
+
 export function useStrongDayWeek(days = 7) {
-  // Nota: tus endpoints de días devuelven el objeto directo, no anidado.
-  // Podrías necesitar un pequeño ajuste si el backend devuelve { day_name: ... } directo.
-  // Asumiremos que el backend devuelve JSON directo.
   const [state, setState] = useState({ day: "", percent: 0, loading: true, ready: false });
 
   useEffect(() => {
@@ -115,5 +118,47 @@ export function useWeakDayWeek(days = 7) {
          .catch(() => setState(p => ({...p, loading: false, ready: false})));
   }, [days]);
   
+  return state;
+}
+
+/* ===============================
+   HOOKS EXPORTABLES — RECHAZOS Y TOTAL DE ENCUESTAS
+=================================*/
+
+export function useWeeklyDeclinesTrend(days = 7) {
+  const [state, setState] = useState({ total: 0, trend: null, loading: true, error: null });
+
+  useEffect(() => {
+    api.get(`/stats/weekly-declines-trend?days=${days}`)
+      .then(res => {
+        setState({
+          total: res.data?.total ?? 0,
+          trend: res.data?.trend || null,
+          loading: false,
+          error: null
+        });
+      })
+      .catch(() => setState({ total: 0, trend: null, loading: false, error: "Error de red" }));
+  }, [days]);
+
+  return state;
+}
+
+export function useWeeklyTotalSurveys(days = 7) {
+  const [state, setState] = useState({ total: 0, trend: null, loading: true, error: null });
+
+  useEffect(() => {
+    api.get(`/stats/weekly-total-surveys?days=${days}`)
+      .then(res => {
+        setState({
+          total: res.data?.total ?? 0,
+          trend: res.data?.trend || null,
+          loading: false,
+          error: null
+        });
+      })
+      .catch(() => setState({ total: 0, trend: null, loading: false, error: "Error de red" }));
+  }, [days]);
+
   return state;
 }

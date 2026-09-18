@@ -8,7 +8,6 @@ import { useWaiterPerformanceFilters, dateOptions} from './useWaiterPerformanceF
 import QuestionBar from '../dashboard/QuestionBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUtensils } from '@fortawesome/free-solid-svg-icons';
-// Estilos base de react-day-picker
 import 'react-day-picker/dist/style.css';
 
 const ChartLoading = () => (
@@ -39,6 +38,18 @@ const customSelectStyles = {
   })
 };
 
+/**
+ * Leyenda simple
+ */
+function LegendItem({ color, label }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`w-2.5 h-2.5 rounded-full ${color} shadow-sm`}></span>
+      <span className="text-xs font-semibold text-slate-600">{label}</span>
+    </div>
+  );
+}
+
 export default function WaiterPerformance() {
   const {
     selectedOption, setSelectedOption,
@@ -64,21 +75,25 @@ export default function WaiterPerformance() {
   const waiterOptions = useMemo(() => waiters.map(w => ({ value: w.id, label: w.mesero })), [waiters]);
   const currentWaiterValue = waiterOptions.find(opt => opt.value === selectedWaiterId) || null;
 
-  // Opciones de mesas basadas en lo que devuelve el backend
   const tableOptions = useMemo(() => tables.map(t => ({ value: t, label: `Mesa ${t}` })), [tables]);
   const currentTableValue = selectedTable ? { value: selectedTable, label: `Mesa ${selectedTable}` } : null;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col w-full h-full">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-4 sm:p-6 flex flex-col w-full h-full">
 
-      {/* Encabezado y Filtros */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
+      {/* Encabezado */}
+      <div className="flex flex-col mb-6 gap-3 border-b border-slate-100 pb-4 sm:pb-6">
         <div>
-          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">Radiografía por Mesero</h3>
-          <p className="text-xs text-slate-500 mt-1 font-medium">Análisis de satisfacción del cliente por colaborador</p>
+          <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
+            Radiografía por Mesero
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 font-medium">
+            Análisis de satisfacción del cliente por colaborador
+          </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto relative" ref={pickerRef}>
+        {/* Filtros - Apilados en mobile, en fila en sm+ */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full relative" ref={pickerRef}>
           
           {/* Select Mesero */}
           <div className="w-full sm:w-64">
@@ -151,7 +166,7 @@ export default function WaiterPerformance() {
           {selectedOption.value === 'custom' && !isPickerOpen && (
             <button
               onClick={() => setIsPickerOpen(true)}
-              className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase"
+              className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase whitespace-nowrap"
             >
               {format(selectedDay, "dd 'de' MMMM", { locale: es })}
             </button>
@@ -159,11 +174,11 @@ export default function WaiterPerformance() {
         </div>
       </div>
 
-      {/* Contenido */}
-      <div className="min-h-[300px]">
+      {/* Contenido principal */}
+      <div className="flex-1 min-h-[300px] overflow-y-auto">
         {!selectedWaiterId ? (
           <div className="flex items-center justify-center min-h-[300px]">
-            <div className="flex flex-col items-center gap-2 text-slate-400">
+            <div className="flex flex-col items-center gap-2 text-slate-400 text-center px-4">
               <FontAwesomeIcon icon={faUtensils} className="text-3xl mb-2" />
               <p className="italic text-sm">Seleccione a un mesero para visualizar sus métricas</p>
             </div>
@@ -171,15 +186,19 @@ export default function WaiterPerformance() {
         ) : loading ? (
           <ChartLoading />
         ) : error ? (
-          <div className="py-20 text-center text-rose-400 font-bold text-xs uppercase tracking-widest">{error}</div>
+          <div className="py-20 text-center text-rose-400 font-bold text-xs uppercase tracking-widest px-4">
+            {error}
+          </div>
         ) : radiography.length > 0 ? (
-          <div className="space-y-8">
-            {/* Indica si estás viendo una mesa específica */}
+          <div className="space-y-6 sm:space-y-8 pr-4">
+            {/* Indicador de mesa específica */}
             {selectedTable && (
               <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">
-                Mostrando resultados de Mesa {selectedTable}
+                📍 Mostrando resultados de Mesa {selectedTable}
               </p>
             )}
+            
+            {/* Preguntas */}
             {radiography.map((q) => (
               <QuestionBar key={q.id} question={q} />
             ))}
@@ -192,21 +211,12 @@ export default function WaiterPerformance() {
       </div>
 
       {/* Leyenda */}
-      <div className="mt-10 pt-6 border-t border-slate-50 flex flex-wrap gap-6 justify-center">
+      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap gap-4 sm:gap-6 justify-center">
         <LegendItem color="bg-emerald-400" label="Excelente" />
         <LegendItem color="bg-indigo-400" label="Bueno" />
         <LegendItem color="bg-amber-400" label="Regular" />
         <LegendItem color="bg-rose-400" label="Malo" />
       </div>
-    </div>
-  );
-}
-
-function LegendItem({ color, label }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={`w-2.5 h-2.5 rounded-full ${color} shadow-sm`}></span>
-      <span className="text-xs font-semibold text-slate-600">{label}</span>
     </div>
   );
 }

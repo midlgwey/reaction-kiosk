@@ -448,3 +448,61 @@ export const getWaiterPerformanceReport = async (req, res) => {
         throw new InternalServerError("Error al obtener reporte de rendimiento");
     }
 };
+
+
+/**
+ * Estadísticas diarias de meseros durante un mes.
+ * Devuelve satisfacción y captadas por día, para graficar evolución.
+ * Útil para ver tendencias a lo largo del mes.
+ */
+export const getDailyWaiterStats = async (req, res) => {
+    const { month, year } = req.query;
+    const { startDate, endDate } = getMonthRange(month, year);
+
+    try {
+        const result = await db.execute({
+            sql: `
+                SELECT
+                    date(datetime(r.created_at, ?)) AS fecha,
+                    w.id AS waiter_id,
+                    w.name AS mesero,
+                    COUNT(DISTINCT r.survey_id) AS captadas,
+                    COALESCE(AVG(CASE WHEN r.question_id = 1 THEN r.value END), 0) AS promedio_p1,
+                    ROUND(
+                        COALESCE(AVG(CASE WHEN r.question_id = 1 THEN r.value END), 0) / 4 * 100, 
+                        2
+                    ) AS satisfaccion
+                FROM reactions r
+                LEFT JOIN waiters w ON r.waiter_id = w.id
+                WHERE date(datetime(r.created_at, ?)) BETWEEN date(?) AND date(?)
+                AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+                GROUP BY fecha, w.id, w.name
+                ORDER BY fecha ASC, w.name ASC
+            `,
+            args: [TIME_OFFSET, TIME_OFFSET, startDate, endDate]
+        });
+
+        // Agrupar por mesero para mejor estructura
+        const statsByWaiter = {};
+        result.rows.forEach(row => {
+            if (!statsByWaiter[row.waiter_id]) {
+                statsByWaiter[row.waiter_id] = {
+                    waiter_id: row.waiter_id,
+                    mesero: row.mesero,
+                    datos_diarios: []
+                };
+            }
+            statsByWaiter[row.waiter_id].datos_diarios.push({
+                fecha: row.fecha,
+                captadas: row.captadas,
+                promedio_p1: parseFloat(row.promedio_p1).toFixed(2),
+                satisfaccion: row.satisfaccion
+            });
+        });
+
+        res.status(StatusCodes.OK).json(Object.values(statsByWaiter));
+    } catch (error) {
+        console.error("Error en getDailyWaiterStats:", error);
+        throw new InternalServerError("Error al obtener estadísticas diarias");
+    }
+};

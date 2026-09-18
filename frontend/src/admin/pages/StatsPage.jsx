@@ -1,28 +1,28 @@
 import StatGridQWeekly from "../components/metrics/statscards/StatGridWeekly"
 import SatisfactionByShift from "../components/charts/stats/SatisfactionByShift"
 import WeeklyCompRadar from "../components/charts/stats/WeeklyCompRadar"
-import DailyTableCapture from "../components/tables/DailyTableCapture"
-import WaiterPerformanceTable from "../components/tables/WaiterPerformanceTable"
 
 const StatsPage = () => {
   return (
-    <div className="space-y-6">
-      <section>
-        <StatGridQWeekly />
-      </section>
+    <div className="p-6 sm:p-8">
+      <div className="mx-auto max-w-7xl space-y-6">
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-4 min-w-0  min-h-[450px]">
-          <WeeklyCompRadar />
+        {/* Tarjetas de métricas semanales */}
+        <section>
+          <StatGridQWeekly />
+        </section>
+
+        {/* Grid: Radar (4 cols) + Satisfacción por turno (8 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-4 min-w-0 min-h-[450px]">
+            <WeeklyCompRadar />
+          </div>
+          <div className="lg:col-span-8 min-w-0 min-h-[450px]">
+            <SatisfactionByShift />
+          </div>
         </div>
-        <div className="col-span-12 lg:col-span-8  min-h-[450px]">
-          <SatisfactionByShift />
-        </div>
+
       </div>
-
-        <DailyTableCapture />
-
-        <WaiterPerformanceTable />
     </div>
   );
 }

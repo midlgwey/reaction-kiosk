@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { logoutAdminService } from "../services/authService";
 import kioskly from "../../assets/logo/kioskly-sidebar.png";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -14,12 +14,17 @@ import {
   UserPlusIcon,
   CalendarDaysIcon,
   PresentationChartLineIcon,
-  IdentificationIcon
+  IdentificationIcon,
+  ChevronDownIcon,
+  PlusCircleIcon,
+  ClipboardDocumentListIcon
 } from "@heroicons/react/24/solid";
 
 const Sidebar = ({ open, setOpen, setAdmin }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [permissions, setPermissions] = useState({});
+  const [expandedMenu, setExpandedMenu] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("permissions");
@@ -31,6 +36,14 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
       }
     }
   }, []);
+
+  // Detecta si estamos en una ruta relacionada a meseros para expandir automáticamente
+  useEffect(() => {
+    if (location.pathname.includes("/admin/waiter") || 
+        location.pathname.includes("/admin/stats")) {
+      setExpandedMenu("meseros");
+    }
+  }, [location]);
 
   const handleLogout = async () => {
     try {
@@ -47,7 +60,28 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
 
   const menuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: HomeIcon, key: "dashboard" },
-    { name: "Meseros", path: "/admin/waiter", icon: UserIcon, key: "meseros" },
+    {
+      name: "Meseros",
+      icon: UserIcon,
+      key: "meseros",
+      hasSubmenu: true,
+      submenu: [
+        {
+          name: "Captura Diaria",
+          path: "/admin/waitertable",
+          icon: PlusCircleIcon,
+          key: "captura-diaria",
+          description: "Registra mesas atendidas por mesero"
+        },
+        {
+          name: "Reporte Mensual",
+          path: "/admin/waiter",
+          icon: ClipboardDocumentListIcon,
+          key: "reporte-mensual",
+          description: "Visualiza rendimiento y cumplimiento"
+        }
+      ]
+    },
     { name: "Estadísticas", path: "/admin/stats", icon: ChartBarIcon, key: "estadisticas" },
     { name: "Comentarios", path: "/admin/feedback", icon: ChatBubbleBottomCenterTextIcon, key: "comentarios" },
     { name: "Reportes", path: "/admin/recovery", icon: DocumentCheckIcon, key: "reportes" },
@@ -56,6 +90,10 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
     { name: "Horarios", path: "/admin/weekly-schedule", icon: CalendarDaysIcon, key: "horarios" },
     { name: "Ventas", path: "/admin/sales", icon: PresentationChartLineIcon, key: "ventas" },
   ];
+
+  const toggleMenu = (key) => {
+    setExpandedMenu(expandedMenu === key ? null : key);
+  };
 
   return (
     <>
@@ -95,31 +133,83 @@ const Sidebar = ({ open, setOpen, setAdmin }) => {
           {menuItems.map((item) => {
             if (!permissions[item.key]) return null;
 
-            const Icon = item.icon;
             const showSigoDivider = item.key === "empleados";
+            const Icon = item.icon;
+            const isExpanded = expandedMenu === item.key;
 
             return (
               <React.Fragment key={item.key}>
                 {showSigoDivider && (
                   <div className="pt-3 pb-1">
                     <div className="my-2 bg-white h-px"></div>
-                    {/* pl-[82px] alinea exactamente con el texto "Kioskly" de arriba */}
-                    <span className="block pl-[82px]  text-[22px] font-bold text-white/90 tracking-wider uppercase">
+                    <span className="block pl-[82px] text-[22px] font-bold text-white/90 tracking-wider uppercase">
                       SIGO
                     </span>
                   </div>
                 )}
-                <NavLink
-                  to={item.path}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) => `
-                    p-3 flex items-center rounded-md px-4 cursor-pointer transition
-                    ${isActive ? "bg-slate-500/70" : "hover:bg-slate-500/50"}
-                  `}
-                >
-                  <Icon className="w-7 h-7 text-white" />
-                  <span className="text-[16px] ml-4 font-bold">{item.name}</span>
-                </NavLink>
+
+                {/* Item Principal */}
+                {item.hasSubmenu ? (
+                  <button
+                    onClick={() => toggleMenu(item.key)}
+                    className={`
+                      w-full p-3 px-4 flex items-center justify-between rounded-md cursor-pointer transition
+                      ${isExpanded ? "bg-slate-500/70" : "hover:bg-slate-500/50"}
+                    `}
+                  >
+                    <div className="flex items-center">
+                      <Icon className="w-7 h-7 text-white" />
+                      <span className="text-[16px] ml-4 font-bold">{item.name}</span>
+                    </div>
+                    <ChevronDownIcon
+                      className={`w-5 h-5 transition-transform duration-300 ${
+                        isExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) => `
+                      p-3 flex items-center rounded-md px-4 cursor-pointer transition
+                      ${isActive ? "bg-slate-500/70" : "hover:bg-slate-500/50"}
+                    `}
+                  >
+                    <Icon className="w-7 h-7 text-white" />
+                    <span className="text-[16px] ml-4 font-bold">{item.name}</span>
+                  </NavLink>
+                )}
+
+                {/* Submenu */}
+                {item.hasSubmenu && isExpanded && (
+                  <div className="space-y-1 pl-4">
+                    {item.submenu.map((subitem) => (
+                      <NavLink
+                        key={subitem.key}
+                        to={subitem.path}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) => `
+                          group p-3 px-4 flex items-start gap-3 rounded-md cursor-pointer transition
+                          ${isActive 
+                            ? "bg-white/20 border-l-2 border-white" 
+                            : "hover:bg-white/10 border-l-2 border-transparent"
+                          }
+                        `}
+                      >
+                        <subitem.icon className="w-5 h-5 text-white mt-0.5 shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="text-[14px] font-semibold text-white">
+                            {subitem.name}
+                          </span>
+                          <span className="text-[11px] text-white/70 group-hover:text-white/90 transition">
+                            {subitem.description}
+                          </span>
+                        </div>
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
               </React.Fragment>
             );
           })}

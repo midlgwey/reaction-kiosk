@@ -2,18 +2,14 @@ import React from 'react';
 import { useSuggestionsList } from '../hooks/feedback/useSuggestionsList';
 import { useSuggestionsPagination } from '../hooks/feedback/useSuggestionsPagination';
 
-// Componentes de Presentación
 import SuggestionsHeader from '../components/suggestions/SuggestionsHeader';
 import SuggestionsTable from '../components/suggestions/SuggestionsTable';
 import Pagination from '../components/suggestions/Pagination';
 import FeedbackStats from '../components/metrics/suggestionscards/StatCardSuggestions';
 
 export default function SuggestionsPage() {
-
-  // Hook de Datos: Obtención y recarga de comentarios desde el backend.
   const { comments, loading, refresh } = useSuggestionsList();
 
-  // Hook de Lógica de UI: Gestión de paginación y filtrado local.
   const { 
     searchTerm, 
     handleSearch, 
@@ -24,35 +20,34 @@ export default function SuggestionsPage() {
   } = useSuggestionsPagination(comments, 10); 
 
   return (
-    // Contenedor Raíz:
-    // - Se elimina el padding (p-6) ya que es inyectado por el AdminLayout.
-    // - Se mantiene 'space-y-6' para el espaciado vertical uniforme entre componentes.
-    <div className="space-y-6 font-sans">
-      
-      {/* Sección de Métricas (KPIs): Resumen estadístico diario */}
-       <FeedbackStats />
+    <div className="p-6 sm:p-8">
+      <div className="mx-auto max-w-7xl space-y-6 font-sans">
+        
+        {/* Sección de Métricas */}
+        <FeedbackStats />
 
-       {/* Barra de Herramientas: Controles de búsqueda y actualización */}
-      <SuggestionsHeader 
-        searchTerm={searchTerm} 
-        onSearch={handleSearch} 
-        onRefresh={refresh} 
-        loading={loading} 
-      />
+        {/* Barra de Herramientas */}
+        <SuggestionsHeader 
+          searchTerm={searchTerm} 
+          onSearch={handleSearch} 
+          onRefresh={refresh} 
+          loading={loading} 
+        />
 
-      {/* Visualización de Datos: Tabla renderizada con el subset de datos actual */}
-      <SuggestionsTable 
-        data={currentData} 
-        loading={loading} 
-      />
+        {/* Tabla de Datos */}
+        <SuggestionsTable 
+          data={currentData} 
+          loading={loading} 
+        />
 
-      {/* Controles de Navegación: Paginación del dataset */}
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+        {/* Paginación */}
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
 
+      </div>
     </div>
   );
 }

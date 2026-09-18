@@ -1,20 +1,19 @@
 import {
   ShieldCheckIcon,
   ExclamationCircleIcon,
-  FireIcon,
-  HandThumbDownIcon,
+  ChatBubbleLeftRightIcon,
+  NoSymbolIcon,
   ExclamationTriangleIcon
 } from "@heroicons/react/24/solid";
 
 import StatCardWeekly from "./StatCardWeekly";
-import StatCard from "../dashboardcards/StatCard";
 
 import {
   useBestQuestionWeek,
   useWorstQuestionWeek,
-  useStrongDayWeek,
-  useWeakDayWeek,
-} from "../../../hooks/stats/useStatCard"
+  useWeeklyDeclinesTrend,
+  useWeeklyTotalSurveys,
+} from "../../../hooks/stats/useStatCard";
 
 // Helpers
 const Spinner = () => (
@@ -27,85 +26,71 @@ const ErrorIcon = () => (
   <ExclamationTriangleIcon className="w-8 h-8 text-red-400" />
 );
 
-
-// Builder para preguntas 
+// Builder para preguntas (mejor/peor)
 function buildQuestionCard(dataState) {
-    // Estado de carga inicial
   if (dataState.loading) {
-    return { question: <Spinner />, subtitle: null };
+    return { question: <Spinner />, subtitle: null, trend: null };
   }
-    // Manejo de excepciones de red o servidor
   if (dataState.error) {
-    return { question: <ErrorIcon />, subtitle: "Error al cargar" };
+    return { question: <ErrorIcon />, subtitle: "Error al cargar", trend: null };
   }
-
-    // Si ready es false o el dato es nulo, significa que ningúna pregunta
-  // alcanzó el umbral mínimo de 5 votos definido en el controlador SQL.
   if (!dataState.ready || !dataState.question || dataState.question === "Sin datos aún") {
     return { 
-      question: "Pendiente ", 
-      subtitle: "Mínimo 5 encuestas requeridas" 
+      question: "Pendiente", 
+      subtitle: "Mínimo 5 encuestas requeridas",
+      trend: null
     };
   }
 
-  // Normalización del puntaje a porcentaje
   const percentage = dataState.avg 
     ? Math.round((dataState.avg / 4) * 100) 
     : 0;
 
   return {
     question: dataState.question,
-    subtitle: `${percentage}% satisfacción`
+    subtitle: `${percentage}% satisfacción`,
+    trend: dataState.trend
   };
 }
 
-// Builder para días 
-function buildDayCard(dataState) {
-  // Estado de carga inicial
+// Builder para cards numéricas (rechazos, total encuestas)
+function buildCountCard(dataState) {
   if (dataState.loading) {
-    return { value: <Spinner />, subtitle: null };
+    return { question: <Spinner />, subtitle: null, trend: null };
   }
-
-  // Manejo de excepciones de red o servidor
   if (dataState.error) {
-    return { value: <ErrorIcon />, subtitle: "Error al cargar" };
+    return { question: <ErrorIcon />, subtitle: "Error al cargar", trend: null };
   }
 
-  // Si ready es false o el dato es nulo, significa que ningún día
-  // alcanzó el umbral mínimo de 5 votos definido en el controlador SQL.
-  if (!dataState.ready || !dataState.day) {
-    return { 
-      value: " Pendiente", 
-      subtitle: "Mínimo 5 encuestas requeridas" 
-    };
-  }
   return {
-    value: dataState.day,
-    subtitle: `${dataState.percent}% promedio`
+    question: dataState.total ?? 0,
+    subtitle: "Esta semana",
+    trend: dataState.trend
   };
 }
+
 export default function StatGridWeekly() {
   const best = useBestQuestionWeek();
   const worst = useWorstQuestionWeek();
-  const strong = useStrongDayWeek();
-  const weak = useWeakDayWeek();
+  const declines = useWeeklyDeclinesTrend();
+  const totalSurveys = useWeeklyTotalSurveys();
 
-  // Preparamos la data visual
   const bestCard = buildQuestionCard(best);
   const worstCard = buildQuestionCard(worst);
-  const strongCard = buildDayCard(strong);
-  const weakCard = buildDayCard(weak);
+  const declinesCard = buildCountCard(declines);
+  const surveysCard = buildCountCard(totalSurveys);
 
   return (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
 
       {/* MEJOR PREGUNTA */}
       <StatCardWeekly
         title="PREGUNTA MEJOR VALORADA"
         question={bestCard.question}
         subtitle={bestCard.subtitle}
+        trend={bestCard.trend}
         color="emerald"
-        icon={<ShieldCheckIcon className="w-8 h-8 md:w-10 md:h-10 " />}
+        icon={<ShieldCheckIcon className="w-8 h-8 md:w-10 md:h-10" />}
       />
 
       {/* PEOR PREGUNTA */}
@@ -113,26 +98,29 @@ export default function StatGridWeekly() {
         title="PREGUNTA CON MÁS QUEJAS"
         question={worstCard.question}
         subtitle={worstCard.subtitle}
+        trend={worstCard.trend}
         color="rose"
         icon={<ExclamationCircleIcon className="w-8 h-8 md:w-10 md:h-10" />}
       />
 
-      {/* DIA FUERTE (Usamos StatCard simple porque es dato corto) */}
-      <StatCard
-        title="DÍA MÁS FUERTE DE LA SEMANA"
-        value={strongCard.value}
-        subtitle={strongCard.subtitle} 
-        color="amber"
-        icon={<FireIcon className="w-8 h-8 md:w-10 md:h-10" />}
+      {/* TOTAL ENCUESTAS */}
+      <StatCardWeekly
+        title="TOTAL DE ENCUESTAS"
+        question={surveysCard.question}
+        subtitle={surveysCard.subtitle}
+        trend={surveysCard.trend}
+        color="indigo"
+        icon={<ChatBubbleLeftRightIcon className="w-8 h-8 md:w-10 md:h-10" />}
       />
 
-      {/* DIA DÉBIL */}
-      <StatCard
-        title="DÍA MÁS DÉBIL DE LA SEMANA"
-        value={weakCard.value}
-        subtitle={weakCard.subtitle}
-        color="orange"
-        icon={<HandThumbDownIcon className="w-8 h-8 md:w-10 md:h-10 " />}
+      {/* RECHAZOS */}
+      <StatCardWeekly
+        title="RECHAZOS DE LA SEMANA"
+        question={declinesCard.question}
+        subtitle={declinesCard.subtitle}
+        trend={declinesCard.trend}
+        color="amber"
+        icon={<NoSymbolIcon className="w-8 h-8 md:w-10 md:h-10" />}
       />
 
     </div>

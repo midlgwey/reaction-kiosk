@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getWaitersTableRanking, getWaiterRadiography, getAllWaiters, getWaiterTables, getWaiterDeclines, getDeclinesLog, getSurveysLog, getWaiterPerformanceReport} from '../controllers/waiterStatsController.js';
+import { getWaitersTableRanking, getWaiterRadiography, getAllWaiters, getWaiterTables, getWaiterDeclines, getDeclinesLog, getSurveysLog, getWaiterPerformanceReport, getDailyWaiterStats} from '../controllers/waiterStatsController.js';
 import { authenticateAdmin, authorizePermissions } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -16,6 +16,8 @@ router.get('/get-surveyslog', authenticateAdmin, authorizePermissions('admin'), 
 router.get('/get-declineslog', authenticateAdmin, authorizePermissions('admin'), getDeclinesLog);
 
 //
+router.get('/get-daily-waiter-stats', authenticateAdmin, getDailyWaiterStats);
 router.get('/get-performance-report', authenticateAdmin, getWaiterPerformanceReport);
+
 
 export default router;
