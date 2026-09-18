@@ -2,7 +2,25 @@ import React from 'react'
 import DailyTableCapture from '../components/tables/DailyTableCapture';
 import WaiterPerformanceTable from '../components/tables/WaiterPerformanceTable';
 import WaiterLogbook from '../components/tables/WaiterLogbook';
-import PageHeader from '../components/ui/Pageheader';
+
+/**
+ * PageHeader - Componente reutilizable para encabezados
+ */
+function PageHeader({ title, subtitle }) {
+  return (
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold text-slate-800 tracking-tight border-l-4 border-indigo-600 pl-4">
+        {title}
+      </h1>
+      {subtitle && (
+        <p className="text-sm mt-2 text-gray-500">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
 
 const WaiterPage = () => {
   return (
