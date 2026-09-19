@@ -2,27 +2,34 @@ import {
   useDailyReactions,
   useDailyServerScore,
   useLowInteractionWaiters,
-  useDailySurveyCount
+  useDailySurveyCount,
+  useLowestRatedWaiter,
+  useWorstRatedQuestion
 } from "../../../hooks/dashboard/useDashboardSummary";
  
 import {
   buildReactionsCard,
   buildServerScoreCard,
   buildLowInteractionCard,
-  buildSurveyCountCard
+  buildSurveyCountCard,
+  buildLowestRatedWaiterCard,
+  buildWorstRatedQuestionCard
 } from "../../../utils/statGridUtils";
  
 export function useStatGrid() {
-  const reactions      = useDailyReactions();
-  const serverScore    = useDailyServerScore();
+  const reactions = useDailyReactions();
+  const serverScore = useDailyServerScore();
   const lowInteractionWaiters = useLowInteractionWaiters();
-  const surveyCount  = useDailySurveyCount();
+  const surveyCount = useDailySurveyCount();
+  const lowestRatedWaiter = useLowestRatedWaiter();
+  const worstRatedQuestion = useWorstRatedQuestion();
  
   return {
-    reactionsCard:   buildReactionsCard(reactions),
+    reactionsCard: buildReactionsCard(reactions),
     serverScoreCard: buildServerScoreCard(serverScore),
-    lowInteractionCard:   buildLowInteractionCard(lowInteractionWaiters),
+    lowInteractionCard: buildLowInteractionCard(lowInteractionWaiters),
     surveyCountCard: buildSurveyCountCard(surveyCount),
+    lowestRatedWaiterCard: buildLowestRatedWaiterCard(lowestRatedWaiter),
+    worstRatedQuestionCard: buildWorstRatedQuestionCard(worstRatedQuestion),
   };
 }
- 

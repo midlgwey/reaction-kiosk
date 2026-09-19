@@ -1,34 +1,59 @@
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+// Función para mostrar el trend de forma visual
+function getTrendIndicator(trend) {
+  if (trend > 0) {
+    return { icon: "↑", color: "text-emerald-600", label: `+${trend}` };
+  } else if (trend < 0) {
+    return { icon: "↓", color: "text-rose-600", label: `${trend}` };
+  }
+  return { icon: "→", color: "text-slate-400", label: "0" };
+}
+
 // ─── Builders ─────────────────────────────────────────────────────────────────
-// Cada función recibe el estado del hook y devuelve { value, subtitle }
-// El JSX de StatCard solo consume estos dos campos.
- 
-export function buildReactionsCard({ loading, error, totalReactions }) {
-  if (loading) return { value: null,    subtitle: null };
-  if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (totalReactions === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy" };
- 
+// Cada función recibe el estado del hook y devuelve { value, subtitle, trend, trendTooltip }
+
+export function buildReactionsCard({ loading, error, totalReactions, trend }) {
+  if (loading) return { value: null, subtitle: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", trend: null };
+  if (totalReactions === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy", trend: null };
+
+  const trendIndicator = getTrendIndicator(trend);
+
   return {
-    value:    totalReactions,
+    value: totalReactions,
     subtitle: "Total de reacciones del día",
+    trend: trendIndicator,
+    trendTooltip: trend > 0 
+      ? `${trend} más reacciones que ayer` 
+      : trend < 0 
+      ? `${Math.abs(trend)} menos reacciones que ayer` 
+      : `Igual que ayer`
   };
 }
- 
-export function buildServerScoreCard({ loading, error, totalResponses, avgScore }) {
-  if (loading) return { value: null,    subtitle: null };
-  if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
-  if (totalResponses === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy" };
- 
+
+export function buildServerScoreCard({ loading, error, totalResponses, avgScore, trend }) {
+  if (loading) return { value: null, subtitle: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", trend: null };
+  if (totalResponses === 0) return { value: "0", subtitle: "Aún no hay reacciones hoy", trend: null };
+
+  const trendIndicator = getTrendIndicator(trend);
+
   return {
-    value:    `${(avgScore || 0).toFixed(1)} / 4`,
+    value: `${(avgScore || 0).toFixed(1)} / 4`,
     subtitle: "Promedio del servicio hoy",
+    trend: trendIndicator,
+    trendTooltip: trend > 0 
+      ? `Mejora de ${trend} vs ayer` 
+      : trend < 0 
+      ? `Baja de ${Math.abs(trend)} vs ayer` 
+      : `Sin cambio vs ayer`
   };
 }
- 
-// Da formato a los datos para mostrarlos bonitos en la tarjeta del dashboard
+
 export function buildLowInteractionCard({ loading, error, data }) {
-  if (loading) return { value: null, subtitle: null, tooltip: null };
-  if (error) return { value: "error", subtitle: "Fallo al cargar datos", tooltip: null };
-  if (data.length === 0) return { value: "Sin actividad", subtitle: "Sin encuestas hoy", tooltip: null };
+  if (loading) return { value: null, subtitle: null, tooltip: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", tooltip: null, trend: null };
+  if (data.length === 0) return { value: "Sin actividad", subtitle: "Sin encuestas hoy", tooltip: null, trend: null };
 
   const byShift = {};
   data.forEach(w => {
@@ -52,21 +77,79 @@ export function buildLowInteractionCard({ loading, error, data }) {
   });
 
   return {
-    value: parts[0].value, // solo muestra el primero en la card
+    value: parts[0].value,
     subtitle: parts.map(p => p.subtitle).join(' · '),
-    tooltip: parts.map(p => p.tooltip).join('\n\n') // desglose completo en el modal
+    tooltip: parts.map(p => p.tooltip).join('\n\n'),
+    trend: null // Sin trend como indicaste
   };
 }
 
-
-
-
 export function buildSurveyCountCard({ loading, error, data }) {
-  if (loading) return { value: null, subtitle: null };
-  if (error)   return { value: "error", subtitle: "Fallo al cargar datos" };
+  if (loading) return { value: null, subtitle: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", trend: null };
+
+  const trendSurveys = getTrendIndicator(data.trendSurveys || 0);
 
   return {
-    value:    `${data.realizadas} | ${data.rechazadas}`,
+    value: `${data.realizadas} | ${data.rechazadas}`,
     subtitle: `Realizadas | No Realizadas`,
+    trend: trendSurveys,
+    trendTooltip: data.trendSurveys > 0 
+      ? `${data.trendSurveys} más encuestas que ayer` 
+      : data.trendSurveys < 0 
+      ? `${Math.abs(data.trendSurveys)} menos encuestas que ayer` 
+      : `Igual que ayer`
+  };
+}
+
+// Nueva card: Mesero con baja calificación
+// Solo muestra si calificación < 4.0 (no perfectas)
+export function buildLowestRatedWaiterCard({ loading, error, data }) {
+  if (loading) return { value: null, subtitle: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", trend: null };
+  if (data.mesero === "Sin datos") return { value: "Ningún mesero", subtitle: "Sin encuestas hoy", trend: null };
+  
+  // Si la calificación es perfecta (4.0), no mostrar como "problema"
+  if (data.avgScore >= 4.0) {
+    return { value: "Ningún mesero", subtitle: "Todos con excelente desempeño", trend: null };
+  }
+
+  const trendIndicator = getTrendIndicator(data.trend);
+
+  return {
+    value: `${data.mesero}`,
+    subtitle: `${(data.avgScore || 0).toFixed(1)} / 4 (${data.totalResponses} enc.)`,
+    trend: trendIndicator,
+    trendTooltip: data.trend > 0 
+      ? `Mejoró ${data.trend} vs ayer` 
+      : data.trend < 0 
+      ? `Bajó ${Math.abs(data.trend)} vs ayer` 
+      : `Sin cambio vs ayer`
+  };
+}
+
+// Nueva card: Pregunta peor calificada
+export function buildWorstRatedQuestionCard({ loading, error, data }) {
+  if (loading) return { value: null, subtitle: null, trend: null };
+  if (error) return { value: "error", subtitle: "Fallo al cargar datos", trend: null };
+  if (data.questionLabel === "Sin datos") return { value: "Sin datos", subtitle: "Sin encuestas hoy", trend: null };
+
+  const trendIndicator = getTrendIndicator(data.trend);
+  
+  // Acortar el label de la pregunta si es muy largo
+  const shortLabel = data.questionLabel.length > 35 
+    ? data.questionLabel.substring(0, 32) + "..."
+    : data.questionLabel;
+
+  return {
+    value: `${(data.avgScore || 0).toFixed(1)} / 4`,
+    subtitle: shortLabel,
+    trend: trendIndicator,
+    tooltip: `Pregunta: ${data.questionLabel}\nCalificación: ${data.avgScore}/4\nTotal de respuestas: ${data.totalResponses}`,
+    trendTooltip: data.trend > 0 
+      ? `Mejoró ${data.trend} vs ayer` 
+      : data.trend < 0 
+      ? `Bajó ${Math.abs(data.trend)} vs ayer` 
+      : `Sin cambio vs ayer`
   };
 }

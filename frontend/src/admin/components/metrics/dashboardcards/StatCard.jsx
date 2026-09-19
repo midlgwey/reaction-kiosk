@@ -49,15 +49,21 @@ const accentColors = {
   },
 };
 
-export default function StatCard({ title, value, subtitle, icon, color = 'indigo', tooltip }) {
+export default function StatCard({ title, value, subtitle, icon, color = 'indigo', tooltip, trend, trendTooltip }) {
   const accent = accentColors[color] || accentColors.indigo;
   
   const [isOpen, setIsOpen] = useState(false);
+  const [showTrendTooltip, setShowTrendTooltip] = useState(false);
 
   const handleClick = () => {
     if (tooltip) {
       setIsOpen(true);
     }
+  };
+
+  // Toggle trend tooltip en mobile (tap), hover en desktop
+  const toggleTrendTooltip = () => {
+    setShowTrendTooltip(!showTrendTooltip);
   };
 
   return (
@@ -99,6 +105,30 @@ export default function StatCard({ title, value, subtitle, icon, color = 'indigo
             <p className="text-slate-500 text-[10px] lg:text-xs font-bold mt-1 leading-snug">
               {subtitle}
             </p>
+          )}
+
+          {/* Trend Indicator — Con tooltip interactivo (hover en desktop, tap en mobile) */}
+          {trend && (
+            <div 
+              className={`flex items-center gap-0.5 font-bold text-xs md:text-sm ${trend.color} mt-2 relative group cursor-help`}
+              onMouseEnter={() => setShowTrendTooltip(true)}
+              onMouseLeave={() => setShowTrendTooltip(false)}
+              onClick={(e) => {
+                e.stopPropagation(); // No propagar el click de la card
+                toggleTrendTooltip();
+              }}
+            >
+              <span>{trend.icon}</span>
+              <span>{trend.label}</span>
+              
+              {/* Tooltip del Trend — Aparece en hover (desktop) o tap (mobile) */}
+              {trendTooltip && showTrendTooltip && (
+                <div className="absolute bottom-full left-0 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] rounded whitespace-nowrap z-10 pointer-events-none">
+                  {trendTooltip}
+                  <div className="absolute top-full left-2 border-4 border-transparent border-t-slate-900"></div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
