@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import Select from 'react-select';
 import { useActiveWaitersAdmin } from '../../hooks/waiters/useActiveWaitersAdmin';
@@ -155,7 +155,7 @@ export default function DailyTableCapture() {
   const [tableCount, setTableCount] = useState('');
   const [dateOption, setDateOption] = useState(DATE_OPTIONS[0]);
   const [selectedDay, setSelectedDay] = useState(new Date());
-  
+
   // Estados para Modales
   const [editModal, setEditModal] = useState({ isOpen: false, entry: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, entry: null });
@@ -193,9 +193,10 @@ export default function DailyTableCapture() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="px-4 md:px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Captura de Mesas Reales
@@ -204,26 +205,29 @@ export default function DailyTableCapture() {
             Registra, visualiza y edita las mesas atendidas por mesero
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+
+        <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
           <button
             onClick={refetch}
-            className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200"
+            className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200 shrink-0"
             title="Actualizar"
           >
             <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <PeriodSelector
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            yearOptions={yearOptions}
-          />
+          <div className="w-full sm:w-auto">
+            <PeriodSelector
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              yearOptions={yearOptions}
+            />
+          </div>
         </div>
       </div>
 
       {/* Selector de Mesero */}
-      <div className="px-6 py-4 border-b border-slate-100 bg-indigo-50/20">
+      <div className="px-4 md:px-6 py-4 border-b border-slate-100 bg-indigo-50/20">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">
           Mesero
         </label>
@@ -249,7 +253,7 @@ export default function DailyTableCapture() {
       ) : (
         <>
           {/* Formulario de Captura */}
-          <div className="px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 bg-gradient-to-r from-indigo-50/30 to-transparent">
+          <div className="px-4 md:px-6 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end border-b border-slate-100 bg-gradient-to-r from-indigo-50/30 to-transparent">
             <div className="flex items-center gap-2 flex-1">
               <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
                 {selectedWaiter?.name?.charAt(0)}
@@ -304,10 +308,10 @@ export default function DailyTableCapture() {
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0">
-                    <th className="px-5 py-3 whitespace-nowrap">Fecha</th>
-                    <th className="px-5 py-3 text-center whitespace-nowrap">Mesas</th>
-                    <th className="px-5 py-3 text-center whitespace-nowrap">Acciones</th>
+                  <tr className="text-[10px] md:text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0 z-20">
+                    <th className="px-3 md:px-5 py-3 whitespace-nowrap">Fecha</th>
+                    <th className="px-3 md:px-5 py-3 text-center whitespace-nowrap">Mesas</th>
+                    <th className="px-3 md:px-5 py-3 text-center whitespace-nowrap">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -320,17 +324,17 @@ export default function DailyTableCapture() {
                   ) : (
                     filteredHistory.map((entry) => (
                       <tr key={entry.id} className="hover:bg-indigo-50/30 transition-colors">
-                        <td className="px-5 py-3 text-sm text-slate-600 font-medium whitespace-nowrap">
+                        <td className="px-3 md:px-5 py-3 text-sm text-slate-600 font-medium whitespace-nowrap">
                           {format(new Date(entry.date + 'T12:00:00'), 'dd MMM yyyy')}
                         </td>
 
-                        <td className="px-5 py-3 text-center">
+                        <td className="px-3 md:px-5 py-3 text-center">
                           <span className="bg-indigo-50 text-indigo-700 font-bold text-xs px-2.5 py-1 rounded-md border border-indigo-100">
                             {entry.table_count}
                           </span>
                         </td>
 
-                        <td className="px-5 py-3">
+                        <td className="px-3 md:px-5 py-3">
                           <div className="flex justify-center items-center gap-2">
                             <button
                               onClick={() => setEditModal({ isOpen: true, entry })}

@@ -13,7 +13,8 @@ export default function WaiterPerformanceTable() {
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
 
-      <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+      {/* Header */}
+      <div className="px-4 md:px-6 py-5 border-b border-slate-200 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center bg-slate-50/50">
         <div>
           <h3 className="text-slate-800 font-bold uppercase text-sm tracking-wider">
             Reporte de Rendimiento Mensual
@@ -22,15 +23,16 @@ export default function WaiterPerformanceTable() {
             Servicio + Cumplimiento — Mínimo aprobatorio: {MINIMO_APROBATORIO}%
           </p>
         </div>
-         
-         <div className="flex gap-2 items-center">
-            <button
-              onClick={refetch}
-              className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200"
-              title="Actualizar"
-            >
-              <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+
+        <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+          <button
+            onClick={refetch}
+            className="p-2 rounded-lg hover:bg-indigo-50 text-indigo-500 transition-colors border border-slate-200 shrink-0"
+            title="Actualizar"
+          >
+            <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <div className="w-full sm:w-auto">
             <PeriodSelector
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
@@ -39,8 +41,10 @@ export default function WaiterPerformanceTable() {
               yearOptions={yearOptions}
             />
           </div>
+        </div>
       </div>
 
+      {/* Tabla */}
       <div className="overflow-x-auto overflow-y-auto max-h-[300px] md:max-h-[400px] lg:max-h-[450px]">
         {loading ? (
           <div className="flex justify-center items-center min-h-[200px]">
@@ -51,13 +55,13 @@ export default function WaiterPerformanceTable() {
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-               <tr className="text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0">
-                <th className="px-5 py-4 whitespace-nowrap">Mesero</th>
-                <th className="px-5 py-4 text-center whitespace-nowrap">Captadas</th>
-                <th className="px-5 py-4 text-center whitespace-nowrap">Mesas Reales</th>
-                <th className="px-5 py-4 text-center whitespace-nowrap">Satisfacción</th>
-                <th className="px-5 py-4 text-center whitespace-nowrap">Cumplimiento</th>
-                <th className="px-5 py-4 text-center whitespace-nowrap min-w-[200px]">Resultado Final</th>
+              <tr className="text-[10px] md:text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0 z-20">
+                <th className="px-3 md:px-5 py-4 whitespace-nowrap sticky left-0 bg-indigo-50 z-30">Mesero</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Captadas</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Mesas Reales</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Satisfacción</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Cumplimiento</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap min-w-[160px]">Resultado Final</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -74,51 +78,52 @@ export default function WaiterPerformanceTable() {
                   return (
                     <tr key={row.id} className="hover:bg-slate-50 transition-colors">
 
-                      <td className="px-5 py-4">
+                      {/* Mesero — sticky para que se quede visible al hacer scroll horizontal */}
+                      <td className="px-3 md:px-5 py-4 sticky left-0 bg-white z-10">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
                             {row.mesero?.charAt(0)}
                           </div>
-                          <span className="font-bold text-slate-700 text-sm">{row.mesero}</span>
+                          <span className="font-bold text-slate-700 text-sm whitespace-nowrap">{row.mesero}</span>
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-3 md:px-5 py-4 text-center">
                         <span className="bg-indigo-50 text-indigo-700 font-bold text-xs px-2 py-1 rounded-md border border-indigo-100">
                           {row.captadas}
                         </span>
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-3 md:px-5 py-4 text-center">
                         {row.mesas_reales > 0 ? (
                           <span className="bg-slate-100 text-slate-700 font-bold text-xs px-2 py-1 rounded-md border border-slate-200">
                             {row.mesas_reales}
                           </span>
                         ) : (
-                          <span className="text-slate-300 text-xs italic">Sin capturas</span>
+                          <span className="text-slate-300 text-xs italic whitespace-nowrap">Sin capturas</span>
                         )}
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-3 md:px-5 py-4 text-center">
                         <span className="font-bold text-sm text-slate-600">
                           {row.satisfaccion}%
                         </span>
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-3 md:px-5 py-4 text-center">
                         <span className="font-bold text-sm text-slate-600">
                           {row.mesas_reales > 0 ? `${row.cumplimiento}%` : '—'}
                         </span>
                       </td>
 
-                      <td className="px-5 py-4">
+                      <td className="px-3 md:px-5 py-4 min-w-[160px]">
                         {row.resultado_final !== null ? (
                           <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                               <span className={`font-black text-sm ${aprobado ? 'text-emerald-600' : 'text-rose-600'}`}>
                                 {row.resultado_final}%
                               </span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap
                                 ${aprobado
                                   ? 'bg-emerald-100 text-emerald-700'
                                   : 'bg-rose-100 text-rose-700'}`}>
@@ -133,7 +138,7 @@ export default function WaiterPerformanceTable() {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-300 text-xs italic">Falta capturar mesas</span>
+                          <span className="text-slate-300 text-xs italic whitespace-nowrap">Sin mesas</span>
                         )}
                       </td>
 
@@ -146,7 +151,8 @@ export default function WaiterPerformanceTable() {
         )}
       </div>
 
-      <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30">
+      {/* Footer */}
+      <div className="px-4 md:px-6 py-4 border-t border-slate-100 bg-slate-50/30">
         <p className="text-[10px] text-slate-400 font-medium">
           💡 Resultado Final = (Satisfacción × 50%) + (Cumplimiento × 50%). Cumplimiento se calcula con las mesas reales capturadas día a día por el gerente.
         </p>

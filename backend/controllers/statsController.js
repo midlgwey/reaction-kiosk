@@ -455,3 +455,153 @@ export const getWeeklyDayWeak = async (req, res) => {
     throw new InternalServerError("Error obteniendo día débil");
   }
 };
+
+// Aceptación de encuestas por día — realizadas vs rechazadas
+// Soporta rango de fechas exacto o últimos X días
+export const getSurveyAcceptanceByDay = async (req, res) => {
+  try {
+    const filter = getDateFilters(req);
+ 
+    // Adaptamos el condition para las tablas sin alias 'r'
+    let conditionFixed = filter.condition;
+    if (conditionFixed.includes('r.created_at')) {
+      conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
+    }
+ 
+    const [surveysResult, declinesResult] = await Promise.all([
+      // Encuestas realizadas agrupadas por día
+      db.execute({
+        sql: `
+          SELECT 
+            DATE(created_at, '${TIME_OFFSET}') AS day,
+            COUNT(DISTINCT survey_id) AS realizadas
+          FROM reactions
+          WHERE ${conditionFixed}
+          AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+          GROUP BY day
+          ORDER BY day ASC
+        `,
+        args: filter.args
+      }),
+      // Encuestas rechazadas agrupadas por día
+      db.execute({
+        sql: `
+          SELECT 
+            DATE(created_at, '${TIME_OFFSET}') AS day,
+            COUNT(*) AS rechazadas
+          FROM declines
+          WHERE ${conditionFixed}
+          AND waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+          GROUP BY day
+          ORDER BY day ASC
+        `,
+        args: filter.args
+      })
+    ]);
+ 
+    // Merge por día
+    const dayMap = {};
+ 
+    surveysResult.rows.forEach(row => {
+      dayMap[row.day] = { day: row.day, realizadas: row.realizadas || 0, rechazadas: 0 };
+    });
+ 
+    declinesResult.rows.forEach(row => {
+      if (dayMap[row.day]) {
+        dayMap[row.day].rechazadas = row.rechazadas || 0;
+      } else {
+        dayMap[row.day] = { day: row.day, realizadas: 0, rechazadas: row.rechazadas || 0 };
+      }
+    });
+ 
+    // Ordenar por fecha y calcular % de aceptación por día
+    const result = Object.values(dayMap)
+      .sort((a, b) => a.day.localeCompare(b.day))
+      .map(row => {
+        const total = row.realizadas + row.rechazadas;
+        return {
+          ...row,
+          total,
+          pctAceptacion: total > 0 ? Math.round((row.realizadas / total) * 100) : 0,
+        };
+      });
+ 
+    res.status(200).json(result);
+ 
+  } catch (error) {
+    console.error('Error en getSurveyAcceptanceByDay:', error);
+    throw new InternalServerError('Error obteniendo aceptación por día');
+  }
+};
+
+// Evolución de satisfacción por pregunta a lo largo del tiempo
+// - Excluye días sin encuestas (restaurante cerrado, lunes, etc.)
+// - Agrupa por día (≤30d), semana (≤180d) o mes (>180d)
+// Endpoint: GET /stats/question-trend?days=7
+export const getQuestionTrend = async (req, res) => {
+  try {
+    const filter = getDateFilters(req);
+    const days = parseInt(req.query.days) || 7;
+ 
+    const QUESTION_LABELS = {
+      1: 'Servicio del mesero',
+      2: 'Bebidas a tiempo',
+      3: 'Calidad de alimentos',
+      4: 'Instalaciones',
+    };
+ 
+    // Determinar granularidad según el rango solicitado
+    let groupExpr, labelType;
+    if (days <= 30) {
+      groupExpr = `DATE(r.created_at, '${TIME_OFFSET}')`;
+      labelType = 'day';
+    } else if (days <= 180) {
+      groupExpr = `strftime('%Y-%W', r.created_at, '${TIME_OFFSET}')`;
+      labelType = 'week';
+    } else {
+      groupExpr = `strftime('%Y-%m', r.created_at, '${TIME_OFFSET}')`;
+      labelType = 'month';
+    }
+ 
+    // Query sin RECURSIVE — solo días/semanas/meses que tienen datos reales
+    // Así los lunes cerrados y días sin encuestas no aparecen con 0
+    const sql = `
+      SELECT
+        ${groupExpr} AS period,
+        r.question_id,
+        ROUND(AVG(r.value), 2) AS avg_score,
+        COUNT(r.id) AS total_responses
+      FROM reactions r
+      WHERE ${filter.condition}
+      AND r.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+      AND r.question_id IN (1, 2, 3, 4)
+      GROUP BY period, r.question_id
+      HAVING COUNT(r.id) >= 1
+      ORDER BY period ASC, r.question_id ASC;
+    `;
+ 
+    const result = await db.execute({ sql, args: filter.args });
+ 
+    // Períodos únicos ordenados (días, semanas o meses según granularidad)
+    const periodsSet = [...new Set(result.rows.map(r => r.period))];
+ 
+    // Armar una serie por pregunta con null donde no hay datos ese periodo
+    const questions = [1, 2, 3, 4].map(qid => ({
+      id: qid,
+      label: QUESTION_LABELS[qid],
+      data: periodsSet.map(period => {
+        const row = result.rows.find(r => r.period === period && r.question_id === qid);
+        return row ? parseFloat(row.avg_score) : null; // null = no se dibuja el punto
+      }),
+      totalResponses: result.rows
+        .filter(r => r.question_id === qid)
+        .reduce((sum, r) => sum + (r.total_responses || 0), 0),
+    }));
+ 
+    res.status(200).json({ labels: periodsSet, questions, labelType });
+ 
+  } catch (error) {
+    console.error('Error en getQuestionTrend:', error);
+    throw new InternalServerError('Error obteniendo evolución por pregunta');
+  }
+};

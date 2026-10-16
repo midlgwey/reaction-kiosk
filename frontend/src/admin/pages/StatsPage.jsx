@@ -1,6 +1,8 @@
 import StatGridQWeekly from "../components/metrics/statscards/StatGridWeekly"
 import SatisfactionByShift from "../components/charts/stats/SatisfactionByShift"
-import WeeklyCompRadar from "../components/charts/stats/WeeklyCompRadar"
+import QuestionDistributionChart from "../components/charts/stats/QuestionDistributionChart"
+import SurveyAcceptanceChart from "../components/charts/stats/SurveyAcceptanceChart"
+import QuestionTrendChart from "../components/charts/stats/QuestionTrendChart"
 
 const StatsPage = () => {
   return (
@@ -12,14 +14,25 @@ const StatsPage = () => {
           <StatGridQWeekly />
         </section>
 
-        {/* Grid: Radar (4 cols) + Satisfacción por turno (8 cols) */}
+        {/* Fila 1: Distribución por pregunta (5 cols) + Aceptación (7 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 min-w-0 min-h-[450px]">
-            <WeeklyCompRadar />
+          <div className="lg:col-span-5 min-w-0 min-h-[450px]">
+            <QuestionDistributionChart />
           </div>
-          <div className="lg:col-span-8 min-w-0 min-h-[450px]">
-            <SatisfactionByShift />
+          <div className="lg:col-span-7 min-w-0 min-h-[450px]">
+            <SurveyAcceptanceChart />
           </div>
+        </div>
+
+       
+        {/* Fila 2: Evolución por pregunta — ancho completo */}
+        <div className="min-h-[420px]">
+          <QuestionTrendChart />
+        </div>
+
+        {/* Fila 3: Satisfacción por turno y día — ancho completo */}
+        <div className="min-h-[420px]">
+          <SatisfactionByShift />
         </div>
 
       </div>

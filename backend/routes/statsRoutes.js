@@ -1,12 +1,10 @@
 import express from 'express';
 
-// 1. Importamos ambos middlewares
 import { authenticateAdmin, authorizePermissions } from "../middlewares/authMiddleware.js";
-import { getBestQuestionWeek, getWorstQuestionWeek, getOverallDistributionWeek, getWeeklySurveyChart, getWeeklyComparisonRadar, getWeeklyDayStrong, getWeeklyDayWeak, getWeeklyTotalSurveys, getWeeklyDeclinesTrend} from '../controllers/statsController.js';
+import { getBestQuestionWeek, getWorstQuestionWeek, getOverallDistributionWeek, getWeeklySurveyChart, getWeeklyComparisonRadar, getWeeklyDayStrong, getWeeklyDayWeak, getWeeklyTotalSurveys, getWeeklyDeclinesTrend, getSurveyAcceptanceByDay, getQuestionTrend} from '../controllers/statsController.js';
 
 const router = express.Router();
 
-// 2. Agregamos authorizePermissions('admin') en cada ruta de estadísticas
 router.get('/best-question-week', authenticateAdmin, authorizePermissions('admin'), getBestQuestionWeek);
 router.get('/worst-question-week', authenticateAdmin, authorizePermissions('admin'), getWorstQuestionWeek);
 router.get('/weekly-day-strong', authenticateAdmin, authorizePermissions('admin'), getWeeklyDayStrong);
@@ -21,4 +19,11 @@ router.get('/overall-distribution-week', authenticateAdmin, authorizePermissions
 // Ruta para el radar de comparacion semanal
 router.get('/weekly-comparison', authenticateAdmin, authorizePermissions('admin'), getWeeklyComparisonRadar);
 
+// Ruta para la grafica de barras de encuestas semanales
+router.get('/weekly-survey-chart', authenticateAdmin, authorizePermissions('admin'), getWeeklySurveyChart);
+
+// Ruta para la grafica de aceptacion de encuestas por dia
+router.get('/survey-acceptance-by-day', authenticateAdmin, authorizePermissions('admin'), getSurveyAcceptanceByDay); 
+
+router.get('/question-trend', authenticateAdmin, authorizePermissions('admin'), getQuestionTrend);
 export default router;
