@@ -1,6 +1,7 @@
 import React from 'react';
 import SuggestionsReportCard from "../components/reports/SuggestionsReportCard";
 import TrendReportCard from '../components/reports/TrendReportCard';
+import PerformanceReportCard from '../components/reports/PerformanceReportCard';
 /**
  * PageHeader - Componente reutilizable para encabezados
  */
@@ -35,6 +36,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           <SuggestionsReportCard />
           <TrendReportCard />
+          <PerformanceReportCard/>
 
         </div>
 
