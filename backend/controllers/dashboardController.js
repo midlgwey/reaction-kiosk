@@ -85,14 +85,10 @@ export const getDailyServerScore = async (req, res) => {
 };
 
 // Meseros con menos encuestas por turno del día
-// Desayuno: mínimo 2 encuestas | Comida/Cena: mínimo 1
-// Excluye de Comida/Cena a los meseros que ya aparecen en Desayuno
-// Obtiene a los 2 meseros con menos encuestas por cada turno (mínimo 1 encuesta)
 export const getLowInteractionWaiters = async (req, res) => {
   try {
     const [breakfastResult, lunchResult] = await Promise.all([
 
-      // Desayuno — solo meseros que SÍ trabajaron (encuestas > 0), los 2 con menos
       db.execute({
         sql: `
           SELECT
@@ -112,7 +108,6 @@ export const getLowInteractionWaiters = async (req, res) => {
         `
       }),
 
-      // Comida/Cena — mismo criterio
       db.execute({
         sql: `
           SELECT
@@ -136,7 +131,6 @@ export const getLowInteractionWaiters = async (req, res) => {
     const breakfast = breakfastResult.rows;
     const lunch = lunchResult.rows;
 
-    // Sin datos en ningún turno
     if (breakfast.length === 0 && lunch.length === 0) {
       return res.status(200).json([]);
     }
@@ -146,13 +140,13 @@ export const getLowInteractionWaiters = async (req, res) => {
         mesero: row.mesero,
         turno: row.turno,
         encuestas: row.encuestas || 0,
-        unico: breakfast.length === 1 
+        unico: breakfast.length === 1
       })),
       ...lunch.map(row => ({
         mesero: row.mesero,
         turno: row.turno,
         encuestas: row.encuestas || 0,
-        unico: lunch.length === 1  
+        unico: lunch.length === 1
       }))
     ];
 
@@ -224,11 +218,9 @@ export const getDailySurveyCount = async (req, res) => {
 };
 
 // Mesero con baja calificación del día (promedio más bajo)
-// Solo incluye meseros con >= 2 encuestas (datos confiables)
 export const getLowestRatedWaiter = async (req, res) => {
   try {
     const [todayResult, yesterdayResult] = await Promise.all([
-      // Hoy — Solo meseros con >= 2 encuestas
       db.execute({
         sql: `
           SELECT
@@ -246,7 +238,6 @@ export const getLowestRatedWaiter = async (req, res) => {
           LIMIT 1
         `
       }),
-      // Ayer — Solo meseros con >= 2 encuestas
       db.execute({
         sql: `
           SELECT
@@ -269,7 +260,6 @@ export const getLowestRatedWaiter = async (req, res) => {
     const today = todayResult.rows[0];
     const yesterday = yesterdayResult.rows[0];
 
-    // Calcular trend
     let trend = 0;
     if (today && yesterday) {
       trend = today.avg_score - yesterday.avg_score;
@@ -295,7 +285,6 @@ export const getLowestRatedWaiter = async (req, res) => {
 export const getWorstRatedQuestion = async (req, res) => {
   try {
     const [todayResult, yesterdayResult] = await Promise.all([
-      // Hoy
       db.execute({
         sql: `
           SELECT 
@@ -310,7 +299,6 @@ export const getWorstRatedQuestion = async (req, res) => {
           LIMIT 1
         `
       }),
-      // Ayer
       db.execute({
         sql: `
           SELECT 
@@ -337,7 +325,6 @@ export const getWorstRatedQuestion = async (req, res) => {
     const today = todayResult.rows[0];
     const yesterday = yesterdayResult.rows[0];
 
-    // Calcular trend
     let trend = 0;
     if (today && yesterday) {
       trend = today.avg_score - yesterday.avg_score;
@@ -360,8 +347,7 @@ export const getWorstRatedQuestion = async (req, res) => {
   }
 };
 
-// Evolución de satisfacción por día — alimenta la gráfica de área
-// Soporta rango de fechas exacto o últimos X días
+// Evolución de satisfacción por día
 export const getDailySatisfactionTrend = async (req, res) => {
   try {
     const filter = getDateFilters(req);
@@ -420,12 +406,11 @@ export const getDailySatisfactionTrend = async (req, res) => {
   }
 };
 
-// Distribución de respuestas por pregunta — alimenta las barras apiladas del dashboard
+// Distribución de respuestas por pregunta
 export const getDailyQuestions = async (req, res) => {
   try {
     const filter = getDateFilters(req);
-    
-    // El helper regresa r.created_at pero esta query no usa alias r
+
     let conditionFixed = filter.condition;
     if (conditionFixed.includes('r.created_at')) {
       conditionFixed = conditionFixed.replace(/r\.created_at/g, 'created_at');
@@ -492,7 +477,6 @@ export const checkInactivity = async (req, res) => {
     if (total === 0) {
       const shift = getShiftByTime();
 
-      // No manda alerta si el restaurante está cerrado
       if (shift === 'Cerrado' || shift === 'Fuera de horario') {
         return res.status(200).json({ message: "Restaurante cerrado, sin alerta" });
       }

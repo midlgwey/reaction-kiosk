@@ -373,13 +373,14 @@ export const getDeclinesLog = async (req, res) => {
  * Fórmula: Resultado Final = (Satisfacción × 50%) + (Cumplimiento × 50%)
  * Satisfacción = suma_p1 / (captadas × 4) × 100
  * Cumplimiento = captadas / mesas_reales × 100
+ * Rechazos = encuestas rechazadas por el cliente en el periodo
  */
 export const getWaiterPerformanceReport = async (req, res) => {
     const { month, year } = req.query;
     const { startDate, endDate } = getMonthRange(month, year);
-
+ 
     try {
-        const [surveysResult, realTablesResult] = await Promise.all([
+        const [surveysResult, realTablesResult, declinesResult] = await Promise.all([
             // Encuestas captadas por kiosko + suma de calificaciones de P1
             db.execute({
                 sql: `
@@ -407,41 +408,69 @@ export const getWaiterPerformanceReport = async (req, res) => {
                     GROUP BY waiter_id
                 `,
                 args: [startDate, endDate]
+            }),
+            // Rechazos de encuesta por mesero en el periodo
+            db.execute({
+                sql: `
+                    SELECT
+                        d.waiter_id,
+                        COUNT(*) AS rechazos
+                    FROM declines d
+                    WHERE date(datetime(d.created_at, ?)) BETWEEN date(?) AND date(?)
+                    AND d.waiter_id NOT IN (SELECT id FROM waiters WHERE is_test = 1)
+                    GROUP BY d.waiter_id
+                `,
+                args: [TIME_OFFSET, startDate, endDate]
             })
         ]);
-
+ 
+        // Mapas para lookup rápido
         const realTablesMap = {};
         realTablesResult.rows.forEach(r => {
             realTablesMap[r.waiter_id] = r.mesas_reales;
         });
-
+ 
+        const declinesMap = {};
+        declinesResult.rows.forEach(r => {
+            declinesMap[r.waiter_id] = r.rechazos;
+        });
+ 
         const report = surveysResult.rows.map(row => {
             const captadas = row.captadas || 0;
             const sumaP1 = row.suma_p1 || 0;
             const mesasReales = realTablesMap[row.id] || 0;
-
+            const rechazos = declinesMap[row.id] || 0;
+ 
             // Factor Servicio: calidad de atención según P1
             const satisfaccion = captadas > 0 ? (sumaP1 / (captadas * 4)) * 100 : 0;
             const factorServicio = satisfaccion * 0.5;
-
+ 
             // Factor Cumplimiento: qué tan bien cubrió las mesas del gerente
             const cumplimiento = mesasReales > 0 ? (captadas / mesasReales) * 100 : 0;
             const factorCumplimiento = cumplimiento * 0.5;
-
+ 
             const resultadoFinal = factorServicio + factorCumplimiento;
-
+ 
+            // Tasa de aceptación: encuestas realizadas vs total de intentos
+            const totalIntentos = captadas + rechazos;
+            const tasaAceptacion = totalIntentos > 0
+                ? ((captadas / totalIntentos) * 100).toFixed(1)
+                : null;
+ 
             return {
                 id: row.id,
                 mesero: row.mesero,
                 captadas,
                 suma_p1: sumaP1,
                 mesas_reales: mesasReales,
+                rechazos,
+                tasa_aceptacion: tasaAceptacion,
                 satisfaccion: satisfaccion.toFixed(2),
                 cumplimiento: cumplimiento.toFixed(2),
                 resultado_final: mesasReales > 0 ? resultadoFinal.toFixed(2) : null
             };
         });
-
+ 
         res.status(StatusCodes.OK).json(report);
     } catch (error) {
         console.error("Error en getWaiterPerformanceReport:", error);

@@ -17,28 +17,36 @@ const customSelectStyles = {
     backgroundColor: state.isSelected ? '#6366f1' : state.isFocused ? '#f5f3ff' : 'white',
     color: state.isSelected ? 'white' : '#475569',
     fontSize: '0.75rem',
-  })
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 50,
+  }),
 };
 
 export default function PeriodSelector({ selectedMonth, setSelectedMonth, selectedYear, setSelectedYear, yearOptions }) {
   return (
-    <div className="flex gap-2 items-center">
-      <div className="w-36">
+    <div className="flex gap-2 items-center w-full sm:w-auto">
+      {/* Mes — ocupa más espacio */}
+      <div className="flex-1 sm:flex-none sm:w-36">
         <Select
           options={MESES}
           value={selectedMonth}
           onChange={setSelectedMonth}
           styles={customSelectStyles}
           isSearchable={false}
+          menuPlacement="auto"
         />
       </div>
-      <div className="w-24">
+      {/* Año — ancho fijo pequeño */}
+      <div className="w-20 sm:w-24 shrink-0">
         <Select
           options={yearOptions}
           value={{ value: selectedYear, label: `${selectedYear}` }}
           onChange={(opt) => setSelectedYear(opt.value)}
           styles={customSelectStyles}
           isSearchable={false}
+          menuPlacement="auto"
         />
       </div>
     </div>

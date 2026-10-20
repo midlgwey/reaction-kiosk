@@ -58,6 +58,8 @@ export default function WaiterPerformanceTable() {
               <tr className="text-[10px] md:text-[11px] uppercase tracking-widest text-indigo-600 font-black bg-indigo-50 border-b border-slate-200 sticky top-0 z-20">
                 <th className="px-3 md:px-5 py-4 whitespace-nowrap sticky left-0 bg-indigo-50 z-30">Mesero</th>
                 <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Captadas</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Rechazos</th>
+                <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">% Aceptación de Encuestas</th>
                 <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Mesas Reales</th>
                 <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Satisfacción</th>
                 <th className="px-3 md:px-5 py-4 text-center whitespace-nowrap">Cumplimiento</th>
@@ -67,13 +69,16 @@ export default function WaiterPerformanceTable() {
             <tbody className="divide-y divide-slate-100">
               {data.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-slate-400 text-sm italic">
+                  <td colSpan="8" className="px-6 py-16 text-center text-slate-400 text-sm italic">
                     No hay datos para este periodo
                   </td>
                 </tr>
               ) : (
                 data.map((row) => {
                   const aprobado = row.resultado_final !== null && parseFloat(row.resultado_final) >= MINIMO_APROBATORIO;
+
+                  // Alerta visual si la tasa de aceptación es baja (< 70%)
+                  const aceptacionBaja = row.tasa_aceptacion !== null && parseFloat(row.tasa_aceptacion) < 70;
 
                   return (
                     <tr key={row.id} className="hover:bg-slate-50 transition-colors">
@@ -88,12 +93,41 @@ export default function WaiterPerformanceTable() {
                         </div>
                       </td>
 
+                      {/* Encuestas captadas */}
                       <td className="px-3 md:px-5 py-4 text-center">
                         <span className="bg-indigo-50 text-indigo-700 font-bold text-xs px-2 py-1 rounded-md border border-indigo-100">
                           {row.captadas}
                         </span>
                       </td>
 
+                      {/* Rechazos — rojo si tiene alguno, gris si ninguno */}
+                      <td className="px-3 md:px-5 py-4 text-center">
+                        {row.rechazos > 0 ? (
+                          <span className="bg-rose-50 text-rose-600 font-bold text-xs px-2 py-1 rounded-md border border-rose-100">
+                            {row.rechazos}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 text-xs font-bold">0</span>
+                        )}
+                      </td>
+
+                      {/* % Aceptación — alerta visual si < 70% */}
+                      <td className="px-3 md:px-5 py-4 text-center">
+                        {row.tasa_aceptacion !== null ? (
+                          <span className={`font-bold text-xs px-2 py-1 rounded-md border ${
+                            aceptacionBaja
+                              ? 'bg-amber-50 text-amber-700 border-amber-100'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                          }`}>
+                            {row.tasa_aceptacion}%
+                            {aceptacionBaja && ' ⚠️'}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 text-xs italic">—</span>
+                        )}
+                      </td>
+
+                      {/* Mesas Reales */}
                       <td className="px-3 md:px-5 py-4 text-center">
                         {row.mesas_reales > 0 ? (
                           <span className="bg-slate-100 text-slate-700 font-bold text-xs px-2 py-1 rounded-md border border-slate-200">
@@ -104,18 +138,21 @@ export default function WaiterPerformanceTable() {
                         )}
                       </td>
 
+                      {/* Satisfacción */}
                       <td className="px-3 md:px-5 py-4 text-center">
                         <span className="font-bold text-sm text-slate-600">
                           {row.satisfaccion}%
                         </span>
                       </td>
 
+                      {/* Cumplimiento */}
                       <td className="px-3 md:px-5 py-4 text-center">
                         <span className="font-bold text-sm text-slate-600">
                           {row.mesas_reales > 0 ? `${row.cumplimiento}%` : '—'}
                         </span>
                       </td>
 
+                      {/* Resultado Final */}
                       <td className="px-3 md:px-5 py-4 min-w-[160px]">
                         {row.resultado_final !== null ? (
                           <div className="flex flex-col gap-1.5">
@@ -154,7 +191,7 @@ export default function WaiterPerformanceTable() {
       {/* Footer */}
       <div className="px-4 md:px-6 py-4 border-t border-slate-100 bg-slate-50/30">
         <p className="text-[10px] text-slate-400 font-medium">
-          💡 Resultado Final = (Satisfacción × 50%) + (Cumplimiento × 50%). Cumplimiento se calcula con las mesas reales capturadas día a día por el gerente.
+          💡 Resultado Final = (Satisfacción × 50%) + (Cumplimiento × 50%). Cumplimiento se calcula con las mesas reales capturadas día a día por el gerente. % Aceptación = encuestas realizadas / (realizadas + rechazadas).
         </p>
       </div>
 

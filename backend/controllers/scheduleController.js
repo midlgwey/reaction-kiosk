@@ -2,7 +2,8 @@
 import { db } from "../db.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../errors/customErrors.js";
-
+import { getActiveEmployees } from '../repositories/employee.repo.js';
+ 
 // ─── GET /schedules/:week_start_date ────────────────────────────────────────
 export const getWeeklySchedule = async (req, res) => {
   const { week_start_date } = req.params;
@@ -243,3 +244,9 @@ export const uploadSchedulePdf = async (req, res) => {
     file: { file_name, file_path, upload_type }
   });
 };
+ 
+export const getScheduleEmployees = async (req, res) => {
+  const employees = await getActiveEmployees();
+  res.status(StatusCodes.OK).json(employees);
+};
+ 

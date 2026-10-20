@@ -1,5 +1,5 @@
 // frontend/src/admin/hooks/schedule/useSchedulePage.js
-// ✅ NOTA: No requiere cambios — el nuevo ScheduleModal sigue usando onChangeShift(day, shift)
+// No requiere cambios — el nuevo ScheduleModal sigue usando onChangeShift(day, shift)
 import { useState, useEffect, useCallback } from 'react';
 import { useSchedule } from './useSchedule';
 import { useExportSchedule } from '../../../superadmin/components/schedule/useExportSchedule';
@@ -43,7 +43,7 @@ export const useSchedulePage = () => {
     saveWeeklySchedule, publishWeeklySchedule, uploadPdf
   } = useSchedule();
 
-  const { exportToExcel } = useExportSchedule();
+  const { exportToExcel, exporting } = useExportSchedule();
 
   const [weekStartDate, setWeekStartDate] = useState(() => getWeekStart(new Date()));
   const [shifts, setShifts] = useState([]);
@@ -169,10 +169,10 @@ export const useSchedulePage = () => {
     }
   };
 
-  const handleExportExcel = () => {
-    const result = exportToExcel(editableSchedules, formattedStart, formattedEnd);
-    if (!result.success) toast.error(result.error || 'Error al exportar');
-  };
+  const handleExportExcel = async () => {
+  const result = await exportToExcel(editableSchedules, formattedStart, formattedEnd);
+  if (result && !result.success) toast.error(result.error || 'Error al exportar');
+};
 
   const handleChangeShift = (day, newShift) =>
     setSelectedEmployee(prev => ({ ...prev, shifts: { ...prev.shifts, [day]: newShift } }));
@@ -205,6 +205,7 @@ export const useSchedulePage = () => {
     handlePublish,
     handleUploadFile,
     handleExportExcel,
+    exporting,  
     handleChangeShift,
     handleSaveModal
   };

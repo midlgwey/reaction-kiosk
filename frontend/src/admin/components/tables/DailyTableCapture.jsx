@@ -34,7 +34,12 @@ const customSelectStyles = {
     ...base,
     color: '#9ca3af',
     fontSize: '0.875rem',
-  })
+  }),
+  // Asegura que el dropdown no quede cortado por contenedores padre
+  menu: (base) => ({
+    ...base,
+    zIndex: 50,
+  }),
 };
 
 // Modal de Edición
@@ -193,7 +198,8 @@ export default function DailyTableCapture() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    // overflow-hidden removido para que el dropdown del Select no quede cortado
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm">
 
       {/* Header */}
       <div className="px-4 md:px-6 py-5 border-b border-slate-200 bg-slate-50/50 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
@@ -242,6 +248,7 @@ export default function DailyTableCapture() {
           styles={customSelectStyles}
           placeholder="Selecciona un mesero"
           isSearchable={false}
+          menuPlacement="auto"
           className="w-full sm:w-80"
         />
       </div>

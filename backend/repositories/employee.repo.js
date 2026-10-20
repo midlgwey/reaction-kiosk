@@ -29,13 +29,21 @@ export const createEmployee = async ({
   return result.lastInsertRowid;
 };
 
-// Función para obtener todos los empleados
+// Todos los empleados — para el panel de administración (incluye inactivos)
 export const getAllEmployees = async () => {
-  const result = await db.execute("SELECT * FROM employees");
+  const result = await db.execute("SELECT * FROM employees ORDER BY first_name ASC");
   return result.rows;
 };
 
-// Función para obtener un empleado por su ID
+// Solo empleados activos — para el módulo de horarios
+export const getActiveEmployees = async () => {
+  const result = await db.execute(
+    "SELECT * FROM employees WHERE status = 'Active' ORDER BY first_name ASC"
+  );
+  return result.rows;
+};
+
+// Función para actualizar un empleado
 export const updateEmployee = async (id, {
   first_name,
   last_name,

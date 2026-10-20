@@ -5,11 +5,16 @@ import upload from "../middlewares/uploadMiddleware.js";
 import { 
   getWeeklySchedule, 
   saveWeeklySchedule, 
-  publishWeeklySchedule, 
+  publishWeeklySchedule,
+  getScheduleEmployees, 
   uploadSchedulePdf 
 } from "../controllers/scheduleController.js";
 
 const router = express.Router();
+
+
+// Ruta para obtener la lista de empleados activos (protegida por autenticación y autorización)
+router.get("/employees-activates", authenticateAdmin, authorizePermissions('admin'), getScheduleEmployees);
 
 // ruta para obtener el horario semanal — admin, supervisor, operativo
 router.get("/:week_start_date", authenticateAdmin, authorizePermissions('admin', 'supervisor', 'operativo'), getWeeklySchedule);
