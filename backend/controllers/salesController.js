@@ -22,24 +22,79 @@ const getWorkDays = (year, month) => {
   return { totalWorkDays, elapsedWorkDays };
 };
 
-// ─── GET /sales/goals/active ─────────────────────────────────────────────────
-export const getActiveSeason = async (req, res) => {
+// ─── Helper: temporada vigente o, si ya terminó, la más reciente ─────────────
+// Permite consultar el panel (solo lectura) cuando la temporada ya acabó.
+// Regresa { season, isActive } o null si no existe ninguna temporada.
+const getCurrentOrLastSeason = async () => {
   const today = new Date().toISOString().split('T')[0];
 
-  const seasonResult = await db.execute({
+  const active = await db.execute({
     sql: `SELECT * FROM sales_goals 
           WHERE season_start <= ? AND season_end >= ?
           LIMIT 1`,
     args: [today, today]
   });
 
-  if (seasonResult.rows.length === 0) {
+  if (active.rows.length > 0) {
+    return { season: active.rows[0], isActive: true };
+  }
+
+  const last = await db.execute(
+    `SELECT * FROM sales_goals ORDER BY season_end DESC LIMIT 1`
+  );
+
+  if (last.rows.length > 0) {
+    return { season: last.rows[0], isActive: false };
+  }
+
+  return null;
+};
+
+// Año de la temporada (se usa en lugar del año actual para filtrar ventas)
+const getSeasonYear = (season) => String(season.season_start).slice(0, 4);
+
+// Mes por defecto: el actual si la temporada sigue activa,
+// o el último mes de la temporada si ya terminó
+const getDefaultMonth = (season, isActive) =>
+  isActive
+    ? String(new Date().getMonth() + 1).padStart(2, '0')
+    : String(season.season_end).slice(5, 7);
+
+// ─── Middleware: bloquea escrituras cuando no hay temporada activa ───────────
+export const requireActiveSeason = async (req, res, next) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const result = await db.execute({
+      sql: `SELECT goal_id FROM sales_goals 
+            WHERE season_start <= ? AND season_end >= ?
+            LIMIT 1`,
+      args: [today, today]
+    });
+
+    if (result.rows.length === 0) {
+      return next(new BadRequestError(
+        "La temporada ya finalizó. El panel está en modo solo consulta."
+      ));
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GET /sales/goals/active ─────────────────────────────────────────────────
+export const getActiveSeason = async (req, res) => {
+  const found = await getCurrentOrLastSeason();
+
+  if (!found) {
     return res.status(StatusCodes.NOT_FOUND).json({
-      message: "No hay una temporada activa en este momento."
+      message: "No hay temporadas registradas."
     });
   }
 
-  const season = seasonResult.rows[0];
+  const { season, isActive } = found;
 
   const goalsResult = await db.execute({
     sql: `SELECT 
@@ -59,6 +114,7 @@ export const getActiveSeason = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     season,
+    season_active: isActive,
     waiter_goals: goalsResult.rows
   });
 };
@@ -112,22 +168,16 @@ export const createSeason = async (req, res) => {
 // Traer metas del mes seleccionado con estado de configuración
 export const getMonthlyGoals = async (req, res) => {
   const { month } = req.params; // formato: '08', '09', '10'
-  const today = new Date().toISOString().split('T')[0];
 
-  const seasonResult = await db.execute({
-    sql: `SELECT * FROM sales_goals 
-          WHERE season_start <= ? AND season_end >= ?
-          LIMIT 1`,
-    args: [today, today]
-  });
+  const found = await getCurrentOrLastSeason();
 
-  if (seasonResult.rows.length === 0) {
+  if (!found) {
     return res.status(StatusCodes.NOT_FOUND).json({
-      message: "No hay temporada activa."
+      message: "No hay temporadas registradas."
     });
   }
 
-  const season = seasonResult.rows[0];
+  const { season, isActive } = found;
 
   // Verificar qué meses ya están configurados
   const configuredMonths = await db.execute({
@@ -157,6 +207,7 @@ export const getMonthlyGoals = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     season,
+    season_active: isActive,
     month,
     months_configured: monthsConfigured,
     goals: goalsResult.rows
@@ -216,26 +267,21 @@ export const saveMonthlyGoals = async (req, res) => {
 // ─── GET /sales/dashboard ─────────────────────────────────────────────────────
 export const getSalesDashboard = async (req, res) => {
   const { month } = req.query; // formato: '08', '09', '10'
-  const today = new Date().toISOString().split('T')[0];
   const now = new Date();
- 
-  const currentMonth = month || String(now.getMonth() + 1).padStart(2, '0');
-  const currentYear = now.getFullYear();
- 
-  const seasonResult = await db.execute({
-    sql: `SELECT * FROM sales_goals 
-          WHERE season_start <= ? AND season_end >= ?
-          LIMIT 1`,
-    args: [today, today]
-  });
- 
-  if (seasonResult.rows.length === 0) {
+
+  const found = await getCurrentOrLastSeason();
+
+  if (!found) {
     return res.status(StatusCodes.NOT_FOUND).json({
-      message: "No hay una temporada activa."
+      message: "No hay temporadas registradas."
     });
   }
- 
-  const season = seasonResult.rows[0];
+
+  const { season, isActive } = found;
+
+  // El mes y el año salen de la temporada (si ya terminó, se consulta su último mes)
+  const currentMonth = month || getDefaultMonth(season, isActive);
+  const currentYear = parseInt(getSeasonYear(season));
  
   // Calcular días hábiles del mes seleccionado (sin lunes)
   const { totalWorkDays, elapsedWorkDays } = getWorkDays(currentYear, parseInt(currentMonth));
@@ -333,6 +379,7 @@ export const getSalesDashboard = async (req, res) => {
  
   res.status(StatusCodes.OK).json({
     season,
+    season_active: isActive,
     global_sold,
     global_percentage,
     team_sold,
@@ -351,24 +398,19 @@ export const getEmployeeSales = async (req, res) => {
   const { employee_id } = req.params;
   const { month } = req.query;
 
-  const today = new Date().toISOString().split('T')[0];
+  const found = await getCurrentOrLastSeason();
 
-  const seasonResult = await db.execute({
-    sql: `SELECT goal_id FROM sales_goals 
-          WHERE season_start <= ? AND season_end >= ?
-          LIMIT 1`,
-    args: [today, today]
-  });
-
-  if (seasonResult.rows.length === 0) {
+  if (!found) {
     return res.status(StatusCodes.NOT_FOUND).json({
-      message: "No hay temporada activa."
+      message: "No hay temporadas registradas."
     });
   }
 
-  const goal_id = seasonResult.rows[0].goal_id;
-  const filterMonth = month || String(new Date().getMonth() + 1).padStart(2, '0');
-  const filterYear = String(new Date().getFullYear());
+  const { season, isActive } = found;
+
+  const goal_id = season.goal_id;
+  const filterMonth = month || getDefaultMonth(season, isActive);
+  const filterYear = getSeasonYear(season);
 
   const salesResult = await db.execute({
     sql: `SELECT * FROM daily_sales
@@ -610,25 +652,20 @@ export const getAdminSales = async (req, res) => {
   const admin_id = req.user.id;
   const { month } = req.query;
 
-  const today = new Date().toISOString().split('T')[0];
+  // Temporada vigente o la más reciente (modo solo consulta)
+  const found = await getCurrentOrLastSeason();
 
-  // Verificar temporada activa
-  const seasonResult = await db.execute({
-    sql: `SELECT goal_id FROM sales_goals 
-          WHERE season_start <= ? AND season_end >= ?
-          LIMIT 1`,
-    args: [today, today]
-  });
-
-  if (seasonResult.rows.length === 0) {
+  if (!found) {
     return res.status(StatusCodes.NOT_FOUND).json({
-      message: "No hay temporada activa."
+      message: "No hay temporadas registradas."
     });
   }
 
-  const goal_id = seasonResult.rows[0].goal_id;
-  const filterMonth = month || String(new Date().getMonth() + 1).padStart(2, '0');
-  const filterYear = String(new Date().getFullYear());
+  const { season, isActive } = found;
+
+  const goal_id = season.goal_id;
+  const filterMonth = month || getDefaultMonth(season, isActive);
+  const filterYear = getSeasonYear(season);
 
   const salesResult = await db.execute({
     sql: `SELECT 
